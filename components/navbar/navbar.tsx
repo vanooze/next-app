@@ -1,4 +1,4 @@
-import { Input, Link, Navbar, NavbarContent } from "@nextui-org/react";
+import { Input, Link, Navbar, NavbarContent } from "@heroui/react";
 import React from "react";
 import { SearchIcon } from "../icons/searchicon";
 import { BurguerButton } from "./burguer-button";

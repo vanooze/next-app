@@ -1,16 +1,13 @@
 "use client";
-import { Button, Input } from "@nextui-org/react";
+import { Button, Input } from "@heroui/react";
 import Link from "next/link";
 import React from "react";
-import { DotsIcon } from "@/components/icons/accounts/dots-icon";
+
 import { ExportIcon } from "@/components/icons/accounts/export-icon";
-import { InfoIcon } from "@/components/icons/accounts/info-icon";
-import { TrashIcon } from "@/components/icons/accounts/trash-icon";
 import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
 import { UsersIcon } from "@/components/icons/breadcrumb/users-icon";
-import { SettingsIcon } from "@/components/icons/sidebar/settings-icon";
 import { TableWrapper } from "@/components/table/table";
-import { AddUser } from "./add-user";
+import { AddTask } from "./add-task";
 
 export const Tasks = () => {
   return (
@@ -26,7 +23,7 @@ export const Tasks = () => {
 
         <li className="flex gap-2">
           <UsersIcon />
-          <span>Users</span>
+          <span>Task</span>
           <span> / </span>{" "}
         </li>
         <li className="flex gap-2">
@@ -34,7 +31,7 @@ export const Tasks = () => {
         </li>
       </ul>
 
-      <h3 className="text-xl font-semibold">All Accounts</h3>
+      <h3 className="text-xl font-semibold">All Tasks</h3>
       <div className="flex justify-between flex-wrap gap-4 items-center">
         <div className="flex items-center gap-3 flex-wrap md:flex-nowrap">
           <Input
@@ -44,13 +41,9 @@ export const Tasks = () => {
             }}
             placeholder="Search users"
           />
-          <SettingsIcon />
-          <TrashIcon />
-          <InfoIcon />
-          <DotsIcon />
         </div>
         <div className="flex flex-row gap-3.5 flex-wrap">
-          <AddUser />
+          <AddTask />
           <Button color="primary" startContent={<ExportIcon />}>
             Export to CSV
           </Button>

@@ -1,89 +1,46 @@
-import { Tooltip, Chip } from "@nextui-org/react";
+import { Tooltip, Chip } from "@heroui/react";
 import React from "react";
 import { DeleteIcon } from "../icons/table/delete-icon";
 import { EditIcon } from "../icons/table/edit-icon";
-import { EyeIcon } from "../icons/table/eye-icon";
-import { dtTasks } from "./data";
+import { dtTask } from "./task";
+import { displayValue } from "@/helpers/displayValue";
+import { formatDateMMDDYYYY } from "@/helpers/formatDate";
 
 interface Props {
-  dtTasks: (typeof dtTasks)[number];
-  columnKey: string | React.Key;
+  dtTasks: dtTask;
+  columnKey: keyof dtTask | "actions";
+  handleEditTask: (task: dtTask) => void;
+  handleDeleteTask: (task: dtTask) => void;
 }
 
-export const RenderCell = ({ dtTasks, columnKey }: Props) => {
-  // @ts-ignore
-  const cellValue = dtTasks[columnKey];
+export const RenderCell = ({
+  dtTasks,
+  columnKey,
+  handleEditTask,
+  handleDeleteTask,
+}: Props) => {
+  const cellValue = dtTasks[columnKey as keyof dtTask];
   switch (columnKey) {
     case "clientName":
-      return (
-        <div>
-          <div>
-            <span>{cellValue}</span>
-          </div>
-        </div>
-      );
     case "projectDesc":
-      return (
-        <div>
-          <div>
-            <span>{cellValue}</span>
-          </div>
-        </div>
-      );
+      return <span>{displayValue(cellValue)}</span>;
     case "dateReceived":
-      return (
-        <div>
-          <div>
-            <span>{cellValue}</span>
-          </div>
-        </div>
-      );
+      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
     case "salesPersonnel":
-      return (
-        <div>
-          <div>
-            <span>{cellValue}</span>
-          </div>
-        </div>
-      );
+      return <span>{displayValue(cellValue)}</span>;
     case "systemDiagram":
-      return (
-        <div>
-          <div>
-            <span>{cellValue}</span>
-          </div>
-          <div>
-            <span>{dtTasks.eBoqDate}</span>
-          </div>
-        </div>
-      );
+      return <span>{displayValue(cellValue)}</span>;
+    case "eBoqDate":
+      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
     case "structuralBoq":
-      return (
-        <div>
-          <div>
-            <span>{cellValue}</span>
-          </div>
-          <div>
-            <span>{dtTasks.sBoqDate}</span>
-          </div>
-        </div>
-      );
+      return <span>{displayValue(cellValue)}</span>;
+    case "sBoqDate":
+      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
     case "sirME":
-      return (
-        <div>
-          <div>
-            <span>{cellValue}</span>
-          </div>
-        </div>
-      );
+      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
     case "sirMJH":
-      return (
-        <div>
-          <div>
-            <span>{cellValue}</span>
-          </div>
-        </div>
-      );
+      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
+
     case "status":
       return (
         <Chip
@@ -105,26 +62,15 @@ export const RenderCell = ({ dtTasks, columnKey }: Props) => {
       return (
         <div className="flex items-center gap-4 ">
           <div>
-            <Tooltip content="Details">
-              <button onClick={() => console.log("View user", dtTasks.id)}>
-                <EyeIcon size={20} fill="#979797" />
-              </button>
-            </Tooltip>
-          </div>
-          <div>
             <Tooltip content="Edit table" color="secondary">
-              <button onClick={() => console.log("Edit user", dtTasks.id)}>
+              <button onClick={() => handleEditTask(dtTasks)}>
                 <EditIcon size={20} fill="#979797" />
               </button>
             </Tooltip>
           </div>
           <div>
-            <Tooltip
-              content="Delete"
-              color="danger"
-              onClick={() => console.log("Delete user", dtTasks.id)}
-            >
-              <button>
+            <Tooltip content="Delete" color="danger">
+              <button onClick={() => handleDeleteTask(dtTasks)}>
                 <DeleteIcon size={20} fill="#FF0080" />
               </button>
             </Tooltip>
@@ -132,6 +78,6 @@ export const RenderCell = ({ dtTasks, columnKey }: Props) => {
         </div>
       );
     default:
-      return cellValue;
+      return <span>{cellValue}</span>;
   }
 };

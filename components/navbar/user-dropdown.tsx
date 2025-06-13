@@ -5,7 +5,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
   NavbarItem,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import React, { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { deleteAuthCookie } from "@/actions/auth.action";
