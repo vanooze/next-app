@@ -14,8 +14,19 @@ export const UserDropdown = () => {
   const router = useRouter();
 
   const handleLogout = useCallback(async () => {
-    await deleteAuthCookie();
-    router.replace("/login");
+    try {
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        router.push("/login");
+      } else {
+        console.error("Logout failed");
+      }
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
   }, [router]);
 
   return (

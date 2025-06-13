@@ -1,78 +1,87 @@
 "use client";
 
-import { createAuthCookie } from "@/actions/auth.action";
-import { LoginSchema } from "@/helpers/schemas";
-import { LoginFormType } from "@/helpers/types";
 import { Button, Input } from "@nextui-org/react";
-import { Formik } from "formik";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useState } from "react";
 
 export const Login = () => {
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [responseMsg, setResponseMsg] = useState<string>("");
   const router = useRouter();
 
-  const initialValues: LoginFormType = {
-    email: "admin@acme.com",
-    password: "admin",
+  const handleLogin = async () => {
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      setResponseMsg(`✅ Success: ${data.message}`);
+      console.log("Token:", data.token);
+
+      // Redirect after short delay
+      setTimeout(() => {
+        router.push("/");
+      }, 1000);
+    } catch (err: any) {
+      setResponseMsg(`❌ something went wrong `);
+      console.error(`${err.message}`);
+    }
   };
-
-  const handleLogin = useCallback(
-    async (values: LoginFormType) => {
-      // `values` contains email & password. You can use provider to connect user
-
-      await createAuthCookie();
-      router.replace("/");
-    },
-    [router]
-  );
 
   return (
     <>
-      <div className='text-center text-[25px] font-bold mb-6'>Login</div>
+      <div className="text-center text-[25px] font-bold mb-6">Login</div>
 
-      <Formik
-        initialValues={initialValues}
-        validationSchema={LoginSchema}
-        onSubmit={handleLogin}>
-        {({ values, errors, touched, handleChange, handleSubmit }) => (
-          <>
-            <div className='flex flex-col w-1/2 gap-4 mb-4'>
-              <Input
-                variant='bordered'
-                label='Email'
-                type='email'
-                value={values.email}
-                isInvalid={!!errors.email && !!touched.email}
-                errorMessage={errors.email}
-                onChange={handleChange("email")}
-              />
-              <Input
-                variant='bordered'
-                label='Password'
-                type='password'
-                value={values.password}
-                isInvalid={!!errors.password && !!touched.password}
-                errorMessage={errors.password}
-                onChange={handleChange("password")}
-              />
-            </div>
+      <div className="flex max-w-xs flex-col gap-4">
+        <Input
+          label="Username"
+          placeholder="Enter your username"
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <Input
+          label="Password"
+          placeholder="Enter your password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
 
-            <Button
-              onPress={() => handleSubmit()}
-              variant='flat'
-              color='primary'>
-              Login
-            </Button>
-          </>
-        )}
-      </Formik>
+      {responseMsg && (
+        <div className="mt-3 text-sm text-center text-red-500">
+          {responseMsg}
+        </div>
+      )}
 
-      <div className='font-light text-slate-400 mt-4 text-sm'>
-        Don&apos;t have an account ?{" "}
-        <Link href='/register' className='font-bold'>
-          Register here
-        </Link>
+      <div className="pt-4">
+        <Button
+          onPress={handleLogin}
+          variant="flat"
+          color="primary"
+          isDisabled={!username || !password}
+        >
+          Login
+        </Button>
+      </div>
+
+      <div className="font-light text-slate-400 mt-4 text-sm text-center">
+        Having problems logging in?{" "}
+        <span className="font-bold text-black dark:text-white">
+          Contact IT support
+        </span>
       </div>
     </>
   );
