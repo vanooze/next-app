@@ -20,6 +20,17 @@ import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useEffect, useState } from "react";
 import { dtTask } from "../../../table/task";
 
+export const selectEboq = [
+  { key: "B.TOPACIO", label: "B.TOPACIO" },
+  { key: "M.GIGANTE", label: "M.GIGANTE" },
+  { key: "J.CAMERO", label: "J.CAMERO" },
+];
+
+export const selectSboq = [
+  { key: "J.ARDINEL", label: "J.ARDINEL" },
+  { key: "J.COLA", label: "J.COLA" },
+];
+
 export const selectStatus = [
   { key: "WIP", label: "WIP" },
   { key: "ongoing", label: "Ongoing" },
@@ -187,24 +198,38 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
                     value={dateReceived}
                     onChange={setDateReceived}
                   />
-                  <Input
+                  <Select
+                    isRequired
+                    items={selectEboq}
                     label="System Diagram"
+                    placeholder="System Diagram"
                     variant="bordered"
-                    value={eboq ?? ""}
-                    onValueChange={setEboq}
-                  />
+                    selectedKeys={[eboq]}
+                    onChange={(e) => setEboq(e.target.value)}
+                  >
+                    {(selectEboq) => (
+                      <SelectItem>{selectEboq.label}</SelectItem>
+                    )}
+                  </Select>
                   <DatePicker
                     label="Endorsed Date"
                     variant="bordered"
                     value={eboqDate}
                     onChange={setEboqDate}
                   />
-                  <Input
-                    label="Structural BOQ"
+                  <Select
+                    isRequired
+                    items={selectSboq}
+                    label="Structural"
+                    placeholder="Structural"
                     variant="bordered"
-                    value={sboq ?? ""}
-                    onValueChange={setSboq}
-                  />
+                    selectedKeys={[sboq]}
+                    onChange={(e) => setSboq(e.target.value)}
+                  >
+                    {(selectSboq) => (
+                      <SelectItem>{selectSboq.label}</SelectItem>
+                    )}
+                  </Select>
                   <DatePicker
                     label="Endorsed Date"
                     variant="bordered"

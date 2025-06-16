@@ -26,6 +26,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   tasks,
   loading,
 }) => {
+  const [page, setPage] = useState(1);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<dtTask | null>(null);
@@ -33,6 +34,8 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     column: "id", // default sort column
     direction: "ascending",
   });
+
+  const rowsPerPage = 10;
 
   const handleOpenEdit = (task: dtTask) => {
     setSelectedTask(task);
@@ -78,6 +81,14 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     });
   }, [tasks, sortDescriptor]);
 
+  const pages = Math.ceil(sortedTasks.length / rowsPerPage);
+
+  const items = useMemo(() => {
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    return sortedTasks.slice(start, end);
+  }, [page, sortedTasks]);
   return (
     <div className="w-full flex flex-col gap-4">
       {loading ? (
@@ -94,6 +105,19 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           aria-label="task table with custom cells"
           sortDescriptor={sortDescriptor}
           onSortChange={setSortDescriptor}
+          bottomContent={
+            <div className="flex w-full justify-center">
+              <Pagination
+                isCompact
+                showControls
+                showShadow
+                color="secondary"
+                page={page}
+                total={pages}
+                onChange={(page) => setPage(page)}
+              />
+            </div>
+          }
         >
           <TableHeader columns={dtColumns}>
             {(column) => (
@@ -107,7 +131,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody emptyContent={"No rows to display."} items={sortedTasks}>
+          <TableBody emptyContent={"No rows to display."} items={items}>
             {(item) => (
               <TableRow key={item.id}>
                 {(columnKey) => (
