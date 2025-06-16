@@ -8,17 +8,18 @@ import {
   ModalHeader,
   useDisclosure,
   useDraggable,
+  addToast,
 } from "@heroui/react";
 import { DatePicker } from "@heroui/date-picker";
 import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date";
-import { Select, SelectSection, SelectItem } from "@heroui/select";
+import { Select, SelectItem } from "@heroui/select";
 import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useState } from "react";
-import { o } from "framer-motion/dist/types.d-B_QPEvFK";
+import { PlusIcon } from "@/components/icons/table/add-icon";
 
 export const selectStatus = [
   { key: "WIP", label: "WIP" },
-  { key: "ongoing", label: "Ongoing" },
+  { key: "Ongoing", label: "Ongoing" },
   { key: "Finished", label: "Finished" },
 ];
 
@@ -71,6 +72,9 @@ export const AddTask = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      if (res.status === 403) {
+        const data = await res.json();
+      }
       if (!res.ok) {
         throw new Error("Failed to create new task");
       }
@@ -86,7 +90,7 @@ export const AddTask = () => {
   return (
     <div>
       <>
-        <Button onPress={onOpen} color="primary">
+        <Button onPress={onOpen} color="primary" endContent={<PlusIcon />}>
           Add Task
         </Button>
         <Modal
@@ -188,12 +192,7 @@ export const AddTask = () => {
                   <Button color="danger" variant="flat" onClick={onClose}>
                     Close
                   </Button>
-                  <Button
-                    color="primary"
-                    onPress={() => handleAddTask(onClose)}
-                  >
-                    Add Task
-                  </Button>
+                  <Button color="primary">Add Task</Button>
                 </ModalFooter>
               </>
             )}

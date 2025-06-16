@@ -1,12 +1,13 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { TableWrapper } from "../table/table";
 import { CardBalance1 } from "./card-balance1";
 import { CardBalance2 } from "./card-balance2";
 import { CardBalance3 } from "./card-balance3";
 import { CardAgents } from "./card-agents";
-import { CardTransactions } from "./card-transactions";
+import { CardAnnouncement } from "./card-announcement";
+import { dtTask } from "../deparments/DT/tasks/task";
 import { Link } from "@heroui/react";
 import NextLink from "next/link";
 
@@ -17,53 +18,82 @@ const Chart = dynamic(
   }
 );
 
-export const Content = () => (
-  <div className="h-full lg:px-6">
-    <div className="flex justify-center gap-4 xl:gap-6 pt-3 px-4 lg:px-0  flex-wrap xl:flex-nowrap sm:pt-10 max-w-[90rem] mx-auto w-full">
-      <div className="mt-6 gap-6 flex flex-col w-full">
-        {/* Card Section Top */}
-        <div className="flex flex-col gap-2">
-          <h3 className="text-xl font-semibold">Tasks</h3>
-          <div className="grid md:grid-cols-2 grid-cols-1 2xl:grid-cols-3 gap-5  justify-center w-full">
-            <CardBalance1 />
-            <CardBalance2 />
-            <CardBalance3 />
+export const Content = () => {
+  const [tasks, setTasks] = useState<dtTask[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const res = await fetch("/api/DT/tasks");
+        const data = await res.json();
+        setTasks(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch tasks", err);
+        setTasks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, []);
+
+  const totalTasks = tasks.length;
+  const WipTask = tasks.filter((task) => task.status === "Ongoing").length;
+  const completedTasks = tasks.filter(
+    (task) => task.status === "Finished"
+  ).length;
+  return (
+    <div className="h-full lg:px-6">
+      <div className="flex justify-center gap-4 xl:gap-6 pt-3 px-4 lg:px-0  flex-wrap xl:flex-nowrap sm:pt-10 max-w-[90rem] mx-auto w-full">
+        <div className="mt-6 gap-6 flex flex-col w-full">
+          {/* Card Section Top */}
+          <div className="flex flex-col gap-2">
+            <h3 className="text-xl font-semibold">Tasks</h3>
+            <div className="grid md:grid-cols-2 grid-cols-1 2xl:grid-cols-3 gap-5  justify-center w-full">
+              <CardBalance1 WIP={WipTask} />
+              <CardBalance2 completed={completedTasks} />
+              <CardBalance3 total={totalTasks} />
+            </div>
+          </div>
+
+          {/* Chart */}
+          <div className="h-full flex flex-col gap-2">
+            <h3 className="text-xl font-semibold">Statistics</h3>
+            <div className="w-full bg-default-50 shadow-lg rounded-2xl p-6 ">
+              <Chart />
+            </div>
           </div>
         </div>
 
-        {/* Chart */}
-        <div className="h-full flex flex-col gap-2">
-          <h3 className="text-xl font-semibold">Statistics</h3>
-          <div className="w-full bg-default-50 shadow-lg rounded-2xl p-6 ">
-            <Chart />
+        {/* Left Section */}
+        <div className="mt-4 gap-2 flex flex-col xl:max-w-md w-full">
+          <h3 className="text-xl font-semibold">Section</h3>
+          <div className="flex flex-col justify-center gap-4 flex-wrap md:flex-nowrap md:flex-col">
+            <CardAgents />
+            <CardAnnouncement />
           </div>
         </div>
       </div>
 
-      {/* Left Section */}
-      <div className="mt-4 gap-2 flex flex-col xl:max-w-md w-full">
-        <h3 className="text-xl font-semibold">Section</h3>
-        <div className="flex flex-col justify-center gap-4 flex-wrap md:flex-nowrap md:flex-col">
-          <CardAgents />
-          <CardTransactions />
+      {/* Table Task Designation */}
+      <div className="flex flex-col justify-center w-full py-5 px-4 lg:px-0  max-w-[90rem] mx-auto gap-3">
+        <div className="flex  flex-wrap justify-between">
+          <h3 className="text-center text-xl font-semibold">
+            Tasks Designation
+          </h3>
+          <Link
+            href="/tasks"
+            as={NextLink}
+            color="primary"
+            className="cursor-pointer"
+          >
+            View All
+          </Link>
         </div>
+        <TableWrapper tasks={tasks} loading={loading} />
       </div>
     </div>
-
-    {/* Table Latest Users */}
-    <div className="flex flex-col justify-center w-full py-5 px-4 lg:px-0  max-w-[90rem] mx-auto gap-3">
-      <div className="flex  flex-wrap justify-between">
-        <h3 className="text-center text-xl font-semibold">Tasks Designation</h3>
-        <Link
-          href="/accounts"
-          as={NextLink}
-          color="primary"
-          className="cursor-pointer"
-        >
-          View All
-        </Link>
-      </div>
-      <TableWrapper />
-    </div>
-  </div>
-);
+  );
+};

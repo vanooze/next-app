@@ -2,7 +2,10 @@ import { Card, CardBody } from "@heroui/react";
 import React from "react";
 import { Community } from "../icons/community";
 
-export const CardBalance1 = () => {
+interface CardBalance1Props {
+  WIP: number;
+}
+export const CardBalance1 = ({ WIP }: CardBalance1Props) => {
   return (
     <Card className="xl:max-w-sm bg-primary rounded-xl shadow-md px-3 w-full">
       <CardBody className="py-5 overflow-hidden">
@@ -14,7 +17,7 @@ export const CardBalance1 = () => {
           </div>
         </div>
         <div className="flex justify-end content-center py-3 px-2">
-          <span className="text-white text-4xl font-semibold">3</span>
+          <span className="text-white text-4xl font-semibold">{WIP}</span>
         </div>
       </CardBody>
     </Card>

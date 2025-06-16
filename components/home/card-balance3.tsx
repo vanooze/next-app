@@ -2,7 +2,11 @@ import { Card, CardBody } from "@heroui/react";
 import React from "react";
 import { Community } from "../icons/community";
 
-export const CardBalance3 = () => {
+interface CardBalance3Props {
+  total: number;
+}
+
+export const CardBalance3 = ({ total }: CardBalance3Props) => {
   return (
     <Card className="xl:max-w-sm bg-success rounded-xl shadow-md px-3 w-full">
       <CardBody className="py-5">
@@ -14,7 +18,7 @@ export const CardBalance3 = () => {
           </div>
         </div>
         <div className="flex justify-end content-center py-3 px-2">
-          <span className="text-white text-4xl font-semibold">23</span>
+          <span className="text-white text-4xl font-semibold">{total}</span>
         </div>
       </CardBody>
     </Card>

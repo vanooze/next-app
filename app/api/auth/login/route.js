@@ -36,8 +36,9 @@ export async function POST(request) {
     }
 
     const token = await createToken({
-      userId: user.id,
+      userId: user.user_id,
       username: user.username,
+      department: user.department,
     });
 
     const { password: _, ...userWithoutPassword } = user;

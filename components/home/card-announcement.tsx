@@ -34,7 +34,7 @@ const items = [
   },
 ];
 
-export const CardTransactions = () => {
+export const CardAnnouncement = () => {
   return (
     <Card className=" bg-default-50 rounded-xl shadow-md px-3">
       <CardBody className="py-5 gap-4">

@@ -1,12 +1,13 @@
 "use client";
 
-import { Button, Input } from "@heroui/react";
+import { Button, Input, Spinner } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export const Login = () => {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [loading, setLoading] = useState(false);
   const [responseMsg, setResponseMsg] = useState<string>("");
   const router = useRouter();
 
@@ -25,16 +26,15 @@ export const Login = () => {
       if (!res.ok) {
         throw new Error(data.error || "Login failed");
       }
-
-      setResponseMsg(`✅ Success: ${data.message}`);
-      console.log("Token:", data.token);
-
+      setLoading(true);
+      console.log("Token being set:", data.token);
       // Redirect after short delay
       setTimeout(() => {
         router.push("/");
+        setLoading(false);
       }, 1000);
     } catch (err: any) {
-      setResponseMsg(`❌ something went wrong `);
+      setResponseMsg(`❌ Invalid Credentials`);
       console.error(`${err.message}`);
     }
   };
@@ -67,14 +67,25 @@ export const Login = () => {
       )}
 
       <div className="pt-4">
-        <Button
-          onPress={handleLogin}
-          variant="flat"
-          color="primary"
-          isDisabled={!username || !password}
-        >
-          Login
-        </Button>
+        {loading ? (
+          <div className="w-full flex justify-center items-center min-h-[200px]">
+            <Spinner
+              classNames={{ label: "text-foreground mt-4" }}
+              size="lg"
+              variant="wave"
+              label="Logging in..."
+            />
+          </div>
+        ) : (
+          <Button
+            onPress={handleLogin}
+            variant="flat"
+            color="primary"
+            isDisabled={!username || !password}
+          >
+            Login
+          </Button>
+        )}
       </div>
 
       <div className="font-light text-slate-400 mt-4 text-sm text-center">

@@ -7,20 +7,32 @@ import {
   TableHeader,
   TableRow,
   Spinner,
+  Pagination,
 } from "@heroui/react";
-import React, { useEffect, useState } from "react";
-import { dtColumns } from "./data";
-import { RenderCell } from "./render-cell";
-import { EditTask } from "../tasks/edit-task";
-import { dtTask } from "./task";
-import { DeleteTask } from "../tasks/delete-task";
+import type { SortDescriptor } from "@react-types/shared";
+import React, { useEffect, useState, useMemo } from "react";
+import { dtColumns } from "../deparments/DT/tasks/task";
+import { RenderCell } from "../deparments/DT/tasks/table/render-cell";
+import { EditTask } from "../deparments/DT/tasks/edit-task";
+import { dtTask } from "../deparments/DT/tasks/task";
+import { DeleteTask } from "../deparments/DT/tasks/delete-task";
 
-export const TableWrapper = () => {
-  const [tasks, setTasks] = useState<dtTask[]>([]);
-  const [loading, setLoading] = useState(true);
+interface TableWrapperProps {
+  tasks: dtTask[];
+  loading: boolean;
+}
+
+export const TableWrapper: React.FC<TableWrapperProps> = ({
+  tasks,
+  loading,
+}) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<dtTask | null>(null);
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+    column: "id", // default sort column
+    direction: "ascending",
+  });
 
   const handleOpenEdit = (task: dtTask) => {
     setSelectedTask(task);
@@ -42,21 +54,29 @@ export const TableWrapper = () => {
     setSelectedTask(null);
   };
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const res = await fetch("/api/DT/tasks");
-        const data = await res.json();
-        setTasks(data);
-      } catch (err) {
-        console.log("Failed to load tasks", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const sortedTasks = useMemo(() => {
+    if (!Array.isArray(tasks)) return [];
 
-    fetchTasks();
-  }, []);
+    const { column, direction } = sortDescriptor;
+    if (!column) return tasks;
+
+    return [...tasks].sort((a, b) => {
+      const aValue = a[column as keyof dtTask];
+      const bValue = b[column as keyof dtTask];
+
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        return direction === "ascending"
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return direction === "ascending" ? aValue - bValue : bValue - aValue;
+      }
+
+      return 0;
+    });
+  }, [tasks, sortDescriptor]);
 
   return (
     <div className="w-full flex flex-col gap-4">
@@ -70,19 +90,24 @@ export const TableWrapper = () => {
           />
         </div>
       ) : (
-        <Table aria-label="task table with custom cells">
+        <Table
+          aria-label="task table with custom cells"
+          sortDescriptor={sortDescriptor}
+          onSortChange={setSortDescriptor}
+        >
           <TableHeader columns={dtColumns}>
             {(column) => (
               <TableColumn
                 key={column.uid}
                 hideHeader={column.uid === "actions"}
                 align={column.uid === "actions" ? "center" : "start"}
+                allowsSorting
               >
                 {column.name}
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody items={tasks}>
+          <TableBody emptyContent={"No rows to display."} items={sortedTasks}>
             {(item) => (
               <TableRow key={item.id}>
                 {(columnKey) => (

@@ -57,6 +57,21 @@ const options: Props["options"] = {
     },
   },
   tooltip: {
+    enabled: true,
+    followCursor: true,
+    fillSeriesColor: true,
+    marker: {
+      show: true,
+    },
+    theme: "dark",
+  },
+  markers: {
+    size: 0,
+    hover: {
+      sizeOffset: 5,
+    },
+  },
+  dataLabels: {
     enabled: false,
   },
   grid: {
@@ -71,8 +86,6 @@ const options: Props["options"] = {
       colors: ["red"],
     },
   },
-  // @ts-ignore
-  markers: false,
 };
 
 export const Steam = () => {

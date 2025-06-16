@@ -7,10 +7,17 @@ import {
   NavbarItem,
 } from "@heroui/react";
 import React, { useCallback } from "react";
+import { useUserContext } from "../layout/UserContext";
 import { useRouter } from "next/navigation";
-import { deleteAuthCookie } from "@/actions/auth.action";
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+}
 
 export const UserDropdown = () => {
+  const { user, loading } = useUserContext();
   const router = useRouter();
 
   const handleLogout = useCallback(async () => {
@@ -50,9 +57,9 @@ export const UserDropdown = () => {
           className="flex flex-col justify-start w-full items-start"
         >
           <p>Signed in as</p>
-          <p>user@example.com</p>
+          <p>{user?.email}</p>
         </DropdownItem>
-        <DropdownItem key="settings">Profile</DropdownItem>
+        <DropdownItem key="profile">Profile</DropdownItem>
         <DropdownItem key="analytics">Analytics</DropdownItem>
         <DropdownItem
           key="logout"

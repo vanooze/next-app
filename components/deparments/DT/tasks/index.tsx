@@ -1,15 +1,36 @@
 "use client";
 import { Button, Input } from "@heroui/react";
 import Link from "next/link";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 import { ExportIcon } from "@/components/icons/accounts/export-icon";
 import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
 import { UsersIcon } from "@/components/icons/breadcrumb/users-icon";
 import { TableWrapper } from "@/components/table/table";
+import { dtTask } from "./task";
 import { AddTask } from "./add-task";
 
 export const Tasks = () => {
+  const [tasks, setTasks] = useState<dtTask[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const res = await fetch("/api/DT/tasks");
+        const data = await res.json();
+        setTasks(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch tasks", err);
+        setTasks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, []);
+
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
       <ul className="flex">
@@ -39,7 +60,7 @@ export const Tasks = () => {
               input: "w-full",
               mainWrapper: "w-full",
             }}
-            placeholder="Search users"
+            placeholder="Search Client Name"
           />
         </div>
         <div className="flex flex-row gap-3.5 flex-wrap">
@@ -50,7 +71,7 @@ export const Tasks = () => {
         </div>
       </div>
       <div className="max-w-[95rem] mx-auto w-full">
-        <TableWrapper />
+        <TableWrapper tasks={tasks} loading={loading} />
       </div>
     </div>
   );

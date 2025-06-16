@@ -2,9 +2,13 @@ import { Card, CardBody } from "@heroui/react";
 import React from "react";
 import { Community } from "../icons/community";
 
-export const CardBalance2 = () => {
+interface CardBalance2Props {
+  completed: number;
+}
+
+export const CardBalance2 = ({ completed }: CardBalance2Props) => {
   return (
-    <Card className="xl:max-w-sm bg-default-50 rounded-xl shadow-md px-3 w-full">
+    <Card className="xl:max-w-sm bg-secondary rounded-xl shadow-md px-3 w-full">
       <CardBody className="py-5">
         <div className="flex gap-2.5">
           <Community />
@@ -14,7 +18,7 @@ export const CardBalance2 = () => {
           </div>
         </div>
         <div className="flex justify-end content-center py-3 px-2">
-          <span className="text-white text-4xl font-semibold">8</span>
+          <span className="text-white text-4xl font-semibold">{completed}</span>
         </div>
       </CardBody>
     </Card>

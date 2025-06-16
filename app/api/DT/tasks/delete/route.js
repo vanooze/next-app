@@ -1,8 +1,17 @@
 import { NextResponse } from "next/server";
 import { executeQuery } from "@/app/lib/db";
+import { getUserFromToken } from "@/lib/auth";
 
 export async function DELETE(req) {
   try {
+    const user = await getUserFromToken(req);
+
+    if (!user || !user.department || !user.department.includes("DT")) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized access" },
+        { status: 403 }
+      );
+    }
     const { id } = await req.json();
 
     if (!id) {

@@ -18,7 +18,7 @@ import {
 import { Select, SelectSection, SelectItem } from "@heroui/select";
 import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useEffect, useState } from "react";
-import { dtTask } from "../table/task";
+import { dtTask } from "./task";
 
 export const selectStatus = [
   { key: "WIP", label: "WIP" },
