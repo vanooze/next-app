@@ -43,7 +43,14 @@ export const Login = () => {
     <>
       <div className="text-center text-[25px] font-bold mb-6">Login</div>
 
-      <div className="flex max-w-xs flex-col gap-4">
+      <div
+        className="flex max-w-xs flex-col gap-4"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !loading) {
+            handleLogin();
+          }
+        }}
+      >
         <Input
           label="Username"
           placeholder="Enter your username"

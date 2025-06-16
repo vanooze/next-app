@@ -1,13 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  // Add other user fields as needed
-}
+import type { User } from "@/helpers/user";
 
 interface UserContextType {
   user: User | null;

@@ -1,15 +1,17 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { TableWrapper } from "../table/table";
+import { TableWrapper } from "../deparments/DT/tasks/table/table";
 import { CardBalance1 } from "./card-balance1";
 import { CardBalance2 } from "./card-balance2";
 import { CardBalance3 } from "./card-balance3";
 import { CardAgents } from "./card-agents";
 import { CardAnnouncement } from "./card-announcement";
-import { dtTask } from "../deparments/DT/tasks/task";
+import { dtTask } from "../table/task";
 import { Link } from "@heroui/react";
 import NextLink from "next/link";
+import { useUserContext } from "../layout/UserContext";
+import { useTasksByDepartment } from "@/components/hooks/useTasksByDepartment";
 
 const Chart = dynamic(
   () => import("../charts/steam").then((mod) => mod.Steam),
@@ -19,25 +21,10 @@ const Chart = dynamic(
 );
 
 export const Content = () => {
-  const [tasks, setTasks] = useState<dtTask[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const res = await fetch("/api/DT/tasks");
-        const data = await res.json();
-        setTasks(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Failed to fetch tasks", err);
-        setTasks([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
-  }, []);
+  const { user } = useUserContext();
+  const { tasks, loading, error } = useTasksByDepartment(
+    user?.department || ""
+  );
 
   const totalTasks = tasks.length;
   const WipTask = tasks.filter((task) => task.status === "Ongoing").length;

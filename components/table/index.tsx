@@ -6,9 +6,9 @@ import React, { useState, useEffect } from "react";
 import { ExportIcon } from "@/components/icons/accounts/export-icon";
 import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
 import { UsersIcon } from "@/components/icons/breadcrumb/users-icon";
-import { TableWrapper } from "@/components/table/table";
+import { TableWrapper } from "@/components/deparments/DT/tasks/table/table";
 import { dtTask } from "./task";
-import { AddTask } from "./add-task";
+import { AddTask } from "../deparments/DT/tasks/add-task";
 
 export const Tasks = () => {
   const [tasks, setTasks] = useState<dtTask[]>([]);
