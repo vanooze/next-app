@@ -7,7 +7,7 @@
       "build": "next build",
       "start": "next start",
       "lint": "next lint",
-      "lan": "next dev -H 0.0.0.0 -p 3000"
+      "lan": "next dev -H 0.0.0.0 -p 3001"
    },
    "dependencies": {
       "@heroui/react": "2.7.10",
