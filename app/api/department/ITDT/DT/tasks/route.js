@@ -1,7 +1,16 @@
 import { executeQuery } from "@/app/lib/db";
+import { NextResponse } from "next/server";
+import { getUserFromToken } from "@/app/lib/auth";
 
-export async function GET() {
+export async function GET(req) {
   try {
+    const user = await getUserFromToken(req);
+    if (!user || !user.department || !user.department.includes("Design")) {
+      return NextResponse.json(
+        { error: "Unauthorized access" },
+        { status: 403 }
+      );
+    }
     const rows = await executeQuery("SELECT * FROM design_activity");
     const tasks = rows.map((r) => ({
       id: r.id,

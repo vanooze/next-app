@@ -11,10 +11,11 @@ import {
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
 import React, { useEffect, useState, useMemo } from "react";
-import { dtColumns } from "../../../../table/task";
+import { dtColumns } from "../../../../../helpers/task";
 import { RenderCell } from "./render-cell";
 import { EditTask } from "../edit-task";
-import { dtTask } from "../../../../table/task";
+import { useUserContext } from "@/components/layout/UserContext";
+import { dtTask } from "../../../../../helpers/task";
 import { DeleteTask } from "../delete-task";
 
 interface TableWrapperProps {
@@ -27,6 +28,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   loading,
 }) => {
   const [page, setPage] = useState(1);
+  const { user } = useUserContext();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<dtTask | null>(null);

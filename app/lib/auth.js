@@ -12,6 +12,8 @@ export async function getUserFromToken(req) {
     return {
       userId: payload.userId,
       username: payload.username,
+      designation: payload.designation,
+      designationStatus: payload.designationStatus,
       department: payload.department,
     };
   } catch (err) {

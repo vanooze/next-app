@@ -1,4 +1,19 @@
+export const selectEboq = [
+  { key: "B.TOPACIO", label: "B.TOPACIO" },
+  { key: "M.GIGANTE", label: "M.GIGANTE" },
+  { key: "J.CAMERO", label: "J.CAMERO" },
+];
 
+export const selectSboq = [
+  { key: "J.ARDINEL", label: "J.ARDINEL" },
+  { key: "J.COLA", label: "J.COLA" },
+];
+
+export const selectStatus = [
+  { key: "OnHold", label: "OnHold" },
+  { key: "Ongoing", label: "Ongoing" },
+  { key: "Finished", label: "Finished" },
+];
 
 export const users = [
   {

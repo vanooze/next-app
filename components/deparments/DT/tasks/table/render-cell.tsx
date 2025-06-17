@@ -2,7 +2,7 @@ import { Tooltip, Chip } from "@heroui/react";
 import React from "react";
 import { DeleteIcon } from "../../../../icons/table/delete-icon";
 import { EditIcon } from "../../../../icons/table/edit-icon";
-import { dtTask } from "../../../../table/task";
+import { dtTask } from "../../../../../helpers/task";
 import { displayValue } from "@/helpers/displayValue";
 import { formatDateMMDDYYYY } from "@/helpers/formatDate";
 
@@ -49,7 +49,7 @@ export const RenderCell = ({
           color={
             cellValue === "Finished"
               ? "success"
-              : cellValue === "WIP"
+              : cellValue === "OnHold"
               ? "danger"
               : "warning"
           }
@@ -60,22 +60,24 @@ export const RenderCell = ({
 
     case "actions":
       return (
-        <div className="flex items-center gap-4 ">
-          <div>
-            <Tooltip content="Edit table" color="secondary">
-              <button onClick={() => handleEditTask(dtTasks)}>
-                <EditIcon size={20} fill="#979797" />
-              </button>
-            </Tooltip>
+        <>
+          <div className="flex items-center gap-4 ">
+            <div>
+              <Tooltip content="Edit table" color="secondary">
+                <button onClick={() => handleEditTask(dtTasks)}>
+                  <EditIcon size={20} fill="#979797" />
+                </button>
+              </Tooltip>
+            </div>
+            <div>
+              <Tooltip content="Delete" color="danger">
+                <button onClick={() => handleDeleteTask(dtTasks)}>
+                  <DeleteIcon size={20} fill="#FF0080" />
+                </button>
+              </Tooltip>
+            </div>
           </div>
-          <div>
-            <Tooltip content="Delete" color="danger">
-              <button onClick={() => handleDeleteTask(dtTasks)}>
-                <DeleteIcon size={20} fill="#FF0080" />
-              </button>
-            </Tooltip>
-          </div>
-        </div>
+        </>
       );
     default:
       return <span>{cellValue}</span>;

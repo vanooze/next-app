@@ -16,23 +16,7 @@ import { Select, SelectItem } from "@heroui/select";
 import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useState } from "react";
 import { PlusIcon } from "@/components/icons/table/add-icon";
-
-export const selectEboq = [
-  { key: "B.TOPACIO", label: "B.TOPACIO" },
-  { key: "M.GIGANTE", label: "M.GIGANTE" },
-  { key: "J.CAMERO", label: "J.CAMERO" },
-];
-
-export const selectSboq = [
-  { key: "J.ARDINEL", label: "J.ARDINEL" },
-  { key: "J.COLA", label: "J.COLA" },
-];
-
-export const selectStatus = [
-  { key: "WIP", label: "WIP" },
-  { key: "Ongoing", label: "Ongoing" },
-  { key: "Finished", label: "Finished" },
-];
+import { selectEboq, selectStatus, selectSboq } from "@/helpers/data";
 
 export const AddTask = () => {
   let defaultDate = today(getLocalTimeZone());
@@ -48,9 +32,9 @@ export const AddTask = () => {
   const [projectDesc, setProjectDesc] = useState<string>("");
   const [salesPersonnel, setSalesPersonnel] = useState<string>("");
   const [dateReceived, setDateReceived] = useState<CalendarDate | null>(null);
-  const [eboq, setEboq] = useState<string>("");
+  const [eboq, setEboq] = useState(new Set<string>());
   const [eboqDate, setEboqDate] = useState<CalendarDate | null>(null);
-  const [sboq, setSboq] = useState<string>("");
+  const [sboq, setSboq] = useState(new Set<string>());
   const [sboqDate, setSboqDate] = useState<CalendarDate | null>(null);
   const [sirme, setSirme] = useState<CalendarDate | null>(null);
   const [sirmjh, setSirmjh] = useState<CalendarDate | null>(null);
@@ -62,15 +46,17 @@ export const AddTask = () => {
     const sboqDateStr = formatDatetoStr(sboqDate);
     const sirmeDateStr = formatDatetoStr(sirme);
     const sirmjhDateStr = formatDatetoStr(sirmjh);
+    const eboqArray = Array.from(eboq);
+    const sboqArray = Array.from(sboq);
 
     const payload = {
       clientName,
       projectDesc,
       salesPersonnel,
       dateReceived: dateReceivedStr,
-      eboq: eboq.trim() !== "" ? eboq : null,
+      eboq: eboqArray.length > 0 ? eboqArray.join(",") : null,
       eboqdate: eboqDateStr,
-      sboq: sboq.trim() !== "" ? sboq : null,
+      sboq: sboqArray.length > 0 ? sboqArray.join(",") : null,
       sboqdate: sboqDateStr,
       sirME: sirmeDateStr,
       sirMJH: sirmjhDateStr,
@@ -150,16 +136,22 @@ export const AddTask = () => {
                     onChange={setDateReceived}
                   />
                   <Select
-                    isRequired
+                    selectionMode="multiple"
                     items={selectEboq}
                     label="System Diagram"
                     placeholder="System Diagram"
                     variant="bordered"
-                    selectedKeys={[eboq]}
-                    onChange={(e) => setEboq(e.target.value)}
+                    selectedKeys={eboq}
+                    onSelectionChange={(keys) => {
+                      if (keys !== "all") {
+                        setEboq(keys as Set<string>);
+                      } else {
+                        setEboq(new Set(selectEboq.map((item) => item.key)));
+                      }
+                    }}
                   >
-                    {(selectEboq) => (
-                      <SelectItem>{selectEboq.label}</SelectItem>
+                    {(item) => (
+                      <SelectItem key={item.key}>{item.label}</SelectItem>
                     )}
                   </Select>
                   <DatePicker
@@ -169,16 +161,22 @@ export const AddTask = () => {
                     onChange={setEboqDate}
                   />
                   <Select
-                    isRequired
+                    selectionMode="multiple"
                     items={selectSboq}
                     label="Structural"
                     placeholder="Structural"
                     variant="bordered"
-                    selectedKeys={[sboq]}
-                    onChange={(e) => setSboq(e.target.value)}
+                    selectedKeys={sboq}
+                    onSelectionChange={(keys) => {
+                      if (keys !== "all") {
+                        setSboq(keys as Set<string>);
+                      } else {
+                        setSboq(new Set(selectSboq.map((item) => item.key)));
+                      }
+                    }}
                   >
-                    {(selectSboq) => (
-                      <SelectItem>{selectSboq.label}</SelectItem>
+                    {(item) => (
+                      <SelectItem key={item.key}>{item.label}</SelectItem>
                     )}
                   </Select>
                   <DatePicker

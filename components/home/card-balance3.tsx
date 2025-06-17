@@ -14,7 +14,9 @@ export const CardBalance3 = ({ total }: CardBalance3Props) => {
           <Community />
           <div className="flex flex-col">
             <span className="text-white font-semibold">Total Task</span>
-            <span className="text-white text-xs">That's a lot of tasks</span>
+            <span className="text-white text-xs">
+              That&apos;s a lot of Tasks!
+            </span>
           </div>
         </div>
         <div className="flex justify-end content-center py-3 px-2">

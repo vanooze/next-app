@@ -86,6 +86,10 @@ const options: Props["options"] = {
       colors: ["red"],
     },
   },
+  legend: {
+    show: true,
+    position: "top",
+  },
 };
 
 export const Steam = () => {

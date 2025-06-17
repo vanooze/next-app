@@ -7,7 +7,6 @@ import { CardBalance2 } from "./card-balance2";
 import { CardBalance3 } from "./card-balance3";
 import { CardAgents } from "./card-agents";
 import { CardAnnouncement } from "./card-announcement";
-import { dtTask } from "../table/task";
 import { Link } from "@heroui/react";
 import NextLink from "next/link";
 import { useUserContext } from "../layout/UserContext";
@@ -27,10 +26,8 @@ export const Content = () => {
   );
 
   const totalTasks = tasks.length;
-  const WipTask = tasks.filter((task) => task.status === "Ongoing").length;
-  const completedTasks = tasks.filter(
-    (task) => task.status === "Finished"
-  ).length;
+  const OnHoldTasks = tasks.filter((task) => task.status === "OnHold").length;
+  const OnGoingTasks = tasks.filter((task) => task.status === "Ongoing").length;
   return (
     <div className="h-full lg:px-6">
       <div className="flex justify-center gap-4 xl:gap-6 pt-3 px-4 lg:px-0  flex-wrap xl:flex-nowrap sm:pt-10 max-w-[90rem] mx-auto w-full">
@@ -39,8 +36,8 @@ export const Content = () => {
           <div className="flex flex-col gap-2">
             <h3 className="text-xl font-semibold">Tasks</h3>
             <div className="grid md:grid-cols-2 grid-cols-1 2xl:grid-cols-3 gap-5  justify-center w-full">
-              <CardBalance1 WIP={WipTask} />
-              <CardBalance2 completed={completedTasks} />
+              <CardBalance1 OnHold={OnHoldTasks} />
+              <CardBalance2 OnGoing={OnGoingTasks} />
               <CardBalance3 total={totalTasks} />
             </div>
           </div>

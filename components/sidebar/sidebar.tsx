@@ -45,11 +45,11 @@ export const SidebarWrapper = () => {
                 icon={<AccountsIcon />}
                 href="tasks"
               />
-              <CollapseItems
+              {/* <CollapseItems
                 icon={<BalanceIcon />}
                 items={["TMIG", "IT/DT", "Marketing"]}
                 title="Departments"
-              />
+              /> */}
               <SidebarItem
                 isActive={pathname === "/customers"}
                 title="Clients"

@@ -7,17 +7,24 @@ import { ExportIcon } from "@/components/icons/accounts/export-icon";
 import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
 import { UsersIcon } from "@/components/icons/breadcrumb/users-icon";
 import { TableWrapper } from "@/components/deparments/DT/tasks/table/table";
-import { dtTask } from "./task";
+import { useUserContext } from "../layout/UserContext";
+import { dtTask } from "../../helpers/task";
 import { AddTask } from "../deparments/DT/tasks/add-task";
+import { SearchIcon } from "../icons/searchicon";
 
 export const Tasks = () => {
   const [tasks, setTasks] = useState<dtTask[]>([]);
+  const { user } = useUserContext();
+  const [filterValue, setFilterValue] = useState("");
+  const [debouncedFilterValue, setDebouncedFilterValue] = useState(filterValue);
   const [loading, setLoading] = useState(true);
+
+  const hasSearchFilter = Boolean(filterValue);
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const res = await fetch("/api/DT/tasks");
+        const res = await fetch("/api/department/ITDT/DT/tasks");
         const data = await res.json();
         setTasks(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -30,6 +37,24 @@ export const Tasks = () => {
 
     fetchTasks();
   }, []);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedFilterValue(filterValue);
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [filterValue]);
+
+  const filteredTasks = debouncedFilterValue
+    ? tasks.filter((task) =>
+        task.clientName
+          ?.toLowerCase()
+          .includes(debouncedFilterValue.toLowerCase())
+      )
+    : tasks;
 
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
@@ -56,22 +81,23 @@ export const Tasks = () => {
       <div className="flex justify-between flex-wrap gap-4 items-center">
         <div className="flex items-center gap-3 flex-wrap md:flex-nowrap">
           <Input
+            isClearable
+            startContent={<SearchIcon />}
             classNames={{
               input: "w-full",
               mainWrapper: "w-full",
             }}
             placeholder="Search Client Name"
+            value={filterValue}
+            onValueChange={setFilterValue}
           />
         </div>
         <div className="flex flex-row gap-3.5 flex-wrap">
           <AddTask />
-          <Button color="primary" startContent={<ExportIcon />}>
-            Export to CSV
-          </Button>
         </div>
       </div>
       <div className="max-w-[95rem] mx-auto w-full">
-        <TableWrapper tasks={tasks} loading={loading} />
+        <TableWrapper tasks={filteredTasks} loading={loading} />
       </div>
     </div>
   );

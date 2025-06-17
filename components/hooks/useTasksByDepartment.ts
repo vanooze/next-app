@@ -1,24 +1,26 @@
 import { useEffect, useState } from "react";
-import { dtTask } from "../table/task";
+import { dtTask } from "../../helpers/task";
 
-function normalizedDepartment(deparment:string): string {
-  const map: Record<string,string> = {
-    "IT/DT Programmer": "DT",
-    "IT/DT Technical" : "DT",
-    "IT/DT Manager": "DT",
-    "HR": "HR",
-    "CREATIVES": "CREATIVES",
-    "ADMIN": "ADMIN",
-    "ACCOUNTING&INVENTORY": "ACCOUNTING&INVENTORY",
-    "TSD" : "TSD",
-    "TMG SUPERVISOR" : "TMG",
-    "SALES" : "SALES",
-  }
+function getDepartmentApiPaths(department: string): string[] {
+  const map: Record<string, string[]> = {
+    "IT/DT Design Supervisor": ["ITDT/DT"],
+    "IT/DT Design": ["ITDT/DT"],
+    "IT/DT Programmer": ["ITDT/IT"],
+    "IT/DT Technical": ["ITDT/IT"],
+    "IT/DT Manager": ["ITDT/DT", "ITDT/IT"],
+    "HR": ["HR"],
+    "CREATIVES": ["CREATIVES"],
+    "ADMIN": ["ADMIN"],
+    "ACCOUNTING&INVENTORY": ["ACCOUNTING&INVENTORY"],
+    "TSD": ["TSD"],
+    "TMG SUPERVISOR": ["TMG"],
+    "SALES": ["SALES"],
+  };
 
-  return map[deparment];
+  return map[department] ?? [];
 }
 
-export function useTasksByDepartment(department: string) {
+export function useTasksByDepartment(department: string, apiSubPath = "tasks") {
   const [tasks, setTasks] = useState<dtTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,13 +29,28 @@ export function useTasksByDepartment(department: string) {
     const fetchTasks = async () => {
       try {
         setLoading(true);
-        const normalizedDept = normalizedDepartment(department)
-        const res = await fetch(`/api/${normalizedDept}/tasks`);
-        if (!res.ok) {
-          throw new Error("Failed to fetch tasks");
+        setError(null);
+
+        const deptPaths = getDepartmentApiPaths(department);
+
+        if (deptPaths.length === 0) {
+          throw new Error(`Unknown department: ${department}`);
         }
-        const data = await res.json();
-        setTasks(data);
+
+        // Fetch all dept paths in parallel
+        const responses = await Promise.all(
+          deptPaths.map((path) =>
+            fetch(`/api/department/${path}/${apiSubPath}`).then((res) => {
+              if (!res.ok) throw new Error(`Failed on ${path}`);
+              return res.json();
+            })
+          )
+        );
+
+        // Combine all results into one array
+        const combined = responses.flat();
+        setTasks(combined);
+
       } catch (err: any) {
         setError(err.message || "Something went wrong");
       } finally {
@@ -42,7 +59,7 @@ export function useTasksByDepartment(department: string) {
     };
 
     if (department) fetchTasks();
-  }, [department]);
+  }, [department, apiSubPath]);
 
   return { tasks, loading, error };
 }

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { executeQuery } from "@/app/lib/db";
-import { getUserFromToken } from "@/lib/auth";
+import { getUserFromToken } from "@/app/lib/auth";
 
 export async function DELETE(req) {
   try {
     const user = await getUserFromToken(req);
 
-    if (!user || !user.department || !user.department.includes("DT")) {
+    if (!user || !user.department || !user.department.includes("Design")) {
       return NextResponse.json(
         { success: false, error: "Unauthorized access" },
         { status: 403 }
