@@ -7,6 +7,7 @@ export const pool = mysql.createPool({
   database: process.env.DB_NAME,
   waitForConnections: true,
   queueLimit: 0,
+  dateStrings: true,
 });
 
 export async function testConnection() {

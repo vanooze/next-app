@@ -10,8 +10,9 @@ export const selectSboq = [
 ];
 
 export const selectStatus = [
-  { key: "OnHold", label: "OnHold" },
-  { key: "Ongoing", label: "Ongoing" },
+  { key: "Rush", label: "Rush" },
+  { key: "Overdue", label: "Overdue" },
+  { key: "Pending", label: "Pending" },
   { key: "Finished", label: "Finished" },
 ];
 

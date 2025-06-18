@@ -20,6 +20,7 @@ import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useEffect, useState } from "react";
 import { selectEboq, selectStatus, selectSboq } from "@/helpers/data";
 import { dtTask } from "../../../../helpers/task";
+import { date } from "yup";
 
 interface EditTaskProps {
   isOpen: boolean;
@@ -36,9 +37,12 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
     isDisabled: !isOpen,
   });
 
-  const safeParseDate = (isoString: string) => {
-    return parseDate(isoString.split("T")[0]);
+  const safeParseDate = (input: string): CalendarDate => {
+    const datePart = input.split("T")[0];
+    return parseDate(datePart);
   };
+
+  console.log("from the database: " + task?.dateReceived);
 
   const [id, setId] = useState<number>();
   const [clientName, setClientName] = useState<string>("");
@@ -98,6 +102,12 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
     }
   }, [task]);
 
+  useEffect(() => {
+    if (sirmjh) {
+      setStatus("Finished");
+    }
+  }, [sirmjh]);
+
   const handleUpdateTask = async (onClose: () => void) => {
     const dateReceivedStr = formatDatetoStr(dateReceived);
     const eboqDateStr = formatDatetoStr(eboqDate);
@@ -123,7 +133,7 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
     };
 
     try {
-      const res = await fetch("/api/DT/tasks/update", {
+      const res = await fetch("/api/department/ITDT/DT/tasks/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -255,6 +265,7 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
                     onChange={setSirmjh}
                   />
                   <Select
+                    isDisabled
                     isRequired
                     items={selectStatus}
                     label="Status"

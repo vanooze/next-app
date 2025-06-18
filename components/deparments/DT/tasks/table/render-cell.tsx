@@ -21,6 +21,24 @@ export const RenderCell = ({
 }: Props) => {
   const cellValue = dtTasks[columnKey as keyof dtTask];
   switch (columnKey) {
+    case "status":
+      return (
+        <Chip
+          size="sm"
+          variant="flat"
+          color={
+            cellValue === "Finished"
+              ? "success"
+              : cellValue === "Overdue"
+              ? "danger"
+              : cellValue === "Rush"
+              ? "secondary"
+              : "warning"
+          }
+        >
+          <span className="capitalize text-xs">{cellValue}</span>
+        </Chip>
+      );
     case "clientName":
     case "projectDesc":
       return <span>{displayValue(cellValue)}</span>;
@@ -40,23 +58,6 @@ export const RenderCell = ({
       return <span>{formatDateMMDDYYYY(cellValue)}</span>;
     case "sirMJH":
       return <span>{formatDateMMDDYYYY(cellValue)}</span>;
-
-    case "status":
-      return (
-        <Chip
-          size="sm"
-          variant="flat"
-          color={
-            cellValue === "Finished"
-              ? "success"
-              : cellValue === "OnHold"
-              ? "danger"
-              : "warning"
-          }
-        >
-          <span className="capitalize text-xs">{cellValue}</span>
-        </Chip>
-      );
 
     case "actions":
       return (

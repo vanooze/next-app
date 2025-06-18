@@ -14,6 +14,7 @@ export interface dtTask {
 }
 
 export const dtColumns = [
+  { name: "Status", uid: "status" },
   { name: "Client Name", uid: "clientName" },
   { name: "Project Descriptions", uid: "projectDesc" },
   { name: "Date Received", uid: "dateReceived" },
@@ -24,6 +25,5 @@ export const dtColumns = [
   { name: "Endorsed Date", uid: "sBoqDate" },
   { name: "Sir ME", uid: "sirME" },
   { name: "Sir MJ/Harold", uid: "sirMJH" },
-  { name: "Status", uid: "status" },
   { name: "ACTIONS", uid: "actions" },
 ];

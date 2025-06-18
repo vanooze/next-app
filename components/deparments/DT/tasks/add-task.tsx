@@ -38,7 +38,7 @@ export const AddTask = () => {
   const [sboqDate, setSboqDate] = useState<CalendarDate | null>(null);
   const [sirme, setSirme] = useState<CalendarDate | null>(null);
   const [sirmjh, setSirmjh] = useState<CalendarDate | null>(null);
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState<string>("Pending");
 
   const handleAddTask = async (onClose: () => void) => {
     const dateReceivedStr = formatDatetoStr(dateReceived);
@@ -64,7 +64,7 @@ export const AddTask = () => {
     };
 
     try {
-      const res = await fetch("api/DT/tasks/create", {
+      const res = await fetch("api/department/ITDT/DT/tasks/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -199,7 +199,10 @@ export const AddTask = () => {
                   />
                   <Select
                     isRequired
-                    items={selectStatus}
+                    items={selectStatus.filter(
+                      (item) =>
+                        item.label !== "Overdue" && item.label !== "Finished"
+                    )}
                     label="Status"
                     placeholder="Select a status"
                     variant="bordered"

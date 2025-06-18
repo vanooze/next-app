@@ -33,7 +33,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<dtTask | null>(null);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "id", // default sort column
+    column: "status", // default sort column
     direction: "ascending",
   });
 
@@ -59,27 +59,36 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     setSelectedTask(null);
   };
 
+  const statusPriority = {
+    Rush: 0,
+    Overdue: 1,
+    Pending: 2,
+    Finished: 3,
+  };
+
   const sortedTasks = useMemo(() => {
     if (!Array.isArray(tasks)) return [];
 
     const { column, direction } = sortDescriptor;
-    if (!column) return tasks;
 
     return [...tasks].sort((a, b) => {
-      const aValue = a[column as keyof dtTask];
-      const bValue = b[column as keyof dtTask];
+      // 1. Custom sort by status always first
+      const aStatus =
+        statusPriority[a.status as keyof typeof statusPriority] ?? 99;
+      const bStatus =
+        statusPriority[b.status as keyof typeof statusPriority] ?? 99;
 
-      if (typeof aValue === "string" && typeof bValue === "string") {
+      if (aStatus !== bStatus) {
         return direction === "ascending"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
+          ? aStatus - bStatus
+          : bStatus - aStatus;
       }
 
-      if (typeof aValue === "number" && typeof bValue === "number") {
-        return direction === "ascending" ? aValue - bValue : bValue - aValue;
-      }
+      // 2. Then sort by dateReceived (or any other fallback column)
+      const aDate = a.dateReceived ? new Date(a.dateReceived).getTime() : 0;
+      const bDate = b.dateReceived ? new Date(b.dateReceived).getTime() : 0;
 
-      return 0;
+      return direction === "descending" ? aDate - bDate : bDate - aDate;
     });
   }, [tasks, sortDescriptor]);
 
@@ -104,6 +113,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         </div>
       ) : (
         <Table
+          isStriped
           aria-label="task table with custom cells"
           sortDescriptor={sortDescriptor}
           onSortChange={setSortDescriptor}

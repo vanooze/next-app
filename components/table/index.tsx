@@ -49,11 +49,13 @@ export const Tasks = () => {
   }, [filterValue]);
 
   const filteredTasks = debouncedFilterValue
-    ? tasks.filter((task) =>
-        task.clientName
-          ?.toLowerCase()
-          .includes(debouncedFilterValue.toLowerCase())
-      )
+    ? tasks.filter((task) => {
+        const query = debouncedFilterValue.toLowerCase();
+        return (
+          task.clientName?.toLowerCase().includes(query) ||
+          task.salesPersonnel?.toLowerCase().includes(query)
+        );
+      })
     : tasks;
 
   return (
@@ -87,7 +89,7 @@ export const Tasks = () => {
               input: "w-full",
               mainWrapper: "w-full",
             }}
-            placeholder="Search Client Name"
+            placeholder="Search Client/Sales Name"
             value={filterValue}
             onValueChange={setFilterValue}
           />
