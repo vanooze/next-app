@@ -16,11 +16,11 @@ import {
   parseDate,
 } from "@internationalized/date";
 import { Select, SelectSection, SelectItem } from "@heroui/select";
+import { mutate } from "swr";
 import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useEffect, useState } from "react";
 import { selectEboq, selectStatus, selectSboq } from "@/helpers/data";
 import { dtTask } from "../../../../helpers/task";
-import { date } from "yup";
 
 interface EditTaskProps {
   isOpen: boolean;
@@ -41,8 +41,6 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
     const datePart = input.split("T")[0];
     return parseDate(datePart);
   };
-
-  console.log("from the database: " + task?.dateReceived);
 
   const [id, setId] = useState<number>();
   const [clientName, setClientName] = useState<string>("");
@@ -108,6 +106,29 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
     }
   }, [sirmjh]);
 
+  useEffect(() => {
+    const receivedDate = dateReceived?.toDate(
+      Intl.DateTimeFormat().resolvedOptions().timeZone
+    );
+
+    if (dateReceived && status !== "Finished") {
+      const now = new Date();
+
+      // Convert CalendarDate to JS Date with time zone
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const receivedDate = dateReceived.toDate(timeZone);
+
+      const timeDiff = now.getTime() - receivedDate.getTime();
+      const daysDiff = timeDiff / (1000 * 3600 * 24);
+
+      if (daysDiff > 3) {
+        setStatus("Overdue");
+      } else {
+        setStatus("Pending");
+      }
+    }
+  }, [dateReceived]);
+
   const handleUpdateTask = async (onClose: () => void) => {
     const dateReceivedStr = formatDatetoStr(dateReceived);
     const eboqDateStr = formatDatetoStr(eboqDate);
@@ -144,9 +165,12 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
       }
 
       const data = await res.json();
-      console.log("Task update: ", data);
+      console.log("Task updated:", data);
+
+      // ✅ Trigger SWR to refetch the tasks list
+      await mutate("/api/department/ITDT/DT/tasks");
+
       onClose();
-      location.reload();
       return data;
     } catch (err) {
       console.error("Error updating task:", err);

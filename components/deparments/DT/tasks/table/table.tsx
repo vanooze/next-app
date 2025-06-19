@@ -21,11 +21,13 @@ import { DeleteTask } from "../delete-task";
 interface TableWrapperProps {
   tasks: dtTask[];
   loading: boolean;
+  fullScreen: boolean;
 }
 
 export const TableWrapper: React.FC<TableWrapperProps> = ({
   tasks,
   loading,
+  fullScreen,
 }) => {
   const [page, setPage] = useState(1);
   const { user } = useUserContext();
@@ -37,7 +39,13 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     direction: "ascending",
   });
 
-  const rowsPerPage = 10;
+  const rowsPerPage = 15;
+
+  const visibleColumns = useMemo(() => {
+    return fullScreen
+      ? dtColumns.filter((col) => col.uid !== "actions")
+      : dtColumns;
+  }, [fullScreen]);
 
   const handleOpenEdit = (task: dtTask) => {
     setSelectedTask(task);
@@ -70,25 +78,34 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     if (!Array.isArray(tasks)) return [];
 
     const { column, direction } = sortDescriptor;
+    if (!column) return tasks;
 
     return [...tasks].sort((a, b) => {
-      // 1. Custom sort by status always first
-      const aStatus =
-        statusPriority[a.status as keyof typeof statusPriority] ?? 99;
-      const bStatus =
-        statusPriority[b.status as keyof typeof statusPriority] ?? 99;
+      const aValue = a[column as keyof dtTask];
+      const bValue = b[column as keyof dtTask];
 
-      if (aStatus !== bStatus) {
+      if (column === "status") {
+        const aPriority =
+          statusPriority[aValue as keyof typeof statusPriority] ?? 99;
+        const bPriority =
+          statusPriority[bValue as keyof typeof statusPriority] ?? 99;
+
         return direction === "ascending"
-          ? aStatus - bStatus
-          : bStatus - aStatus;
+          ? aPriority - bPriority
+          : bPriority - aPriority;
       }
 
-      // 2. Then sort by dateReceived (or any other fallback column)
-      const aDate = a.dateReceived ? new Date(a.dateReceived).getTime() : 0;
-      const bDate = b.dateReceived ? new Date(b.dateReceived).getTime() : 0;
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        return direction === "ascending"
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
 
-      return direction === "descending" ? aDate - bDate : bDate - aDate;
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return direction === "ascending" ? aValue - bValue : bValue - aValue;
+      }
+
+      return 0;
     });
   }, [tasks, sortDescriptor]);
 
@@ -100,8 +117,13 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
     return sortedTasks.slice(start, end);
   }, [page, sortedTasks]);
+
   return (
-    <div className="w-full flex flex-col gap-4">
+    <div
+      className={`w-full ${
+        fullScreen ? "overflow-auto h-full" : "w-full flex flex-col gap-4"
+      }`}
+    >
       {loading ? (
         <div className="w-full flex justify-center items-center min-h-[200px]">
           <Spinner
@@ -117,6 +139,10 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           aria-label="task table with custom cells"
           sortDescriptor={sortDescriptor}
           onSortChange={setSortDescriptor}
+          classNames={{
+            base: "min-w-[800px] w-full",
+            table: fullScreen ? "h-[calc(100vh-10rem)]" : "",
+          }}
           bottomContent={
             <div className="flex w-full justify-center">
               <Pagination
@@ -131,7 +157,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
             </div>
           }
         >
-          <TableHeader columns={dtColumns}>
+          <TableHeader columns={visibleColumns}>
             {(column) => (
               <TableColumn
                 key={column.uid}
@@ -146,16 +172,16 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           <TableBody emptyContent={"No rows to display."} items={items}>
             {(item) => (
               <TableRow key={item.id}>
-                {(columnKey) => (
-                  <TableCell>
+                {visibleColumns.map((col) => (
+                  <TableCell key={col.uid}>
                     <RenderCell
                       dtTasks={item}
-                      columnKey={columnKey as keyof dtTask | "actions"}
+                      columnKey={col.uid as keyof dtTask | "actions"}
                       handleEditTask={handleOpenEdit}
                       handleDeleteTask={handleOpenDelete}
                     />
                   </TableCell>
-                )}
+                ))}
               </TableRow>
             )}
           </TableBody>

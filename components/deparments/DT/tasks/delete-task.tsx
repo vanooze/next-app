@@ -7,6 +7,7 @@ import {
   ModalHeader,
   useDraggable,
 } from "@heroui/react";
+import { mutate } from "swr";
 import React, { useRef } from "react";
 
 interface DeleteTaskProps {
@@ -38,8 +39,10 @@ export const DeleteTask = ({ isOpen, onClose, taskId }: DeleteTaskProps) => {
       const data = await res.json();
       console.log("Task deleted:", data);
 
+      // 🔁 Refresh SWR cache
+      await mutate("/api/department/ITDT/DT/tasks");
+
       onClose();
-      location.reload();
     } catch (err) {
       console.error("Error deleting task:", err);
     }

@@ -1,9 +1,9 @@
 "use client";
-import { Button, Input } from "@heroui/react";
+import { Button, Input, Tooltip } from "@heroui/react";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
-
-import { ExportIcon } from "@/components/icons/accounts/export-icon";
+import React, { useState, useEffect, useRef } from "react";
+import useSWR from "swr";
+import { fetcher } from "@/app/lib/fetcher";
 import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
 import { UsersIcon } from "@/components/icons/breadcrumb/users-icon";
 import { TableWrapper } from "@/components/deparments/DT/tasks/table/table";
@@ -11,32 +11,22 @@ import { useUserContext } from "../layout/UserContext";
 import { dtTask } from "../../helpers/task";
 import { AddTask } from "../deparments/DT/tasks/add-task";
 import { SearchIcon } from "../icons/searchicon";
+import { EyeIcon } from "../icons/table/eye-icon";
 
 export const Tasks = () => {
-  const [tasks, setTasks] = useState<dtTask[]>([]);
   const { user } = useUserContext();
   const [filterValue, setFilterValue] = useState("");
   const [debouncedFilterValue, setDebouncedFilterValue] = useState(filterValue);
-  const [loading, setLoading] = useState(true);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
-  const hasSearchFilter = Boolean(filterValue);
-
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const res = await fetch("/api/department/ITDT/DT/tasks");
-        const data = await res.json();
-        setTasks(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Failed to fetch tasks", err);
-        setTasks([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
-  }, []);
+  const {
+    data: tasks = [],
+    error,
+    isLoading,
+  } = useSWR<dtTask[]>("/api/department/ITDT/DT/tasks", fetcher, {
+    refreshInterval: 10000, // every 10 seconds
+    revalidateOnFocus: true, // optional but useful
+  });
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -57,6 +47,14 @@ export const Tasks = () => {
         );
       })
     : tasks;
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsFullScreen(false);
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, []);
 
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
@@ -93,13 +91,30 @@ export const Tasks = () => {
             value={filterValue}
             onValueChange={setFilterValue}
           />
+          <div className="flex items-center ">
+            <Tooltip content="View in fullscreen" color="secondary">
+              <button onClick={() => setIsFullScreen((prev) => !prev)}>
+                <EyeIcon size={20} fill="#979797" />
+              </button>
+            </Tooltip>
+          </div>
         </div>
         <div className="flex flex-row gap-3.5 flex-wrap">
           <AddTask />
         </div>
       </div>
-      <div className="max-w-[95rem] mx-auto w-full">
-        <TableWrapper tasks={filteredTasks} loading={loading} />
+      <div
+        className={`${
+          isFullScreen
+            ? "fixed inset-0 z-[9999] bg-white p-4 overflow-auto shadow-xl rounded-none"
+            : "max-w-[95rem] mx-auto w-full"
+        } transition-all duration-300`}
+      >
+        <TableWrapper
+          tasks={filteredTasks}
+          loading={isLoading}
+          fullScreen={isFullScreen}
+        />
       </div>
     </div>
   );

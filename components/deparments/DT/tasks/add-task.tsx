@@ -8,13 +8,14 @@ import {
   ModalHeader,
   useDisclosure,
   useDraggable,
-  addToast,
+  Tooltip,
 } from "@heroui/react";
 import { DatePicker } from "@heroui/date-picker";
 import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date";
 import { Select, SelectItem } from "@heroui/select";
+import { mutate } from "swr";
 import { formatDatetoStr } from "@/helpers/formatDate";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PlusIcon } from "@/components/icons/table/add-icon";
 import { selectEboq, selectStatus, selectSboq } from "@/helpers/data";
 
@@ -38,7 +39,8 @@ export const AddTask = () => {
   const [sboqDate, setSboqDate] = useState<CalendarDate | null>(null);
   const [sirme, setSirme] = useState<CalendarDate | null>(null);
   const [sirmjh, setSirmjh] = useState<CalendarDate | null>(null);
-  const [status, setStatus] = useState<string>("Pending");
+  const [status, setStatus] = useState<string>("");
+  const [filteredStatus, setFilteredStatus] = useState(selectStatus);
 
   const handleAddTask = async (onClose: () => void) => {
     const dateReceivedStr = formatDatetoStr(dateReceived);
@@ -64,25 +66,68 @@ export const AddTask = () => {
     };
 
     try {
-      const res = await fetch("api/department/ITDT/DT/tasks/create", {
+      const res = await fetch("/api/department/ITDT/DT/tasks/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (res.status === 403) {
-        const data = await res.json();
-      }
+
       if (!res.ok) {
         throw new Error("Failed to create new task");
       }
+
       const data = await res.json();
-      console.log("Task Created: ", data);
+      console.log("Task Created:", data);
+
+      await mutate("/api/department/ITDT/DT/tasks");
+
       onClose();
-      location.reload();
     } catch (err) {
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    if (sirmjh) {
+      setStatus("Finished");
+      setFilteredStatus(
+        selectStatus.filter((item) => item.label === "Finished")
+      );
+      return;
+    }
+
+    if (!dateReceived) {
+      setFilteredStatus(
+        selectStatus.filter(
+          (item) => item.label === "Pending" || item.label === "Rush"
+        )
+      );
+      return;
+    }
+
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const receivedDate = dateReceived.toDate(timeZone);
+    const now = new Date();
+
+    const diffTime = now.getTime() - receivedDate.getTime();
+    const diffDays = diffTime / (1000 * 3600 * 24);
+
+    if (diffDays > 3) {
+      setStatus("Overdue");
+      setFilteredStatus(
+        selectStatus.filter(
+          (item) => item.label === "Overdue" || item.label === "Rush"
+        )
+      );
+    } else {
+      setStatus("Pending");
+      setFilteredStatus(
+        selectStatus.filter(
+          (item) => item.label === "Pending" || item.label === "Rush"
+        )
+      );
+    }
+  }, [dateReceived, sirmjh]);
 
   return (
     <div>
@@ -199,18 +244,17 @@ export const AddTask = () => {
                   />
                   <Select
                     isRequired
-                    items={selectStatus.filter(
-                      (item) =>
-                        item.label !== "Overdue" && item.label !== "Finished"
-                    )}
+                    items={filteredStatus}
                     label="Status"
                     placeholder="Select a status"
                     variant="bordered"
                     selectedKeys={[status]}
-                    onChange={(e) => setStatus(e.target.value)}
+                    onSelectionChange={(keys) =>
+                      setStatus(Array.from(keys)[0] as string)
+                    }
                   >
-                    {(selectStatus) => (
-                      <SelectItem>{selectStatus.label}</SelectItem>
+                    {(item) => (
+                      <SelectItem key={item.label}>{item.label}</SelectItem>
                     )}
                   </Select>
                 </ModalBody>
