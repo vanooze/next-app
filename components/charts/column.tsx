@@ -34,7 +34,6 @@ export const Column: React.FC<ColumnProps> = ({ tasks }) => {
       ...Object.values(sboqMap),
       ...Object.values(eboqMap),
       "Sir ME",
-      "Sir MJ/H",
     ]);
 
     for (const status of statusList) {
@@ -76,11 +75,6 @@ export const Column: React.FC<ColumnProps> = ({ tasks }) => {
 
       if ((!task.sirME && sboqPeople.length > 0) || eboqPeople.length > 0) {
         counts[status]["Sir ME"] = (counts[status]["Sir ME"] || 0) + 1;
-      }
-
-      // ✅ Only count Sir MJH if sirMJH is null
-      if (!task.sirMJH) {
-        counts[status]["Sir MJ/H"] = (counts[status]["Sir MJ/H"] || 0) + 1;
       }
     }
 

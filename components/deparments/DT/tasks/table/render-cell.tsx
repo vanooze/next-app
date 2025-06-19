@@ -31,7 +31,7 @@ export const RenderCell = ({
               ? "success"
               : cellValue === "Overdue"
               ? "danger"
-              : cellValue === "Rush"
+              : cellValue === "Priority"
               ? "secondary"
               : "warning"
           }

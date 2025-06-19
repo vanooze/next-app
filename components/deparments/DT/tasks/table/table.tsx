@@ -74,7 +74,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   };
 
   const statusPriority = {
-    Rush: 0,
+    Priority: 0,
     Overdue: 1,
     Pending: 2,
     Finished: 3,
