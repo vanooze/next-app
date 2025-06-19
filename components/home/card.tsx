@@ -12,9 +12,9 @@ export const Card0 = ({ Rush }: CardProps) => {
         <div className="flex gap-2.5">
           <Community />
           <div className="flex flex-col">
-            <span className="text-white font-semibold">Task Rush</span>
+            <span className="text-white font-semibold">Task Priority</span>
             <span className="text-white text-xs">
-              Tasks that needed to finish quickly
+              Tasks that are priority first
             </span>
           </div>
         </div>

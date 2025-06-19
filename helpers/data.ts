@@ -10,7 +10,7 @@ export const selectSboq = [
 ];
 
 export const selectStatus = [
-  { key: "Rush", label: "Rush" },
+  { key: "Priority", label: "Priority" },
   { key: "Overdue", label: "Overdue" },
   { key: "Pending", label: "Pending" },
   { key: "Finished", label: "Finished" },

@@ -303,7 +303,7 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
                         ? selectStatus.filter((item) => item.key === "Finished")
                         : selectStatus.filter(
                             (item) =>
-                              item.key === "Overdue" || item.key === "Rush"
+                              item.key === "Overdue" || item.key === "Priority"
                           )
                     }
                   >

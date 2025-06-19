@@ -29,7 +29,7 @@ export const Content = () => {
     (task) => task.status === "Pending"
   ).length;
 
-  const onRushTasks = tasks.filter((task) => task.status === "Rush").length;
+  const onRushTasks = tasks.filter((task) => task.status === "Priority").length;
 
   const OverdueTasks = tasks.filter((task) => task.status === "Overdue").length;
 
