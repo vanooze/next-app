@@ -38,6 +38,12 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     column: "status", // default sort column
     direction: "ascending",
   });
+  const [isUserSorted, setIsUserSorted] = useState(false);
+
+  const handleSortChange = (descriptor: SortDescriptor) => {
+    setSortDescriptor(descriptor);
+    setIsUserSorted(true);
+  };
 
   const rowsPerPage = 15;
 
@@ -84,6 +90,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       const aValue = a[column as keyof dtTask];
       const bValue = b[column as keyof dtTask];
 
+      // Sort by status using custom priority
       if (column === "status") {
         const aPriority =
           statusPriority[aValue as keyof typeof statusPriority] ?? 99;
@@ -93,6 +100,17 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         return direction === "ascending"
           ? aPriority - bPriority
           : bPriority - aPriority;
+      }
+
+      if (column === "dateReceived") {
+        const aDate = aValue ? new Date(aValue as string).getTime() : null;
+        const bDate = bValue ? new Date(bValue as string).getTime() : null;
+
+        if (aDate === null && bDate === null) return 0;
+        if (aDate === null) return direction === "ascending" ? -1 : 1;
+        if (bDate === null) return direction === "ascending" ? 1 : -1;
+
+        return direction === "ascending" ? aDate - bDate : bDate - aDate;
       }
 
       if (typeof aValue === "string" && typeof bValue === "string") {
@@ -138,7 +156,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           isStriped
           aria-label="task table with custom cells"
           sortDescriptor={sortDescriptor}
-          onSortChange={setSortDescriptor}
+          onSortChange={handleSortChange}
           classNames={{
             base: "min-w-[800px] w-full",
             table: fullScreen ? "h-[calc(100vh-10rem)]" : "",

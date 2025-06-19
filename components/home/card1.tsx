@@ -2,10 +2,10 @@ import { Card, CardBody } from "@heroui/react";
 import React from "react";
 import { Community } from "../icons/community";
 
-interface CardBalance1Props {
+interface Card1Props {
   Pending: number;
 }
-export const CardBalance1 = ({ Pending }: CardBalance1Props) => {
+export const Card1 = ({ Pending }: Card1Props) => {
   return (
     <Card className="xl:max-w-sm bg-warning rounded-xl shadow-md px-3 w-full">
       <CardBody className="py-5 overflow-hidden">

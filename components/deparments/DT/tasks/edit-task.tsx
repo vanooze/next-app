@@ -101,7 +101,7 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
   }, [task]);
 
   useEffect(() => {
-    if (sirmjh) {
+    if (sirmjh && status !== "Finished") {
       setStatus("Finished");
     }
   }, [sirmjh]);
@@ -289,17 +289,26 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
                     onChange={setSirmjh}
                   />
                   <Select
-                    isDisabled
                     isRequired
-                    items={selectStatus}
+                    selectedKeys={new Set([status])}
+                    onSelectionChange={(keys) => {
+                      const selected = Array.from(keys)[0];
+                      if (typeof selected === "string") setStatus(selected);
+                    }}
                     label="Status"
                     placeholder="Select a status"
                     variant="bordered"
-                    selectedKeys={[status]}
-                    onChange={(e) => setStatus(e.target.value)}
+                    items={
+                      sirmjh
+                        ? selectStatus.filter((item) => item.key === "Finished")
+                        : selectStatus.filter(
+                            (item) =>
+                              item.key === "Overdue" || item.key === "Rush"
+                          )
+                    }
                   >
-                    {(selectStatus) => (
-                      <SelectItem>{selectStatus.label}</SelectItem>
+                    {(item) => (
+                      <SelectItem key={item.key}>{item.label}</SelectItem>
                     )}
                   </Select>
                 </ModalBody>

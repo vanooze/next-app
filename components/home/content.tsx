@@ -2,18 +2,17 @@
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { TableWrapper } from "../deparments/DT/tasks/table/table";
-import { CardBalance1 } from "./card-balance1";
-import { CardBalance2 } from "./card-balance2";
-import { CardBalance3 } from "./card-balance3";
-import { CardAgents } from "./card-agents";
-import { CardAnnouncement } from "./card-announcement";
+import { Card0 } from "./card";
+import { Card1 } from "./card1";
+import { Card2 } from "./card2";
+import { Card3 } from "./card3";
 import { Link } from "@heroui/react";
 import NextLink from "next/link";
 import { useUserContext } from "../layout/UserContext";
 import { useTasksByDepartment } from "@/components/hooks/useTasksByDepartment";
 
-const Chart = dynamic(
-  () => import("../charts/steam").then((mod) => mod.Steam),
+const ColumnChart = dynamic(
+  () => import("../charts/column").then((mod) => mod.Column),
   {
     ssr: false,
   }
@@ -24,14 +23,29 @@ export const Content = () => {
   const { tasks, loading, error } = useTasksByDepartment(
     user?.department || ""
   );
+  const now = new Date();
 
   const OnPendingTasks = tasks.filter(
     (task) => task.status === "Pending"
   ).length;
+
+  const onRushTasks = tasks.filter((task) => task.status === "Rush").length;
+
   const OverdueTasks = tasks.filter((task) => task.status === "Overdue").length;
-  const FinishedTasks = tasks.filter(
-    (task) => task.status === "Finished"
-  ).length;
+
+  const FinishedTasks = tasks.filter((task) => {
+    if (task.status !== "Finished") return false;
+
+    const sirMJHDate = task.sirMJH ? new Date(task.sirMJH) : null;
+
+    if (!sirMJHDate) return false;
+
+    const diffDays =
+      (now.getTime() - sirMJHDate.getTime()) / (1000 * 60 * 60 * 24);
+
+    return diffDays <= 30;
+  }).length;
+
   return (
     <div className="h-full lg:px-6">
       <div className="flex justify-center gap-4 xl:gap-6 pt-3 px-4 lg:px-0  flex-wrap xl:flex-nowrap sm:pt-10 max-w-[90rem] mx-auto w-full">
@@ -39,10 +53,11 @@ export const Content = () => {
           {/* Card Section Top */}
           <div className="flex flex-col gap-2">
             <h3 className="text-xl font-semibold">Tasks</h3>
-            <div className="grid md:grid-cols-2 grid-cols-1 2xl:grid-cols-3 gap-5  justify-center w-full">
-              <CardBalance1 Pending={OnPendingTasks} />
-              <CardBalance2 Overdue={OverdueTasks} />
-              <CardBalance3 Finished={FinishedTasks} />
+            <div className="grid md:grid-cols-2 grid-cols-1 2xl:grid-cols-4 gap-5  justify-center w-full">
+              <Card0 Rush={onRushTasks} />
+              <Card1 Pending={OnPendingTasks} />
+              <Card2 Overdue={OverdueTasks} />
+              <Card3 Finished={FinishedTasks} />
             </div>
           </div>
 
@@ -50,17 +65,8 @@ export const Content = () => {
           <div className="h-full flex flex-col gap-2">
             <h3 className="text-xl font-semibold">Statistics</h3>
             <div className="w-full bg-default-50 shadow-lg rounded-2xl p-6 ">
-              <Chart />
+              <ColumnChart tasks={tasks} />
             </div>
-          </div>
-        </div>
-
-        {/* Left Section */}
-        <div className="mt-4 gap-2 flex flex-col xl:max-w-md w-full">
-          <h3 className="text-xl font-semibold">Section</h3>
-          <div className="flex flex-col justify-center gap-4 flex-wrap md:flex-nowrap md:flex-col">
-            <CardAgents />
-            <CardAnnouncement />
           </div>
         </div>
       </div>
