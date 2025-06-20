@@ -11,11 +11,11 @@ import {
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
 import React, { useEffect, useState, useMemo } from "react";
-import { dtColumns } from "../../../../../helpers/task";
+import { dtColumns } from "../../../../../helpers/db";
 import { RenderCell } from "./render-cell";
 import { EditTask } from "../edit-task";
 import { useUserContext } from "@/components/layout/UserContext";
-import { dtTask } from "../../../../../helpers/task";
+import { dtTask } from "../../../../../helpers/db";
 import { DeleteTask } from "../delete-task";
 
 interface TableWrapperProps {

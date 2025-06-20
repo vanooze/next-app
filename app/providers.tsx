@@ -13,9 +13,10 @@ export function Providers({ children, themeProps }: ProvidersProps) {
   return (
     <HeroUIProvider>
       <NextThemesProvider
-        defaultTheme='system'
-        attribute='class'
-        {...themeProps}>
+        defaultTheme="system"
+        attribute="class"
+        {...themeProps}
+      >
         {children}
       </NextThemesProvider>
     </HeroUIProvider>

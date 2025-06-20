@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { dtTask } from "../../helpers/task";
+import useSWR from "swr";
+import { dtTask } from "../../helpers/db";
 
 const departmentApiMap: Record<string, string[]> = {
   "IT/DT Design Supervisor": ["ITDT/DT"],
@@ -20,47 +21,34 @@ function getDepartmentPaths(department: string): string[] {
   return departmentApiMap[department] ?? [];
 }
 
+const fetchTasks = async (paths: string[], apiSubPath: string): Promise<dtTask[]> => {
+  const results = await Promise.all(
+    paths.map(async (path) => {
+      const res = await fetch(`/api/department/${path}/${apiSubPath}`);
+      if (!res.ok) throw new Error(`Failed to fetch: ${path}`);
+      return res.json();
+    })
+  );
+  return results.flat();
+};
+
 export function useTasksByDepartment(department: string, apiSubPath = "tasks") {
-  const [tasks, setTasks] = useState<dtTask[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const paths = getDepartmentPaths(department);
+  const shouldFetch = !!department && paths.length > 0;
 
-  useEffect(() => {
-    if (!department) return;
+  const { data, error, isLoading, mutate } = useSWR<dtTask[]>(
+    shouldFetch ? [`tasks`, department, apiSubPath] : null,
+    () => fetchTasks(paths, apiSubPath),
+    {
+      refreshInterval: 5000, // optional: auto-refresh every 5s
+      revalidateOnFocus: true, // revalidate on tab focus
+    }
+  );
 
-    const fetchTasks = async () => {
-      setLoading(true);
-      setError(null);
-
-      const paths = getDepartmentPaths(department);
-
-      if (paths.length === 0) {
-        setError(`Unknown department: ${department}`);
-        setTasks([]);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const responses = await Promise.all(
-          paths.map(async (path) => {
-            const res = await fetch(`/api/department/${path}/${apiSubPath}`);
-            if (!res.ok) throw new Error(`Failed to fetch: ${path}`);
-            return res.json();
-          })
-        );
-
-        setTasks(responses.flat());
-      } catch (err: any) {
-        setError(err.message || "Failed to load tasks");
-        setTasks([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
-  }, [department, apiSubPath]);
-
-  return { tasks, loading, error };
+  return {
+    tasks: data ?? [],
+    loading: isLoading,
+    error: error?.message ?? null,
+    mutate,
+  };
 }

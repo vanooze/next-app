@@ -5,15 +5,15 @@ import React, { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/app/lib/fetcher";
 import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
-import { UsersIcon } from "@/components/icons/breadcrumb/users-icon";
 import { TableWrapper } from "@/components/deparments/DT/tasks/table/table";
 import { useUserContext } from "../layout/UserContext";
-import { dtTask } from "../../helpers/task";
+import { dtTask } from "../../helpers/db";
 import { AddTask } from "../deparments/DT/tasks/add-task";
 import { SearchIcon } from "../icons/searchicon";
 import { EyeIcon } from "../icons/table/eye-icon";
+import { ReportsIcon } from "../icons/sidebar/reports-icon";
 
-export const Tasks = () => {
+export const Reports = () => {
   const { user } = useUserContext();
   const [filterValue, setFilterValue] = useState("");
   const [debouncedFilterValue, setDebouncedFilterValue] = useState(filterValue);
@@ -68,8 +68,8 @@ export const Tasks = () => {
         </li>
 
         <li className="flex gap-2">
-          <UsersIcon />
-          <span>Task</span>
+          <ReportsIcon />
+          <span>Reports</span>
           <span> / </span>{" "}
         </li>
         <li className="flex gap-2">

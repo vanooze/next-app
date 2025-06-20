@@ -1,8 +1,8 @@
 import React from "react";
-import { Tasks } from "@/components/table";
+import { Tasks } from "@/components/table/task";
 
-const accounts = () => {
+const TaskPage = () => {
   return <Tasks />;
 };
 
-export default accounts;
+export default TaskPage;

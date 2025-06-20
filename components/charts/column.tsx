@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import useSWR from "swr";
 import Chart from "react-apexcharts";
-import { dtTask } from "@/helpers/task";
+import { dtTask } from "@/helpers/db";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -73,7 +73,7 @@ export const Column: React.FC<ColumnProps> = ({ tasks }) => {
         counts[status][person] = (counts[status][person] || 0) + 1;
       }
 
-      if ((!task.sirME && sboqPeople.length > 0) || eboqPeople.length > 0) {
+      if (task.sirME && (task.sBoqDate || task.eBoqDate)) {
         counts[status]["Sir ME"] = (counts[status]["Sir ME"] || 0) + 1;
       }
     }
