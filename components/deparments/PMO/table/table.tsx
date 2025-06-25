@@ -11,15 +11,14 @@ import {
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
 import React, { useEffect, useState, useMemo } from "react";
-import { dtColumns } from "../../../../../helpers/db";
+import { ProjectMonitoringColumns } from "@/helpers/db";
 import { RenderCell } from "./render-cell";
-import { EditTask } from "../operation/edit-task";
+import { AddTask } from "../action/add-task";
 import { useUserContext } from "@/components/layout/UserContext";
-import { dtTask } from "../../../../../helpers/db";
-import { DeleteTask } from "../operation/delete-task";
+import { ProjectMonitoring } from "@/helpers/db";
 
 interface TableWrapperProps {
-  tasks: dtTask[];
+  tasks: ProjectMonitoring[];
   loading: boolean;
   fullScreen: boolean;
 }
@@ -33,10 +32,12 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   const { user } = useUserContext();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<dtTask | null>(null);
+  const [selectedTask, setSelectedTask] = useState<ProjectMonitoring | null>(
+    null
+  );
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "status", // default sort column
-    direction: "ascending",
+    column: "date", // default sort column
+    direction: "descending",
   });
   const [isUserSorted, setIsUserSorted] = useState(false);
 
@@ -49,11 +50,11 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
   const visibleColumns = useMemo(() => {
     return fullScreen
-      ? dtColumns.filter((col) => col.uid !== "actions")
-      : dtColumns;
+      ? ProjectMonitoringColumns.filter((col) => col.uid !== "actions")
+      : ProjectMonitoringColumns;
   }, [fullScreen]);
 
-  const handleOpenEdit = (task: dtTask) => {
+  const handleOpenEdit = (task: ProjectMonitoring) => {
     setSelectedTask(task);
     setIsEditOpen(true);
   };
@@ -63,23 +64,6 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     setSelectedTask(null);
   };
 
-  const handleOpenDelete = (task: dtTask) => {
-    setSelectedTask(task);
-    setIsDeleteOpen(true);
-  };
-
-  const handleCloseDelete = () => {
-    setIsDeleteOpen(false);
-    setSelectedTask(null);
-  };
-
-  const statusPriority = {
-    Priority: 0,
-    Overdue: 1,
-    Pending: 2,
-    Finished: 3,
-  };
-
   const sortedTasks = useMemo(() => {
     if (!Array.isArray(tasks)) return [];
 
@@ -87,22 +71,10 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     if (!column) return tasks;
 
     return [...tasks].sort((a, b) => {
-      const aValue = a[column as keyof dtTask];
-      const bValue = b[column as keyof dtTask];
+      const aValue = a[column as keyof ProjectMonitoring];
+      const bValue = b[column as keyof ProjectMonitoring];
 
-      // Sort by status using custom priority
-      if (column === "status") {
-        const aPriority =
-          statusPriority[aValue as keyof typeof statusPriority] ?? 99;
-        const bPriority =
-          statusPriority[bValue as keyof typeof statusPriority] ?? 99;
-
-        return direction === "ascending"
-          ? aPriority - bPriority
-          : bPriority - aPriority;
-      }
-
-      if (column === "dateReceived") {
+      if (column === "date") {
         const aDate = aValue ? new Date(aValue as string).getTime() : null;
         const bDate = bValue ? new Date(bValue as string).getTime() : null;
 
@@ -193,10 +165,9 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
                 {visibleColumns.map((col) => (
                   <TableCell key={col.uid}>
                     <RenderCell
-                      dtTasks={item}
-                      columnKey={col.uid as keyof dtTask | "actions"}
-                      handleEditTask={handleOpenEdit}
-                      handleDeleteTask={handleOpenDelete}
+                      Tasks={item}
+                      columnKey={col.uid as keyof ProjectMonitoring | "actions"}
+                      handleAddTask={handleOpenEdit}
                     />
                   </TableCell>
                 ))}
@@ -205,15 +176,10 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           </TableBody>
         </Table>
       )}
-      <EditTask
+      <AddTask
         isOpen={isEditOpen}
         onClose={handleCloseEdit}
         task={selectedTask}
-      />
-      <DeleteTask
-        isOpen={isDeleteOpen}
-        onClose={handleCloseDelete}
-        taskId={selectedTask?.id ?? 0}
       />
     </div>
   );

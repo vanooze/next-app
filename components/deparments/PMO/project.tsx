@@ -5,15 +5,14 @@ import React, { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/app/lib/fetcher";
 import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
-import { TableWrapper } from "@/components/deparments/DT/tasks/table/table";
-import { useUserContext } from "../layout/UserContext";
-import { dtTask } from "../../helpers/db";
-import { AddTask } from "../deparments/DT/tasks/add-task";
-import { SearchIcon } from "../icons/searchicon";
-import { EyeIcon } from "../icons/table/eye-icon";
-import { ReportsIcon } from "../icons/sidebar/reports-icon";
+import { UsersIcon } from "@/components/icons/breadcrumb/users-icon";
+import { TableWrapper } from "@/components/deparments/PMO/table/table";
+import { useUserContext } from "@/components/layout/UserContext";
+import { ProjectMonitoring } from "@/helpers/db";
+import { SearchIcon } from "@/components/icons/searchicon";
+import { EyeIcon } from "@/components/icons/table/eye-icon";
 
-export const Reports = () => {
+export const Tasks = () => {
   const { user } = useUserContext();
   const [filterValue, setFilterValue] = useState("");
   const [debouncedFilterValue, setDebouncedFilterValue] = useState(filterValue);
@@ -23,7 +22,7 @@ export const Reports = () => {
     data: tasks = [],
     error,
     isLoading,
-  } = useSWR<dtTask[]>("/api/department/ITDT/DT/tasks", fetcher, {
+  } = useSWR<ProjectMonitoring[]>("/api/department/PMO/tasks", fetcher, {
     refreshInterval: 10000, // every 10 seconds
     revalidateOnFocus: true, // optional but useful
   });
@@ -42,8 +41,8 @@ export const Reports = () => {
     ? tasks.filter((task) => {
         const query = debouncedFilterValue.toLowerCase();
         return (
-          task.clientName?.toLowerCase().includes(query) ||
-          task.salesPersonnel?.toLowerCase().includes(query)
+          task.customer?.toLowerCase().includes(query) ||
+          task.sales?.toLowerCase().includes(query)
         );
       })
     : tasks;
@@ -68,8 +67,8 @@ export const Reports = () => {
         </li>
 
         <li className="flex gap-2">
-          <ReportsIcon />
-          <span>Reports</span>
+          <UsersIcon />
+          <span>Project Monitoring</span>
           <span> / </span>{" "}
         </li>
         <li className="flex gap-2">
@@ -77,7 +76,7 @@ export const Reports = () => {
         </li>
       </ul>
 
-      <h3 className="text-xl font-semibold">All Tasks</h3>
+      <h3 className="text-xl font-semibold">Project Monitoring</h3>
       <div className="flex justify-between flex-wrap gap-4 items-center">
         <div className="flex items-center gap-3 flex-wrap md:flex-nowrap">
           <Input
@@ -87,7 +86,7 @@ export const Reports = () => {
               input: "w-full",
               mainWrapper: "w-full",
             }}
-            placeholder="Search Client/Sales Name"
+            placeholder="Search Customer/Sales Name"
             value={filterValue}
             onValueChange={setFilterValue}
           />
@@ -99,14 +98,12 @@ export const Reports = () => {
             </Tooltip>
           </div>
         </div>
-        <div className="flex flex-row gap-3.5 flex-wrap">
-          <AddTask />
-        </div>
+        <div className="flex flex-row gap-3.5 flex-wrap"></div>
       </div>
       <div
         className={`${
           isFullScreen
-            ? "fixed inset-0 z-[9999] bg-white p-4 overflow-auto shadow-xl rounded-none"
+            ? "fixed inset-0 z-[9999] bg-default p-4 overflow-auto shadow-xl rounded-none"
             : "max-w-[95rem] mx-auto w-full"
         } transition-all duration-300`}
       >

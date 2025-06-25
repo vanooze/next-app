@@ -15,13 +15,17 @@ const departmentApiMap: Record<string, string[]> = {
   TSD: ["TSD"],
   "TMG SUPERVISOR": ["TMG"],
   SALES: ["SALES"],
+  PMO: ["PMO"],
 };
 
 function getDepartmentPaths(department: string): string[] {
   return departmentApiMap[department] ?? [];
 }
 
-const fetchTasks = async (paths: string[], apiSubPath: string): Promise<dtTask[]> => {
+const fetchTasks = async (
+  paths: string[],
+  apiSubPath: string
+): Promise<dtTask[]> => {
   const results = await Promise.all(
     paths.map(async (path) => {
       const res = await fetch(`/api/department/${path}/${apiSubPath}`);

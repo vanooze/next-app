@@ -6,22 +6,30 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  useDisclosure,
   useDraggable,
 } from "@heroui/react";
 import { DatePicker } from "@heroui/date-picker";
-import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date";
-import { Select, SelectItem } from "@heroui/select";
+import {
+  CalendarDate,
+  getLocalTimeZone,
+  today,
+  parseDate,
+} from "@internationalized/date";
+import { Select, SelectSection, SelectItem } from "@heroui/select";
 import { mutate } from "swr";
 import { formatDatetoStr } from "@/helpers/formatDate";
-import React, { useState, useEffect } from "react";
-import { PlusIcon } from "@/components/icons/table/add-icon";
+import React, { useEffect, useState } from "react";
 import { selectEboq, selectStatus, selectSboq } from "@/helpers/data";
-import { ReportsIcon } from "@/components/icons/sidebar/reports-icon";
+import { dtTask } from "../../../../../helpers/db";
 
-export const AddReport = () => {
+interface EditTaskProps {
+  isOpen: boolean;
+  onClose: () => void;
+  task: dtTask | null;
+}
+
+export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
   let defaultDate = today(getLocalTimeZone());
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const targetRef = React.useRef(null);
   const { moveProps } = useDraggable({
     targetRef,
@@ -29,6 +37,12 @@ export const AddReport = () => {
     isDisabled: !isOpen,
   });
 
+  const safeParseDate = (input: string): CalendarDate => {
+    const datePart = input.split("T")[0];
+    return parseDate(datePart);
+  };
+
+  const [id, setId] = useState<number>();
   const [clientName, setClientName] = useState<string>("");
   const [projectDesc, setProjectDesc] = useState<string>("");
   const [salesPersonnel, setSalesPersonnel] = useState<string>("");
@@ -40,9 +54,82 @@ export const AddReport = () => {
   const [sirme, setSirme] = useState<CalendarDate | null>(null);
   const [sirmjh, setSirmjh] = useState<CalendarDate | null>(null);
   const [status, setStatus] = useState<string>("");
-  const [filteredStatus, setFilteredStatus] = useState(selectStatus);
 
-  const handleAddReport = async (onClose: () => void) => {
+  useEffect(() => {
+    if (task) {
+      setId(task.id);
+      setClientName(task.clientName ?? "");
+      setProjectDesc(task.projectDesc ?? "");
+      setSalesPersonnel(task.salesPersonnel ?? "");
+      setDateReceived(
+        typeof task.dateReceived === "string"
+          ? safeParseDate(task.dateReceived)
+          : task.dateReceived ?? null
+      );
+      setEboq(
+        task.systemDiagram
+          ? new Set(task.systemDiagram.split(",").map((s) => s.trim()))
+          : new Set()
+      );
+      setEboqDate(
+        typeof task.eBoqDate === "string"
+          ? safeParseDate(task.eBoqDate)
+          : task.eBoqDate ?? null
+      );
+      setSboq(
+        task.structuralBoq
+          ? new Set(task.structuralBoq.split(",").map((s) => s.trim()))
+          : new Set()
+      );
+      setSboqDate(
+        typeof task.sBoqDate === "string"
+          ? safeParseDate(task.sBoqDate)
+          : task.sBoqDate ?? null
+      );
+      setSirme(
+        typeof task.sirME === "string"
+          ? safeParseDate(task.sirME)
+          : task.sirME ?? null
+      );
+      setSirmjh(
+        typeof task.sirMJH === "string"
+          ? safeParseDate(task.sirMJH)
+          : task.sirMJH ?? null
+      );
+      setStatus(task.status ?? "");
+    }
+  }, [task]);
+
+  useEffect(() => {
+    if (sirmjh && status !== "Finished") {
+      setStatus("Finished");
+    }
+  }, [sirmjh]);
+
+  useEffect(() => {
+    const receivedDate = dateReceived?.toDate(
+      Intl.DateTimeFormat().resolvedOptions().timeZone
+    );
+
+    if (dateReceived && status !== "Finished") {
+      const now = new Date();
+
+      // Convert CalendarDate to JS Date with time zone
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const receivedDate = dateReceived.toDate(timeZone);
+
+      const timeDiff = now.getTime() - receivedDate.getTime();
+      const daysDiff = timeDiff / (1000 * 3600 * 24);
+
+      if (daysDiff > 3) {
+        setStatus("Overdue");
+      } else {
+        setStatus("Pending");
+      }
+    }
+  }, [dateReceived]);
+
+  const handleUpdateTask = async (onClose: () => void) => {
     const dateReceivedStr = formatDatetoStr(dateReceived);
     const eboqDateStr = formatDatetoStr(eboqDate);
     const sboqDateStr = formatDatetoStr(sboqDate);
@@ -52,6 +139,7 @@ export const AddReport = () => {
     const sboqArray = Array.from(sboq);
 
     const payload = {
+      id,
       clientName,
       projectDesc,
       salesPersonnel,
@@ -66,85 +154,38 @@ export const AddReport = () => {
     };
 
     try {
-      const res = await fetch("/api/department/ITDT/DT/tasks/create", {
+      const res = await fetch("/api/department/ITDT/DT/tasks/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create new report");
+        throw new Error("Failed to update task");
       }
 
       const data = await res.json();
-      console.log("Report Created:", data);
+      console.log("Task updated:", data);
 
+      // ✅ Trigger SWR to refetch the tasks list
       await mutate("/api/department/ITDT/DT/tasks");
 
       onClose();
+      return data;
     } catch (err) {
-      console.error(err);
+      console.error("Error updating task:", err);
+      throw err;
     }
   };
-
-  useEffect(() => {
-    if (sirmjh) {
-      setStatus("Finished");
-      setFilteredStatus(
-        selectStatus.filter((item) => item.label === "Finished")
-      );
-      return;
-    }
-
-    if (!dateReceived) {
-      setFilteredStatus(
-        selectStatus.filter(
-          (item) => item.label === "Pending" || item.label === "Priority"
-        )
-      );
-      return;
-    }
-
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const receivedDate = dateReceived.toDate(timeZone);
-    const now = new Date();
-
-    const diffTime = now.getTime() - receivedDate.getTime();
-    const diffDays = diffTime / (1000 * 3600 * 24);
-
-    if (diffDays > 3) {
-      setStatus("Overdue");
-      setFilteredStatus(
-        selectStatus.filter(
-          (item) => item.label === "Overdue" || item.label === "Priority"
-        )
-      );
-    } else {
-      setStatus("Pending");
-      setFilteredStatus(
-        selectStatus.filter(
-          (item) => item.label === "Pending" || item.label === "Priority"
-        )
-      );
-    }
-  }, [dateReceived, sirmjh]);
 
   return (
     <div>
       <>
-        <Button
-          onPress={onOpen}
-          color="secondary"
-          startContent={<ReportsIcon />}
-          endContent={<PlusIcon />}
-        >
-          Add Report{" "}
-        </Button>
         <Modal
           ref={targetRef}
           isOpen={isOpen}
           size="xl"
-          onOpenChange={onOpenChange}
+          onOpenChange={onClose}
           placement="top-center"
         >
           <ModalContent>
@@ -154,7 +195,7 @@ export const AddReport = () => {
                   {...moveProps}
                   className="w-full flex flex-col gap-4"
                 >
-                  Add Report
+                  Update Task
                 </ModalHeader>
                 <ModalBody className="grid grid-cols-2 gap-4">
                   <Input
@@ -249,17 +290,25 @@ export const AddReport = () => {
                   />
                   <Select
                     isRequired
-                    items={filteredStatus}
+                    selectedKeys={new Set([status])}
+                    onSelectionChange={(keys) => {
+                      const selected = Array.from(keys)[0];
+                      if (typeof selected === "string") setStatus(selected);
+                    }}
                     label="Status"
                     placeholder="Select a status"
                     variant="bordered"
-                    selectedKeys={[status]}
-                    onSelectionChange={(keys) =>
-                      setStatus(Array.from(keys)[0] as string)
+                    items={
+                      sirmjh
+                        ? selectStatus.filter((item) => item.key === "Finished")
+                        : selectStatus.filter(
+                            (item) =>
+                              item.key === "Overdue" || item.key === "Priority"
+                          )
                     }
                   >
                     {(item) => (
-                      <SelectItem key={item.label}>{item.label}</SelectItem>
+                      <SelectItem key={item.key}>{item.label}</SelectItem>
                     )}
                   </Select>
                 </ModalBody>
@@ -269,9 +318,9 @@ export const AddReport = () => {
                   </Button>
                   <Button
                     color="primary"
-                    onClick={() => handleAddReport(onClose)}
+                    onPress={() => handleUpdateTask(onClose)}
                   >
-                    Add Report
+                    Update Task
                   </Button>
                 </ModalFooter>
               </>

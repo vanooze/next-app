@@ -12,8 +12,10 @@ import { SidebarItem } from "./sidebar-item";
 import { SidebarMenu } from "./sidebar-menu";
 import { useSidebarContext } from "../layout/layout-context";
 import { usePathname } from "next/navigation";
+import { useUserContext } from "../layout/UserContext";
 
 export const SidebarWrapper = () => {
+  const { user, loading } = useUserContext();
   const pathname = usePathname();
   const { collapsed, setCollapsed } = useSidebarContext();
 
@@ -50,12 +52,12 @@ export const SidebarWrapper = () => {
                 items={["TMIG", "IT/DT", "Marketing"]}
                 title="Departments"
               /> */}
-              {/* <SidebarItem
+              <SidebarItem
                 isActive={pathname === "/reports"}
                 title="Reports"
                 icon={<ReportsIcon />}
                 href="reports"
-              /> */}
+              />
             </SidebarMenu>
           </div>
         </div>

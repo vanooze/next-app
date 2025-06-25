@@ -4,7 +4,7 @@ import { DeleteIcon } from "../../../../icons/table/delete-icon";
 import { EditIcon } from "../../../../icons/table/edit-icon";
 import { dtTask } from "../../../../../helpers/db";
 import { displayValue } from "@/helpers/displayValue";
-import { formatDateMMDDYYYY } from "@/helpers/formatDate";
+import { normalizeToYYYYMMDD } from "@/helpers/formatDate";
 
 interface Props {
   dtTasks: dtTask;
@@ -43,21 +43,21 @@ export const RenderCell = ({
     case "projectDesc":
       return <span>{displayValue(cellValue)}</span>;
     case "dateReceived":
-      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
+      return <span>{normalizeToYYYYMMDD(cellValue)}</span>;
     case "salesPersonnel":
       return <span>{displayValue(cellValue)}</span>;
     case "systemDiagram":
       return <span>{displayValue(cellValue)}</span>;
     case "eBoqDate":
-      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
+      return <span>{normalizeToYYYYMMDD(cellValue)}</span>;
     case "structuralBoq":
       return <span>{displayValue(cellValue)}</span>;
     case "sBoqDate":
-      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
+      return <span>{normalizeToYYYYMMDD(cellValue)}</span>;
     case "sirME":
-      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
+      return <span>{normalizeToYYYYMMDD(cellValue)}</span>;
     case "sirMJH":
-      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
+      return <span>{normalizeToYYYYMMDD(cellValue)}</span>;
 
     case "actions":
       return (

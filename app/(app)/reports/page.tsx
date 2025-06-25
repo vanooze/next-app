@@ -1,8 +1,12 @@
+import Reports from "@/components/deparments/DT/reports/reports";
 import React from "react";
-import { Reports } from "@/components/table/report";
 
-const ReportPage = () => {
-  return <Reports />;
-};
+function page() {
+  return (
+    <>
+      <Reports />
+    </>
+  );
+}
 
-export default ReportPage;
+export default page;

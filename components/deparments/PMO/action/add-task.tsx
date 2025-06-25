@@ -1,0 +1,275 @@
+import {
+  Button,
+  Divider,
+  Input,
+  Listbox,
+  ListboxItem,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  select,
+} from "@heroui/react";
+import { DatePicker } from "@heroui/date-picker";
+import {
+  CalendarDate,
+  getLocalTimeZone,
+  today,
+  parseDate,
+} from "@internationalized/date";
+import { Select, SelectSection, SelectItem } from "@heroui/select";
+import { mutate } from "swr";
+import { formatDatetoStr } from "@/helpers/formatDate";
+import React, { useEffect, useState, useRef } from "react";
+import {
+  selectEboq,
+  selectStatus,
+  selectSboq,
+  selectTMIG,
+  selectDesign,
+  selectPmo,
+  selectSales,
+} from "@/helpers/data";
+import { ProjectMonitoring } from "@/helpers/db";
+import { date } from "yup";
+import { ListBoxContext } from "react-aria-components";
+
+interface AddTasksProps {
+  isOpen: boolean;
+  onClose: () => void;
+  task: ProjectMonitoring | null;
+}
+
+export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
+  let defaultDate = today(getLocalTimeZone());
+  const targetRef = useRef(null);
+
+  const safeParseDate = (input: string): CalendarDate => {
+    const isoString = normalizeToISO(input);
+    return parseDate(isoString);
+  };
+
+  const normalizeToISO = (input: string): string => {
+    if (!input) return "";
+
+    const parts = input.split("T")[0].split(/[-\/]/);
+    if (parts.length !== 3) return input;
+
+    if (Number(parts[0]) <= 12 && Number(parts[1]) <= 31) {
+      const [month, day, year] = parts;
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+
+    if (Number(parts[1]) <= 12 && Number(parts[0]) <= 31) {
+      const [day, month, year] = parts;
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+
+    return input;
+  };
+
+  const [projectTasks, setProjectTasks] = useState<any[]>([]);
+  const [soId, setSoId] = useState<number>();
+  const [clientName, setClientName] = useState<string>("");
+  const [projectDate, setProjectDate] = useState<CalendarDate | null>(null);
+  const [taskTodo, setTaskTodo] = useState<string>("");
+  const [dateFilled, setDatefilled] = useState<CalendarDate | null>(null);
+  const [dateStart, setDateStart] = useState<CalendarDate | null>(null);
+  const [dateEnd, setDateEnd] = useState<CalendarDate | null>(null);
+  const [notes, setNotes] = useState<string>("");
+  const [type, setType] = useState(null);
+  const [status, setStatus] = useState<number>();
+  const [pmoOffcer, setPmoOfficer] = useState<string>("");
+  const [donePending, setDonePending] = useState<number>();
+  const [doneDate, setDoneDate] = useState<CalendarDate | null>(null);
+  const [positionOrder, setPositionOrder] = useState<number>();
+
+  useEffect(() => {
+    if (task) {
+      setSoId(task.idkey);
+      setClientName(task.customer ?? "");
+      setProjectDate(
+        typeof task.date === "string"
+          ? safeParseDate(task.date)
+          : task.date ?? null
+      );
+      setPmoOfficer(task.contactPerson);
+    }
+  }, [task]);
+
+  const projectDateStr = formatDatetoStr(projectDate);
+  const headingClasses =
+    "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
+
+  const handleAddTask = async (onClose: () => void) => {
+    const dateFilledStr = formatDatetoStr(defaultDate);
+    const dateStartStr = formatDatetoStr(dateStart);
+    const dateEndStr = formatDatetoStr(dateEnd);
+    const doneDateStr = formatDatetoStr(doneDate);
+
+    const payload = {
+      soId,
+      taskTodo,
+      dateFilled: dateFilledStr,
+      dateStart: dateStartStr,
+      dateEnd: dateEndStr,
+      notes,
+      type,
+      status,
+      pmoOffcer,
+      donePending,
+      doneDate: doneDateStr,
+      positionOrder,
+    };
+
+    try {
+      const res = await fetch("/api/department/PMO/project_tasks/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to create a task");
+      }
+
+      const data = await res.json();
+
+      await mutate("/api/department/PMO/project_tasks");
+
+      onClose();
+    } catch (err) {
+      console.error("Create Task Error:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!soId) return;
+
+    const fetchProjectTasks = async () => {
+      const res = await fetch(`/api/department/PMO/project_tasks?soId=${soId}`);
+      const data = await res.json();
+      setProjectTasks(data);
+    };
+
+    fetchProjectTasks();
+  }, [soId]);
+
+  console.log(projectTasks);
+
+  return (
+    <div>
+      <>
+        <Modal
+          ref={targetRef}
+          isOpen={isOpen}
+          size="5xl"
+          onOpenChange={onClose}
+        >
+          <ModalContent>
+            {(onClose) => (
+              <>
+                <ModalHeader className="w-full flex flex-col gap-1">
+                  <span>{clientName}</span>
+                  <span>{projectDateStr}</span>
+                </ModalHeader>
+                <ModalBody className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      className=""
+                      label="Title"
+                      variant="bordered"
+                      value={taskTodo}
+                      onValueChange={setTaskTodo}
+                    />
+                    <DatePicker
+                      label="Date Start"
+                      variant="bordered"
+                      value={dateStart}
+                      onChange={setDateStart}
+                    />
+                    <Input
+                      className=""
+                      label="Notes"
+                      variant="bordered"
+                      value={notes}
+                      onValueChange={setNotes}
+                    />
+                    <DatePicker
+                      label="Date End"
+                      variant="bordered"
+                      value={dateEnd}
+                      onChange={setDateEnd}
+                    />
+                    <Select
+                      className="col-span-2"
+                      label="Designate task into:"
+                      placeholder="Designate task into:"
+                      variant="bordered"
+                      scrollShadowProps={{ isEnabled: false }}
+                    >
+                      <SelectSection
+                        classNames={{ heading: headingClasses }}
+                        title="TMIG"
+                      >
+                        {selectTMIG.map((item) => (
+                          <SelectItem key={item.key}>{item.label}</SelectItem>
+                        ))}
+                      </SelectSection>
+                      <SelectSection
+                        classNames={{ heading: headingClasses }}
+                        title="Sales"
+                      >
+                        {selectSales.map((item) => (
+                          <SelectItem key={item.key}>{item.label}</SelectItem>
+                        ))}
+                      </SelectSection>
+                      <SelectSection
+                        classNames={{ heading: headingClasses }}
+                        title="PMO"
+                      >
+                        {selectPmo.map((item) => (
+                          <SelectItem key={item.key}>{item.label}</SelectItem>
+                        ))}
+                      </SelectSection>
+                      <SelectSection
+                        classNames={{ heading: headingClasses }}
+                        title="Design"
+                      >
+                        {selectDesign.map((item) => (
+                          <SelectItem key={item.key}>{item.label}</SelectItem>
+                        ))}
+                      </SelectSection>
+                    </Select>
+                    <Button
+                      className="col-end-3 mt-4"
+                      color="primary"
+                      onPress={() => handleAddTask(onClose)}
+                    >
+                      Add Task
+                    </Button>
+                  </div>
+                  <div className="flex gap-4">
+                    <Divider orientation="vertical" />
+                    <Listbox aria-label="Tasks for this project">
+                      {projectTasks.length === 0 ? (
+                        <ListboxItem key="none">No tasks yet</ListboxItem>
+                      ) : (
+                        projectTasks.map((task) => (
+                          <ListboxItem key={task.soId}>
+                            {task.taskTodo} : {task.pmoOfficer}
+                          </ListboxItem>
+                        ))
+                      )}
+                    </Listbox>
+                  </div>
+                </ModalBody>
+              </>
+            )}
+          </ModalContent>
+        </Modal>
+      </>
+    </div>
+  );
+};

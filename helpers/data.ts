@@ -16,6 +16,130 @@ export const selectStatus = [
   { key: "Finished", label: "Finished" },
 ];
 
+export const selectTMIG = [
+  {
+    key: `Japitana, Christopher Villa`,
+    label: `Japitana, Christopher Villa`,
+  },
+  {
+    key: `Fabros, Richard Ellarma`,
+    label: `Fabros, Richard Ellarma`,
+  },
+  {
+    key: `Calaguas, Rickson Yumul`,
+    label: `Calaguas, Rickson Yumul`,
+  },
+  {
+    key: `Santiago, Ferdinand Michael Espinonsa`,
+    label: `Santiago, Ferdinand Michael Espinonsa`,
+  },
+  {
+    key: `Bumaat, Mark Anthony Tangunan`,
+    label: `Bumaat, Mark Anthony Tangunan`,
+  },
+  {
+    key: `Ducut , Lawrence Gutierrez`,
+    label: `Ducut , Lawrence Gutierrez`,
+  },
+  {
+    key: `Punay, Angelito Jr. Obligado`,
+    label: `Punay, Angelito Jr. Obligado`,
+  },
+  {
+    key: `Carig, Regie Bazar`,
+    label: `Carig, Regie Bazar`,
+  },
+  {
+    key: `Tintero, Vhal Joshua Robles`,
+    label: `Tintero, Vhal Joshua Robles`,
+  },
+  {
+    key: `Marfil, John Quingquing`,
+    label: `Marfil, John Quingquing`,
+  },
+  {
+    key: `David, Jomar Anover`,
+    label: `David, Jomar Anover`,
+  },
+  {
+    key: `Lusterio, Julius Dinglasa`,
+    label: `Lusterio, Julius Dinglasa`,
+  },
+  {
+    key: `Tamo, Mark Louie Fulgencio`,
+    label: `Tamo, Mark Louie Fulgencio`,
+  },
+  {
+    key: `Unida, Joshua Venhur Malayo`,
+    label: `Unida, Joshua Venhur Malayo`,
+  },
+];
+
+export const selectSales = [
+  {
+    key: `Bautista, Kenneth Ortega`,
+    label: `Bautista, Kenneth Ortega`,
+  },
+  {
+    key: `Cruz, Rian Ramos`,
+    label: `Cruz, Rian Ramos`,
+  },
+  {
+    key: `Garcia, Genevel Valente`,
+    label: `Garcia, Genevel Valente`,
+  },
+  {
+    key: `Robles, Alliah Pearl Cabueños`,
+    label: `Robles, Alliah Pearl Cabueños`,
+  },
+];
+
+export const selectDesign = [
+  {
+    key: `Camero, Jan Ronnell Villa`,
+    label: `Camero, Jan Ronnell Villa`,
+  },
+  {
+    key: `Ardinel, Jilian Mark Halili`,
+    label: `Ardinel, Jilian Mark Halili`,
+  },
+  {
+    key: `Gigante, Marcial III Abaya`,
+    label: `Gigante, Marcial III Abaya`,
+  },
+  {
+    key: `Cola, John Eden Ross Villena`,
+    label: `Cola, John Eden Ross Villena`,
+  },
+  {
+    key: `Topacio, Billy Joel Villare`,
+    label: `Topacio, Billy Joel Villare`,
+  },
+  {
+    key: `Estacio, Marvinne Echevarria`,
+    label: `Estacio, Marvinne Echevarria`,
+  },
+];
+
+export const selectPmo = [
+  {
+    key: `Calimutan, Joshua Alvarez`,
+    label: `Calimutan, Joshua Alvarez`,
+  },
+  {
+    key: `Raymundo, Ryan Joseph De Luna`,
+    label: `Raymundo, Ryan Joseph De Luna`,
+  },
+  {
+    key: `Pineda, Noel De Las Alas`,
+    label: `Pineda, Noel De Las Alas`,
+  },
+  {
+    key: `Villar, Noriel Bastasa`,
+    label: `Villar, Noriel Bastasa`,
+  },
+];
+
 export const users = [
   {
     id: 1,

@@ -28,3 +28,27 @@ export const dtColumns = [
   { name: "Sir MJ/Harold", uid: "sirMJH" },
   { name: "ACTIONS", uid: "actions" },
 ];
+
+// ------------------------- PROJECT MONITORING -------------------------
+
+export interface ProjectMonitoring {
+  id: number;
+  idkey: number;
+  soNumber: number;
+  customer: string;
+  contactPerson: string;
+  sales: string;
+  date: string | null;
+  status: string;
+}
+
+export const ProjectMonitoringColumns = [
+  { name: "SO Number", uid: "soNumber" },
+  { name: "Customer", uid: "customer" },
+  { name: "Contact Person", uid: "contactPerson" },
+  { name: "Sales/Consultant", uid: "sales" },
+  { name: "Date", uid: "date" },
+  { name: "Status", uid: "status" },
+  { name: "Actions", uid: "actions" },
+  { name: "Tasks", uid: "tasks" },
+];

@@ -7,12 +7,11 @@ import { fetcher } from "@/app/lib/fetcher";
 import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
 import { UsersIcon } from "@/components/icons/breadcrumb/users-icon";
 import { TableWrapper } from "@/components/deparments/DT/tasks/table/table";
-import { useUserContext } from "../layout/UserContext";
-import { dtTask } from "../../helpers/db";
-import { AddTask } from "../deparments/DT/tasks/add-task";
-import { SearchIcon } from "../icons/searchicon";
-import { EyeIcon } from "../icons/table/eye-icon";
-import { AddReport } from "../deparments/DT/reports/add-report";
+import { useUserContext } from "../../../layout/UserContext";
+import { dtTask } from "../../../../helpers/db";
+import { AddTask } from "./operation/add-task";
+import { SearchIcon } from "../../../icons/searchicon";
+import { EyeIcon } from "../../../icons/table/eye-icon";
 
 export const Tasks = () => {
   const { user } = useUserContext();
