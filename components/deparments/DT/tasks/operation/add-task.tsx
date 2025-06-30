@@ -99,7 +99,10 @@ export const AddTask = () => {
     if (!dateReceived) {
       setFilteredStatus(
         selectStatus.filter(
-          (item) => item.label === "Pending" || item.label === "Priority"
+          (item) =>
+            item.label === "Pending" ||
+            item.label === "Priority" ||
+            item.label === "OnHold"
         )
       );
       return;
@@ -116,14 +119,20 @@ export const AddTask = () => {
       setStatus("Overdue");
       setFilteredStatus(
         selectStatus.filter(
-          (item) => item.label === "Overdue" || item.label === "Priority"
+          (item) =>
+            item.label === "Overdue" ||
+            item.label === "Priority" ||
+            item.label === "OnHold"
         )
       );
     } else {
       setStatus("Pending");
       setFilteredStatus(
         selectStatus.filter(
-          (item) => item.label === "Pending" || item.label === "Priority"
+          (item) =>
+            item.label === "Pending" ||
+            item.label === "Priority" ||
+            item.label === "OnHold"
         )
       );
     }

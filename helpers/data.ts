@@ -13,6 +13,7 @@ export const selectStatus = [
   { key: "Priority", label: "Priority" },
   { key: "Overdue", label: "Overdue" },
   { key: "Pending", label: "Pending" },
+  { key: "OnHold", label: "OnHold" },
   { key: "Finished", label: "Finished" },
 ];
 

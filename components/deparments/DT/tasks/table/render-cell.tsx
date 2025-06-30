@@ -27,13 +27,21 @@ export const RenderCell = ({
           size="sm"
           variant="flat"
           color={
-            cellValue === "Finished"
-              ? "success"
-              : cellValue === "Overdue"
-              ? "danger"
-              : cellValue === "Priority"
-              ? "secondary"
+            typeof cellValue === "string" &&
+            ["Finished", "Overdue", "Priority", "OnHold"].includes(cellValue)
+              ? "default"
               : "warning"
+          }
+          className={
+            cellValue === "Finished"
+              ? "bg-success-100 text-success-700"
+              : cellValue === "Overdue"
+              ? "bg-danger-100 text-danger-700"
+              : cellValue === "Priority"
+              ? "bg-purple-100 text-purple-700"
+              : cellValue === "OnHold"
+              ? "bg-cyan-100 text-cyan-700"
+              : "bg-yellow-100 text-yellow-700"
           }
         >
           <span className="capitalize text-xs">{cellValue}</span>

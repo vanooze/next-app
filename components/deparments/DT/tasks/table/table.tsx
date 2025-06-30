@@ -75,9 +75,10 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
   const statusPriority = {
     Priority: 0,
-    Overdue: 1,
-    Pending: 2,
-    Finished: 3,
+    OnHold: 1,
+    Overdue: 2,
+    Pending: 3,
+    Finished: 4,
   };
 
   const sortedTasks = useMemo(() => {

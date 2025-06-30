@@ -52,12 +52,12 @@ export const SidebarWrapper = () => {
                 items={["TMIG", "IT/DT", "Marketing"]}
                 title="Departments"
               /> */}
-              <SidebarItem
+              {/* <SidebarItem
                 isActive={pathname === "/reports"}
                 title="Reports"
                 icon={<ReportsIcon />}
                 href="reports"
-              />
+              /> */}
             </SidebarMenu>
           </div>
         </div>

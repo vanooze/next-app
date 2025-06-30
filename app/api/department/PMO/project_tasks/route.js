@@ -54,7 +54,7 @@ export async function GET(req) {
   } catch (error) {
     console.error("API Error: ", error);
     return NextResponse.json(
-      { error: "Failed to fetch table" },
+      { error: "Failed to create task" },
       { status: 500 }
     );
   }

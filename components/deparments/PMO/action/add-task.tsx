@@ -7,33 +7,28 @@ import {
   Modal,
   ModalBody,
   ModalContent,
-  ModalFooter,
   ModalHeader,
-  select,
 } from "@heroui/react";
-import { DatePicker } from "@heroui/date-picker";
+import { GridList, GridListItem, Text } from "react-aria-components";
 import {
   CalendarDate,
   getLocalTimeZone,
   today,
   parseDate,
 } from "@internationalized/date";
+import { DatePicker } from "@heroui/date-picker";
 import { Select, SelectSection, SelectItem } from "@heroui/select";
 import { mutate } from "swr";
 import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useEffect, useState, useRef } from "react";
 import {
-  selectEboq,
-  selectStatus,
-  selectSboq,
   selectTMIG,
   selectDesign,
   selectPmo,
   selectSales,
 } from "@/helpers/data";
 import { ProjectMonitoring } from "@/helpers/db";
-import { date } from "yup";
-import { ListBoxContext } from "react-aria-components";
+import { useListData } from "react-stately";
 
 interface AddTasksProps {
   isOpen: boolean;
@@ -85,6 +80,10 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
   const [doneDate, setDoneDate] = useState<CalendarDate | null>(null);
   const [positionOrder, setPositionOrder] = useState<number>();
 
+  const projectDateStr = formatDatetoStr(projectDate);
+  const headingClasses =
+    "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
+
   useEffect(() => {
     if (task) {
       setSoId(task.idkey);
@@ -98,15 +97,17 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
     }
   }, [task]);
 
-  const projectDateStr = formatDatetoStr(projectDate);
-  const headingClasses =
-    "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
-
   const handleAddTask = async (onClose: () => void) => {
     const dateFilledStr = formatDatetoStr(defaultDate);
     const dateStartStr = formatDatetoStr(dateStart);
     const dateEndStr = formatDatetoStr(dateEnd);
     const doneDateStr = formatDatetoStr(doneDate);
+    const list = useListData({
+      initialItems: projectTasks.sort(
+        (a, b) => (a.positionOrder ?? 0) - (b.positionOrder ?? 0)
+      ),
+      getKey: (item) => item.id,
+    });
 
     const payload = {
       soId,
@@ -257,7 +258,7 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
                         <ListboxItem key="none">No tasks yet</ListboxItem>
                       ) : (
                         projectTasks.map((task) => (
-                          <ListboxItem key={task.soId}>
+                          <ListboxItem key={task.id}>
                             {task.taskTodo} : {task.pmoOfficer}
                           </ListboxItem>
                         ))
