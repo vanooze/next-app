@@ -21,10 +21,11 @@ export const Column: React.FC<ColumnProps> = ({ tasks }) => {
     "B.TOPACIO": "Billy",
   };
 
-  const statusList = ["Priority", "Overdue", "Pending"];
+  const statusList = ["Priority", "Overdue", "OnHold", "Pending"];
   const colorMap: Record<string, string> = {
     Priority: "#7828c8",
     Overdue: "#dc2626",
+    OnHold: "#09AACD",
     Pending: "#f59e0b",
   };
 
