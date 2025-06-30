@@ -1,5 +1,6 @@
 import {
   Button,
+  Checkbox,
   Divider,
   Input,
   Listbox,
@@ -37,6 +38,25 @@ interface AddTasksProps {
 }
 
 export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
+  const [project, setProject] = useState<any[]>([]);
+  const [taskId, setTasksId] = useState<number>();
+  const [soId, setSoId] = useState<number>();
+  const [clientName, setClientName] = useState<string>("");
+  const [projectDate, setProjectDate] = useState<CalendarDate | null>(null);
+  const [taskTodo, setTaskTodo] = useState<string>("");
+  const [dateFilled, setDatefilled] = useState<CalendarDate | null>(null);
+  const [dateStart, setDateStart] = useState<CalendarDate | null>(null);
+  const [dateEnd, setDateEnd] = useState<CalendarDate | null>(null);
+  const [notes, setNotes] = useState<string>("");
+  const [type, setType] = useState(null);
+  const [status, setStatus] = useState<number>();
+  const [pmoOffcer, setPmoOfficer] = useState<string>("");
+  const [donePending, setDonePending] = useState<string>("");
+  const [doneDate, setDoneDate] = useState<CalendarDate | null>(null);
+  const [positionOrder, setPositionOrder] = useState<number>();
+  const projectDateStr = formatDatetoStr(projectDate);
+  const headingClasses =
+    "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
   let defaultDate = today(getLocalTimeZone());
   const targetRef = useRef(null);
 
@@ -64,26 +84,6 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
     return input;
   };
 
-  const [projectTasks, setProjectTasks] = useState<any[]>([]);
-  const [soId, setSoId] = useState<number>();
-  const [clientName, setClientName] = useState<string>("");
-  const [projectDate, setProjectDate] = useState<CalendarDate | null>(null);
-  const [taskTodo, setTaskTodo] = useState<string>("");
-  const [dateFilled, setDatefilled] = useState<CalendarDate | null>(null);
-  const [dateStart, setDateStart] = useState<CalendarDate | null>(null);
-  const [dateEnd, setDateEnd] = useState<CalendarDate | null>(null);
-  const [notes, setNotes] = useState<string>("");
-  const [type, setType] = useState(null);
-  const [status, setStatus] = useState<number>();
-  const [pmoOffcer, setPmoOfficer] = useState<string>("");
-  const [donePending, setDonePending] = useState<number>();
-  const [doneDate, setDoneDate] = useState<CalendarDate | null>(null);
-  const [positionOrder, setPositionOrder] = useState<number>();
-
-  const projectDateStr = formatDatetoStr(projectDate);
-  const headingClasses =
-    "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
-
   useEffect(() => {
     if (task) {
       setSoId(task.idkey);
@@ -103,7 +103,7 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
     const dateEndStr = formatDatetoStr(dateEnd);
     const doneDateStr = formatDatetoStr(doneDate);
     const list = useListData({
-      initialItems: projectTasks.sort(
+      initialItems: project.sort(
         (a, b) => (a.positionOrder ?? 0) - (b.positionOrder ?? 0)
       ),
       getKey: (item) => item.id,
@@ -151,13 +151,13 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
     const fetchProjectTasks = async () => {
       const res = await fetch(`/api/department/PMO/project_tasks?soId=${soId}`);
       const data = await res.json();
-      setProjectTasks(data);
+      setProject(data);
     };
 
     fetchProjectTasks();
   }, [soId]);
 
-  console.log(projectTasks);
+  console.log(project);
 
   return (
     <div>
@@ -254,12 +254,57 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
                   <div className="flex gap-4">
                     <Divider orientation="vertical" />
                     <Listbox aria-label="Tasks for this project">
-                      {projectTasks.length === 0 ? (
+                      {project.length === 0 ? (
                         <ListboxItem key="none">No tasks yet</ListboxItem>
                       ) : (
-                        projectTasks.map((task) => (
-                          <ListboxItem key={task.id}>
-                            {task.taskTodo} : {task.pmoOfficer}
+                        project.map((task) => (
+                          <ListboxItem key={task.taskKey}>
+                            <Checkbox
+                              isSelected={task.donePending === "1"}
+                              onValueChange={async (val) => {
+                                const newValue = val ? "1" : "0";
+
+                                try {
+                                  const res = await fetch(
+                                    `/api/department/PMO/project_tasks/update_status`,
+                                    {
+                                      method: "POST",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                      },
+                                      body: JSON.stringify({
+                                        donePending: newValue,
+                                        id: task.taskKey,
+                                      }),
+                                    }
+                                  );
+
+                                  if (!res.ok) {
+                                    throw new Error(
+                                      "Failed to update task status"
+                                    );
+                                  }
+
+                                  const updated = project.map((proj) =>
+                                    proj.taskKey === task.taskKey
+                                      ? { ...proj, donePending: newValue }
+                                      : proj
+                                  );
+
+                                  setProject(updated);
+                                  mutate(
+                                    `/api/department/PMO/project_tasks?soId=${soId}`
+                                  );
+                                } catch (err) {
+                                  console.error(
+                                    "Failed to update donePending",
+                                    err
+                                  );
+                                }
+                              }}
+                            >
+                              {task.taskTodo} : {task.pmoOfficer}
+                            </Checkbox>
                           </ListboxItem>
                         ))
                       )}
