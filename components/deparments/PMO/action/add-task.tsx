@@ -8,18 +8,19 @@ import {
   Modal,
   ModalBody,
   ModalContent,
+  Spinner,
   ModalHeader,
+  Tooltip,
 } from "@heroui/react";
-import { GridList, GridListItem, Text } from "react-aria-components";
 import {
   CalendarDate,
   getLocalTimeZone,
   today,
   parseDate,
 } from "@internationalized/date";
+import { EditIcon } from "@/components/icons/table/edit-icon";
 import { DatePicker } from "@heroui/date-picker";
 import { Select, SelectSection, SelectItem } from "@heroui/select";
-import { mutate } from "swr";
 import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useEffect, useState, useRef } from "react";
 import {
@@ -28,8 +29,10 @@ import {
   selectPmo,
   selectSales,
 } from "@/helpers/data";
+import type { ProjectTask } from "@/helpers/db";
 import { ProjectMonitoring } from "@/helpers/db";
-import { useListData } from "react-stately";
+import { EditTaskModal } from "../tasks/tasks";
+import useSWR from "swr";
 
 interface AddTasksProps {
   isOpen: boolean;
@@ -38,7 +41,6 @@ interface AddTasksProps {
 }
 
 export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
-  const [project, setProject] = useState<any[]>([]);
   const [taskId, setTasksId] = useState<number>();
   const [soId, setSoId] = useState<number>();
   const [clientName, setClientName] = useState<string>("");
@@ -49,16 +51,29 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
   const [dateEnd, setDateEnd] = useState<CalendarDate | null>(null);
   const [notes, setNotes] = useState<string>("");
   const [type, setType] = useState(null);
-  const [status, setStatus] = useState<number>();
-  const [pmoOffcer, setPmoOfficer] = useState<string>("");
+  const [status, setStatus] = useState<number>(0);
+  const [pmoOfficer, setPmoOfficer] = useState<string>("");
   const [donePending, setDonePending] = useState<string>("");
   const [doneDate, setDoneDate] = useState<CalendarDate | null>(null);
-  const [positionOrder, setPositionOrder] = useState<number>();
+  const [editTasksOpen, setEditTasksOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<ProjectTask | null>(null);
+  const [positionOrder, setPositionOrder] = useState<number>(0);
   const projectDateStr = formatDatetoStr(projectDate);
   const headingClasses =
     "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
   let defaultDate = today(getLocalTimeZone());
   const targetRef = useRef(null);
+
+  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+  const {
+    data: project = [],
+    isLoading,
+    mutate,
+  } = useSWR<ProjectTask[]>(
+    soId ? `/api/department/PMO/project_tasks?soId=${soId}` : null,
+    fetcher
+  );
 
   const safeParseDate = (input: string): CalendarDate => {
     const isoString = normalizeToISO(input);
@@ -97,17 +112,16 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
     }
   }, [task]);
 
+  const addToPosition = () => {
+    return project.length + 1;
+  };
+
   const handleAddTask = async (onClose: () => void) => {
     const dateFilledStr = formatDatetoStr(defaultDate);
     const dateStartStr = formatDatetoStr(dateStart);
     const dateEndStr = formatDatetoStr(dateEnd);
     const doneDateStr = formatDatetoStr(doneDate);
-    const list = useListData({
-      initialItems: project.sort(
-        (a, b) => (a.positionOrder ?? 0) - (b.positionOrder ?? 0)
-      ),
-      getKey: (item) => item.id,
-    });
+    const positonOrdering = addToPosition();
 
     const payload = {
       soId,
@@ -118,10 +132,10 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
       notes,
       type,
       status,
-      pmoOffcer,
+      pmoOfficer,
       donePending,
       doneDate: doneDateStr,
-      positionOrder,
+      positionOrder: positonOrdering,
     };
 
     try {
@@ -137,27 +151,37 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
 
       const data = await res.json();
 
-      await mutate("/api/department/PMO/project_tasks");
-
-      onClose();
+      await mutate();
     } catch (err) {
       console.error("Create Task Error:", err);
     }
   };
 
-  useEffect(() => {
-    if (!soId) return;
+  const handleDonePendingChange = async (taskKey: number, val: boolean) => {
+    const newValue = val ? "1" : "0";
 
-    const fetchProjectTasks = async () => {
-      const res = await fetch(`/api/department/PMO/project_tasks?soId=${soId}`);
-      const data = await res.json();
-      setProject(data);
-    };
+    try {
+      const res = await fetch(
+        `/api/department/PMO/project_tasks/update_status`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            donePending: newValue,
+            id: taskKey,
+          }),
+        }
+      );
 
-    fetchProjectTasks();
-  }, [soId]);
+      if (!res.ok) throw new Error("Failed to update task status");
 
-  console.log(project);
+      await mutate();
+    } catch (err) {
+      console.error("Failed to update donePending", err);
+    }
+  };
 
   return (
     <div>
@@ -208,6 +232,7 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
                       label="Designate task into:"
                       placeholder="Designate task into:"
                       variant="bordered"
+                      onChange={(e) => setPmoOfficer(e.target.value)}
                       scrollShadowProps={{ isEnabled: false }}
                     >
                       <SelectSection
@@ -253,55 +278,41 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
                   </div>
                   <div className="flex gap-4">
                     <Divider orientation="vertical" />
-                    <Listbox aria-label="Tasks for this project">
-                      {project.length === 0 ? (
+                    <Listbox
+                      aria-label="Tasks for this project"
+                      variant="light"
+                    >
+                      {isLoading ? (
+                        <ListboxItem key="loading">
+                          <Spinner />
+                        </ListboxItem>
+                      ) : project.length === 0 ? (
                         <ListboxItem key="none">No tasks yet</ListboxItem>
                       ) : (
-                        project.map((task) => (
-                          <ListboxItem key={task.taskKey}>
+                        project.map((task: ProjectTask) => (
+                          <ListboxItem
+                            key={task.taskKey}
+                            endContent={
+                              <Tooltip content="Edit tasks" color="secondary">
+                                <button
+                                  className="gap-5"
+                                  onClick={() => {
+                                    setSelectedTask(task);
+                                    setEditTasksOpen(true);
+                                  }}
+                                >
+                                  <EditIcon size={20} fill="#979797" />
+                                </button>
+                              </Tooltip>
+                            }
+                          >
                             <Checkbox
-                              isSelected={task.donePending === "1"}
-                              onValueChange={async (val) => {
-                                const newValue = val ? "1" : "0";
-
-                                try {
-                                  const res = await fetch(
-                                    `/api/department/PMO/project_tasks/update_status`,
-                                    {
-                                      method: "POST",
-                                      headers: {
-                                        "Content-Type": "application/json",
-                                      },
-                                      body: JSON.stringify({
-                                        donePending: newValue,
-                                        id: task.taskKey,
-                                      }),
-                                    }
-                                  );
-
-                                  if (!res.ok) {
-                                    throw new Error(
-                                      "Failed to update task status"
-                                    );
-                                  }
-
-                                  const updated = project.map((proj) =>
-                                    proj.taskKey === task.taskKey
-                                      ? { ...proj, donePending: newValue }
-                                      : proj
-                                  );
-
-                                  setProject(updated);
-                                  mutate(
-                                    `/api/department/PMO/project_tasks?soId=${soId}`
-                                  );
-                                } catch (err) {
-                                  console.error(
-                                    "Failed to update donePending",
-                                    err
-                                  );
-                                }
-                              }}
+                              radius="full"
+                              isSelected={String(task.donePending) === "1"}
+                              lineThrough
+                              onValueChange={(val) =>
+                                handleDonePendingChange(task.taskKey, val)
+                              }
                             >
                               {task.taskTodo} : {task.pmoOfficer}
                             </Checkbox>
@@ -315,6 +326,13 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
             )}
           </ModalContent>
         </Modal>
+
+        <EditTaskModal
+          isOpen={editTasksOpen}
+          onClose={() => setEditTasksOpen(false)}
+          task={selectedTask}
+          project={task?.customer ?? ""}
+        />
       </>
     </div>
   );

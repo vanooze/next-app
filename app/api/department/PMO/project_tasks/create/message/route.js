@@ -14,58 +14,31 @@ export async function POST(req) {
 
     const body = await req.json();
 
-    const {
-      soId,
-      taskTodo,
-      dateFilled,
-      dateStart,
-      dateEnd,
-      notes,
-      type,
-      status,
-      pmoOfficer,
-      donePending,
-      doneDate,
-      positionOrder,
-    } = body;
+    const { taskKey, userKey, message, status, date } = body;
 
-    const query = `INSERT INTO project_task(
-    so_id,
-    task_todo,
-    date_filled,
-    date_start,
-    date_end,
-    notes,
-    type,
+    const query = `INSERT INTO task_reply(
+    task_key,
+    user_key,
+    message,
     status,
-    pmo_officer,
-    done_pending,
-    done_date,
-    position_order)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`;
+    date)
+    VALUES (?,?,?,?,?)`;
 
     const result = await executeQuery(query, [
-      soId,
-      taskTodo,
-      dateFilled,
-      dateStart,
-      dateEnd,
-      notes,
-      type,
+      taskKey,
+      userKey,
+      message,
       status,
-      pmoOfficer,
-      donePending,
-      doneDate,
-      positionOrder,
+      date,
     ]);
 
     return NextResponse.json({ success: true, soId: result.soId });
   } catch (err) {
-    console.error("Error creating task: ", err);
+    console.error("Error creating reply: ", err);
     return NextResponse.json(
       {
         success: false,
-        error: "Failed to create task",
+        error: "Failed to create reply",
       },
       { status: 500 }
     );

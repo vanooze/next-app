@@ -52,3 +52,21 @@ export const ProjectMonitoringColumns = [
   { name: "Actions", uid: "actions" },
   { name: "Tasks", uid: "tasks" },
 ];
+
+// ------------------------- TASKS PER PROJECT -------------------------
+
+export interface ProjectTask {
+  taskKey: number;
+  soId: number;
+  taskTodo: string;
+  dateFilled: string | null;
+  dateStart: string | null;
+  dateEnd: string | null;
+  notes: string;
+  type: string;
+  status: string;
+  pmoOfficer: string;
+  donePending: string;
+  doneDate: string | null;
+  positionOrder: string;
+}
