@@ -15,32 +15,43 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const taskId = searchParams.get("taskId");
 
-    const query = `
+    let query = `
       SELECT
         task_key,
         user_key,
-        message,
+        attach_name,
+        attach_type,
         status,
-        date
+        date_attach,
+        project_name
       FROM task_attachment
-      ${taskId ? "WHERE task_key = ?" : ""}
     `;
+    const params = [];
 
-    const rows = await executeQuery(query, taskId ? [taskId] : []);
+    if (taskId) {
+      query += ` WHERE task_key = ? AND status = "1"`;
+      params.push(taskId);
+    } else {
+      query += ` WHERE status = "1"`;
+    }
+
+    const rows = await executeQuery(query, params);
 
     const reply = rows.map((r) => ({
       taskKey: r.task_key,
       userKey: r.user_key,
-      message: r.message,
+      attachName: r.attach_name,
+      attachType: r.attach_type,
       status: r.status,
-      date: r.date,
+      dateAttach: r.date_attach,
+      projectName: r.project_name,
     }));
 
     return NextResponse.json(reply);
   } catch (error) {
     console.error("API Error: ", error);
     return NextResponse.json(
-      { error: "Failed to create task" },
+      { error: "Failed to fetch attachments" },
       { status: 500 }
     );
   }

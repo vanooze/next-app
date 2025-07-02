@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || "super-secret-key");
+const secret = new TextEncoder().encode(
+  process.env.JWT_SECRET || "super-secret-key"
+);
 
 async function verifyToken(token: string) {
   try {
@@ -19,7 +21,7 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
 
   const isAuthPage = pathname === "/login" || pathname === "/register";
-  const isProtectedPage = pathname === "/" || pathname === "/accounts";
+  const isProtectedPage = pathname === "/";
 
   const user = token ? await verifyToken(token) : null;
 

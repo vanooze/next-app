@@ -1,55 +1,53 @@
-import { executeQuery } from "@/app/lib/eform";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 import { NextResponse } from "next/server";
+import { executeQuery } from "@/app/lib/eform";
 import { getUserFromToken } from "@/app/lib/auth";
 
 export async function POST(req) {
   try {
     const user = await getUserFromToken(req);
     if (!user || !user.department?.includes("PMO")) {
-      return NextResponse.json(
-        { error: "Unauthorized access" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const body = await req.json();
+    const formData = await req.formData();
 
-    const {
-      taskKey,
-      userKey,
-      attachName,
-      attachType,
-      status,
-      attachDate,
-      projectName,
-    } = body;
+    const taskKey = formData.get("taskKey")?.toString();
+    const userKey = formData.get("userKey")?.toString();
+    const status = formData.get("status")?.toString();
+    const attachDate = formData.get("attachDate")?.toString();
+    const projectName = formData.get("projectName")?.toString();
+    const file = formData.get("file");
 
-    const query = `INSERT INTO task_attachment (
-      task_key,
-      user_key,
-      attach_name,
-      attach_type,
-      status,
-      date_attach,
-      project_name
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    if (!file || !file.name || !projectName) {
+      return NextResponse.json(
+        { error: "Missing file or project name" },
+        { status: 400 }
+      );
+    }
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const uploadDir = path.join(
+      process.cwd(),
+      "public",
+      "uploads",
+      projectName
+    );
+    await mkdir(uploadDir, { recursive: true });
 
-    const result = await executeQuery(query, [
-      taskKey,
-      userKey,
-      attachName,
-      attachType,
-      status,
-      attachDate,
-      projectName,
-    ]);
+    const filePath = path.join(uploadDir, file.name);
+    await writeFile(filePath, buffer);
+
+    await executeQuery(
+      `INSERT INTO task_attachment (task_key, user_key, attach_name, attach_type, status, date_attach, project_name)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [taskKey, userKey, file.name, file.type, status, attachDate, projectName]
+    );
 
     return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error("Error creating attachment: ", err);
-    return NextResponse.json(
-      { success: false, error: "Failed to create attachment" },
-      { status: 500 }
-    );
+  } catch (error) {
+    console.error("Upload Error:", error);
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }

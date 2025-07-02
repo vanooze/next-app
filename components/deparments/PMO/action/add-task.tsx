@@ -51,7 +51,7 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
   const [dateEnd, setDateEnd] = useState<CalendarDate | null>(null);
   const [notes, setNotes] = useState<string>("");
   const [type, setType] = useState(null);
-  const [status, setStatus] = useState<number>(0);
+  const [status, setStatus] = useState<number>(1);
   const [pmoOfficer, setPmoOfficer] = useState<string>("");
   const [donePending, setDonePending] = useState<string>("");
   const [doneDate, setDoneDate] = useState<CalendarDate | null>(null);

@@ -19,125 +19,121 @@ export const selectStatus = [
 
 export const selectTMIG = [
   {
-    key: `Japitana, Christopher Villa`,
-    label: `Japitana, Christopher Villa`,
+    key: `CHRISTOPHER JAPITANA`,
+    label: `CHRISTOPHER JAPITANA`,
   },
   {
-    key: `Fabros, Richard Ellarma`,
-    label: `Fabros, Richard Ellarma`,
+    key: `RICHARD FABROS`,
+    label: `RICHARD FABROS`,
   },
   {
-    key: `Calaguas, Rickson Yumul`,
-    label: `Calaguas, Rickson Yumul`,
+    key: `RICKSON CALAGUAS`,
+    label: `RICKSON CALAGUAS`,
   },
   {
-    key: `Santiago, Ferdinand Michael Espinonsa`,
-    label: `Santiago, Ferdinand Michael Espinonsa`,
+    key: `FERDINAND SANTIAGO`,
+    label: `FERDINAND SANTIAGO`,
   },
   {
-    key: `Bumaat, Mark Anthony Tangunan`,
-    label: `Bumaat, Mark Anthony Tangunan`,
+    key: `MARK ANTHONY BUMAAT`,
+    label: `MARK ANTHONY BUMAAT`,
   },
   {
-    key: `Ducut , Lawrence Gutierrez`,
-    label: `Ducut , Lawrence Gutierrez`,
+    key: `LAWRENCE DUCUT`,
+    label: `LAWRENCE DUCUT`,
   },
   {
-    key: `Punay, Angelito Jr. Obligado`,
-    label: `Punay, Angelito Jr. Obligado`,
+    key: `ANGELITO PUNAY`,
+    label: `ANGELITO PUNAY`,
   },
   {
-    key: `Carig, Regie Bazar`,
-    label: `Carig, Regie Bazar`,
+    key: `Regie B. Carig`,
+    label: `Regie B. Carig`,
   },
   {
-    key: `Tintero, Vhal Joshua Robles`,
-    label: `Tintero, Vhal Joshua Robles`,
+    key: `Vhal Joshua Tintero`,
+    label: `Vhal Joshua Tintero`,
   },
   {
-    key: `Marfil, John Quingquing`,
-    label: `Marfil, John Quingquing`,
+    key: `John Q. Marfil`,
+    label: `John Q. Marfil`,
   },
   {
-    key: `David, Jomar Anover`,
-    label: `David, Jomar Anover`,
+    key: `Jomar A. David`,
+    label: `Jomar A. David`,
   },
   {
-    key: `Lusterio, Julius Dinglasa`,
-    label: `Lusterio, Julius Dinglasa`,
+    key: `Julius D. Lusterio`,
+    label: `Julius D. Lusterio`,
   },
   {
-    key: `Tamo, Mark Louie Fulgencio`,
-    label: `Tamo, Mark Louie Fulgencio`,
+    key: `Mark Louie F. Tamo`,
+    label: `Mark Louie F. Tamo`,
   },
   {
-    key: `Unida, Joshua Venhur Malayo`,
-    label: `Unida, Joshua Venhur Malayo`,
+    key: `Joshua Venhur M. Unida`,
+    label: `Joshua Venhur M. Unida`,
   },
 ];
 
 export const selectSales = [
   {
-    key: `Bautista, Kenneth Ortega`,
-    label: `Bautista, Kenneth Ortega`,
+    key: `KENNETH BAUTISTA`,
+    label: `KENNETH BAUTISTA`,
   },
   {
-    key: `Cruz, Rian Ramos`,
-    label: `Cruz, Rian Ramos`,
+    key: `Rian Cruz`,
+    label: `Rian Cruz`,
   },
   {
-    key: `Garcia, Genevel Valente`,
-    label: `Garcia, Genevel Valente`,
+    key: `Genevel Garcia`,
+    label: `Genevel Garcia`,
   },
   {
-    key: `Robles, Alliah Pearl Cabueños`,
-    label: `Robles, Alliah Pearl Cabueños`,
+    key: `Alliah Pearl Robles`,
+    label: `Alliah Pearl Robles`,
   },
 ];
 
 export const selectDesign = [
   {
-    key: `Camero, Jan Ronnell Villa`,
-    label: `Camero, Jan Ronnell Villa`,
+    key: `Jan Ronnell V. Camero`,
+    label: `Jan Ronnell V. Camero`,
   },
   {
-    key: `Ardinel, Jilian Mark Halili`,
-    label: `Ardinel, Jilian Mark Halili`,
+    key: `Jilian Mark H. Ardinel`,
+    label: `Jilian Mark H. Ardinel`,
   },
   {
-    key: `Gigante, Marcial III Abaya`,
-    label: `Gigante, Marcial III Abaya`,
+    key: `Marcial A. Gigante III`,
+    label: `Marcial A. Gigante III`,
   },
   {
-    key: `Cola, John Eden Ross Villena`,
-    label: `Cola, John Eden Ross Villena`,
+    key: `John Eden Ross V. Cola`,
+    label: `John Eden Ross V. Cola`,
   },
   {
-    key: `Topacio, Billy Joel Villare`,
-    label: `Topacio, Billy Joel Villare`,
+    key: `BILLY JOEL TOPACIO`,
+    label: `BILLY JOEL TOPACIO`,
   },
   {
-    key: `Estacio, Marvinne Echevarria`,
-    label: `Estacio, Marvinne Echevarria`,
+    key: `MARVINNE ESTACIO`,
+    label: `MARVINNE ESTACIO`,
   },
 ];
 
 export const selectPmo = [
   {
-    key: `Calimutan, Joshua Alvarez`,
-    label: `Calimutan, Joshua Alvarez`,
+    key: `Joshua A. Calimutan`,
+    label: `Joshua A. Calimutan`,
   },
   {
-    key: `Raymundo, Ryan Joseph De Luna`,
-    label: `Raymundo, Ryan Joseph De Luna`,
+    key: `Ryan Joseph DL. Raymundo`,
+    label: `RRyan Joseph DL. Raymundo`,
   },
   {
-    key: `Pineda, Noel De Las Alas`,
-    label: `Pineda, Noel De Las Alas`,
-  },
-  {
-    key: `Villar, Noriel Bastasa`,
-    label: `Villar, Noriel Bastasa`,
+    key: `NORIEL VILLAR`,
+    label: `NORIEL VILLAR`,
   },
 ];
 

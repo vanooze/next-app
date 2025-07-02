@@ -12,6 +12,7 @@ import {
   Textarea,
   Card,
   ScrollShadow,
+  Spinner,
 } from "@heroui/react";
 import {
   CalendarDate,
@@ -23,6 +24,7 @@ import { DropZone, DropItem, FileTrigger } from "react-aria-components";
 import { Provider } from "react-aria-components";
 import useSWR, { mutate } from "swr";
 import { useUserContext } from "@/components/layout/UserContext";
+import { ExportIcon } from "@/components/icons/accounts/export-icon";
 
 interface EditTasksModalProps {
   isOpen: boolean;
@@ -51,8 +53,6 @@ export const EditTaskModal = ({
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
-  let defaultDate = today(getLocalTimeZone());
-
   const pad = (n: number) => n.toString().padStart(2, "0");
   const now = new Date();
   const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -61,6 +61,7 @@ export const EditTaskModal = ({
     const isoString = normalizeToISO(input);
     return parseDate(isoString);
   };
+
   const normalizeToISO = (input: string): string => {
     if (!input) return "";
 
@@ -89,14 +90,24 @@ export const EditTaskModal = ({
 
     return cleanDate;
   };
+
   const dateSentStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(
     now.getDate()
   )} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-  const { data, mutate: mutateReplies } = useSWR(
+
+  const { data: repliesData, mutate: mutateReplies } = useSWR(
     task ? `/api/department/PMO/project_tasks/message?taskId=${taskId}` : null,
     fetcher
   );
-  const replies: any[] = Array.isArray(data) ? data : [];
+  const replies: any[] = Array.isArray(repliesData) ? repliesData : [];
+
+  const { data: attachmentsData, mutate: mutateAttachments } = useSWR(
+    taskId
+      ? `/api/department/PMO/project_tasks/attachment?taskId=${taskId}`
+      : null,
+    fetcher
+  );
+
   const formatToDateTime = (dateStr: string): string => {
     const date = new Date(dateStr);
     const pad = (n: number) => n.toString().padStart(2, "0");
@@ -183,27 +194,33 @@ export const EditTaskModal = ({
     const status = "1";
 
     for (const file of files) {
-      const formData = {
-        taskKey: taskId,
-        userKey: user?.name ?? "",
-        attachName: file.name,
-        attachType: file.type,
-        status,
-        attachDate,
-        projectName: project,
-      };
+      const formData = new FormData();
+      formData.append("taskKey", taskId.toString());
+      formData.append("userKey", user?.name ?? "");
+      formData.append("status", status);
+      formData.append("attachDate", attachDate);
+      formData.append("projectName", project.toString());
+      formData.append("file", file);
 
       await fetch("/api/department/PMO/project_tasks/create/attachment", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+        body: formData,
       });
     }
 
     setIsUploading(false);
     setFiles([]);
+  };
+
+  const handleDownload = (project: string, file: string) => {
+    const link = document.createElement("a");
+    link.href = `/api/department/PMO/project_tasks/attachment/download?project=${encodeURIComponent(
+      project
+    )}&file=${encodeURIComponent(file)}`;
+    link.download = file;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -236,7 +253,7 @@ export const EditTaskModal = ({
             <Divider />
             <ScrollShadow hideScrollBar className="w-full max-h-96">
               {replies.length === 0 ? (
-                <Card className="mt-4 p-4">
+                <Card className="m-4 p-4">
                   <p className="text-sm text-default-500">No replies yet.</p>
                 </Card>
               ) : (
@@ -297,6 +314,37 @@ export const EditTaskModal = ({
                     {isUploading ? "Uploading..." : "Upload Files"}
                   </Button>
                 </div>
+              )}
+            </div>
+            <div className="mt-4">
+              <p className="font-semibold text-sm mb-2">Attachments:</p>
+              {attachmentsData?.length > 0 ? (
+                attachmentsData.map((attachment: any, index: number) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between border rounded px-3 py-2 mb-2"
+                  >
+                    <span className="text-sm text-gray-700">
+                      {attachment.attachName}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="flex items-center gap-1"
+                      onClick={() =>
+                        handleDownload(
+                          attachment.projectName,
+                          attachment.attachName
+                        )
+                      }
+                    >
+                      <ExportIcon />
+                      Download
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">No attachments yet.</p>
               )}
             </div>
           </div>

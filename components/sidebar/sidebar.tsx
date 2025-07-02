@@ -47,6 +47,12 @@ export const SidebarWrapper = () => {
                 icon={<AccountsIcon />}
                 href="tasks"
               />
+              <SidebarItem
+                isActive={pathname === "/project"}
+                title="Project Monitoring"
+                icon={<ReportsIcon />}
+                href="project"
+              />
               {/* <CollapseItems
                 icon={<BalanceIcon />}
                 items={["TMIG", "IT/DT", "Marketing"]}
