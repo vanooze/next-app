@@ -31,7 +31,6 @@ import {
 } from "@/helpers/data";
 import type { ProjectTask } from "@/helpers/db";
 import { ProjectMonitoring } from "@/helpers/db";
-import { EditTaskModal } from "../tasks/tasks";
 import useSWR from "swr";
 
 interface AddTasksProps {
@@ -326,13 +325,6 @@ export const AddTask = ({ isOpen, onClose, task }: AddTasksProps) => {
             )}
           </ModalContent>
         </Modal>
-
-        <EditTaskModal
-          isOpen={editTasksOpen}
-          onClose={() => setEditTasksOpen(false)}
-          task={selectedTask}
-          project={task?.customer ?? ""}
-        />
       </>
     </div>
   );

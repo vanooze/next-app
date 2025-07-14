@@ -70,3 +70,58 @@ export interface ProjectTask {
   doneDate: string | null;
   positionOrder: string;
 }
+
+export const ProjectTaskColumns = [
+  { name: "SO ID", uid: "soID" },
+  { name: "Task Todo", uid: "taskTodo" },
+  { name: "Date Filled", uid: "dateFilled" },
+  { name: "Date Start", uid: "dateStart" },
+  { name: "Date End", uid: "dateEnd" },
+  { name: "Notes", uid: "notes" },
+  { name: "PMO Officer", uid: "pmoOfficer" },
+  { name: "Done Date", uid: "doneDate" },
+];
+
+export const soColumn = [
+  { name: "project Id", uid: "projectId" },
+  { name: "project Name", uid: "projectName" },
+  { name: "project Id", uid: "projectId" },
+  { name: "assigned Personnel", uid: "assignedPersonnel" },
+  { name: "description", uid: "description" },
+  { name: "Attachment", uid: "attachmentName" },
+  { name: "date", uid: "date" },
+];
+
+export const SOColumn = [
+  { name: "Type", uid: "type" },
+  { name: "ID", uid: "projectId" },
+  { name: "Project Name", uid: "projectName" },
+  { name: "Personnel", uid: "assignedPersonnel" },
+  { name: "Description", uid: "description" },
+  { name: "Attachment", uid: "attachmentName" },
+  { name: "Date", uid: "date" },
+];
+
+// ------------------------- PMO TASKS -------------------------
+
+export interface PMOTasks {
+  id: number;
+  clientName: string;
+  taskDesc: string;
+  dateStart: string;
+  dateEnd: string;
+  personnel: string;
+  dateFinished: string | null;
+  status: string;
+}
+
+export const PMOTasksColumn = [
+  { name: "Status", uid: "status" },
+  { name: "Client Name", uid: "clientName" },
+  { name: "Description", uid: "taskDesc" },
+  { name: "Date Start", uid: "dateStart" },
+  { name: "Date End", uid: "dateEnd" },
+  { name: "Personnel", uid: "personnel" },
+  { name: "Date Finished", uid: "dateFinished" },
+  { name: "Actions", uid: "actions" },
+];

@@ -12,24 +12,34 @@ export async function GET(req) {
       );
     }
 
-    const query = await executeQuery(`
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    const rows = await executeQuery(
+      `
       SELECT
-       id,
-       client_name,
-       task_desc,
-       date_received,
-       personnel,
-       date,
-       status
-       FROM pmo_activity
-    `);
+        project_id,
+        project_name,
+        assigned_po,
+        description,      
+        attachment_name,
+        attachment_type,
+        date,
+        status
+      FROM po
+      WHERE status = "1"
+      ${id ? "AND project_Id = ?" : ""}
+    `,
+      id ? [id] : []
+    );
 
     const tasks = rows.map((r) => ({
-      id: r.id,
-      clientName: r.client_name,
-      taskDesc: r.task_desc,
-      dateReceived: r.date_received,
-      personnel: r.personnel,
+      projectId: r.project_id,
+      projectName: r.project_name,
+      assignedPo: r.assigned_po,
+      description: r.description,
+      attachmentName: r.attachment_name,
+      attachmentType: r.attachment_type,
       date: r.date,
       status: r.status,
     }));

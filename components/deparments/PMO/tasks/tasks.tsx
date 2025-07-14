@@ -1,355 +1,121 @@
-import React, { useEffect, useState } from "react";
-import { ProjectTask } from "@/helpers/db";
-import { formatDatetoStr } from "@/helpers/formatDate";
-import {
-  Button,
-  Divider,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
-  Code,
-  Textarea,
-  Card,
-  ScrollShadow,
-  Spinner,
-} from "@heroui/react";
-import {
-  CalendarDate,
-  getLocalTimeZone,
-  today,
-  parseDate,
-} from "@internationalized/date";
-import { DropZone, DropItem, FileTrigger } from "react-aria-components";
-import { Provider } from "react-aria-components";
-import useSWR, { mutate } from "swr";
-import { useUserContext } from "@/components/layout/UserContext";
-import { ExportIcon } from "@/components/icons/accounts/export-icon";
+"use client";
+import { Button, Input, Tooltip } from "@heroui/react";
+import Link from "next/link";
+import React, { useState, useEffect, useRef } from "react";
+import useSWR from "swr";
+import { fetcher } from "@/app/lib/fetcher";
+import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
+import { UsersIcon } from "@/components/icons/breadcrumb/users-icon";
+import { PMOTableWrapper } from "@/components/deparments/PMO/tasks/table/table";
+import { useUserContext } from "../../../layout/UserContext";
+import { PMOTasks } from "../../../../helpers/db";
+import { AddTask } from "@/components/deparments/PMO/tasks/action/add-task";
+import { SearchIcon } from "../../../icons/searchicon";
+import { EyeIcon } from "../../../icons/table/eye-icon";
 
-interface EditTasksModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  task: ProjectTask | null;
-  project: string;
-}
+export const Tasks = () => {
+  const { user } = useUserContext();
+  const [filterValue, setFilterValue] = useState("");
+  const [debouncedFilterValue, setDebouncedFilterValue] = useState(filterValue);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
-export const EditTaskModal = ({
-  isOpen,
-  onClose,
-  task,
-  project,
-}: EditTasksModalProps) => {
-  const { user, loading } = useUserContext();
-  const [taskId, setTaskId] = useState(task?.taskKey ?? "");
-  const [taskTodo, setTasksTodo] = useState(task?.taskTodo ?? "");
-  const [dateStart, setDateStart] = useState<CalendarDate | null>(null);
-  const [dateEnd, setDateEnd] = useState<CalendarDate | null>(null);
-  const [dateFilled, setDatefilled] = useState<CalendarDate | null>(null);
-  const [notes, setNotes] = useState(task?.notes ?? "");
-  //  ------------ TASK MESSAGE ------------
-  const [message, setMessage] = useState<string>("");
-  const [status, setStatus] = useState<string>("1");
-  // ------------ TASK ATTACHEMENT ------------
-  const [files, setFiles] = useState<File[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+  const {
+    data: tasks = [],
+    error,
+    isLoading,
+  } = useSWR<PMOTasks[]>("/api/department/PMO/tasks", fetcher, {
+    refreshInterval: 10000, // every 10 seconds
+    revalidateOnFocus: true, // optional but useful
+  });
 
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  const now = new Date();
-  const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
-  const safeParseDate = (input: string): CalendarDate => {
-    const isoString = normalizeToISO(input);
-    return parseDate(isoString);
-  };
-
-  const normalizeToISO = (input: string): string => {
-    if (!input) return "";
-
-    const cleanDate = input.split("T")[0].split(" ")[0];
-    const parts = cleanDate.split(/[-\/]/);
-    if (parts.length !== 3) return input;
-    if (Number(parts[0]) > 31 || Number(parts[1]) > 12) {
-      return cleanDate;
-    }
-    if (
-      Number(parts[0]) <= 12 &&
-      Number(parts[1]) <= 31 &&
-      Number(parts[2]) > 31
-    ) {
-      const [month, day, year] = parts;
-      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-    }
-    if (
-      Number(parts[1]) <= 12 &&
-      Number(parts[0]) <= 31 &&
-      Number(parts[2]) > 31
-    ) {
-      const [day, month, year] = parts;
-      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-    }
-
-    return cleanDate;
-  };
-
-  const dateSentStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(
-    now.getDate()
-  )} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-
-  const { data: repliesData, mutate: mutateReplies } = useSWR(
-    task ? `/api/department/PMO/project_tasks/message?taskId=${taskId}` : null,
-    fetcher
-  );
-  const replies: any[] = Array.isArray(repliesData) ? repliesData : [];
-
-  const { data: attachmentsData, mutate: mutateAttachments } = useSWR(
-    taskId
-      ? `/api/department/PMO/project_tasks/attachment?taskId=${taskId}`
-      : null,
-    fetcher
-  );
-
-  const formatToDateTime = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    const pad = (n: number) => n.toString().padStart(2, "0");
-
-    const yyyy = date.getFullYear();
-    const mm = pad(date.getMonth() + 1);
-    const dd = pad(date.getDate());
-    const hh = pad(date.getHours());
-    const min = pad(date.getMinutes());
-
-    return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
-  };
-
-  const handleAddMessage = async (onClose: () => void) => {
-    const payload = {
-      taskKey: taskId,
-      userKey: user?.name ?? "",
-      message,
-      status,
-      date: dateSentStr,
-    };
-
-    try {
-      const res = await fetch(
-        "/api/department/PMO/project_tasks/create/message",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error("Failed to create a Message");
-      }
-
-      const data = await res.json();
-
-      await mutateReplies();
-    } catch (err) {
-      console.error("Create Message Error:", err);
-    }
-  };
   useEffect(() => {
-    if (task) {
-      setTaskId(task.taskKey);
-      setTasksTodo(task.taskTodo);
-      setNotes(task.notes);
-      setDateStart(
-        typeof task.dateStart === "string"
-          ? safeParseDate(task.dateStart)
-          : task.dateStart ?? null
-      );
-      setDateEnd(
-        typeof task.dateEnd === "string"
-          ? safeParseDate(task.dateEnd)
-          : task.dateEnd ?? null
-      );
-      setDatefilled(
-        typeof task.dateFilled === "string"
-          ? safeParseDate(task.dateFilled)
-          : task.dateFilled ?? null
-      );
-    }
-  }, [task]);
+    const handler = setTimeout(() => {
+      setDebouncedFilterValue(filterValue);
+    }, 300);
 
-  const handleDrop = async (e: { items: DropItem[] }) => {
-    const newFiles: File[] = [];
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [filterValue]);
 
-    for (const item of e.items) {
-      if (item.kind === "file") {
-        const file = await item.getFile();
-        newFiles.push(file);
-      }
-    }
+  const filteredTasks = debouncedFilterValue
+    ? tasks.filter((task) => {
+        const query = debouncedFilterValue.toLowerCase();
+        return (
+          task.clientName?.toLowerCase().includes(query) ||
+          task.personnel?.toLowerCase().includes(query)
+        );
+      })
+    : tasks;
 
-    setFiles((prev) => [...prev, ...newFiles]);
-  };
-
-  const uploadFiles = async () => {
-    setIsUploading(true);
-
-    const attachDate = new Date().toISOString().slice(0, 19).replace("T", " ");
-    const status = "1";
-
-    for (const file of files) {
-      const formData = new FormData();
-      formData.append("taskKey", taskId.toString());
-      formData.append("userKey", user?.name ?? "");
-      formData.append("status", status);
-      formData.append("attachDate", attachDate);
-      formData.append("projectName", project.toString());
-      formData.append("file", file);
-
-      await fetch("/api/department/PMO/project_tasks/create/attachment", {
-        method: "POST",
-        body: formData,
-      });
-    }
-
-    setIsUploading(false);
-    setFiles([]);
-  };
-
-  const handleDownload = (project: string, file: string) => {
-    const link = document.createElement("a");
-    link.href = `/api/department/PMO/project_tasks/attachment/download?project=${encodeURIComponent(
-      project
-    )}&file=${encodeURIComponent(file)}`;
-    link.download = file;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsFullScreen(false);
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, []);
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={onClose} size="5xl">
-      <ModalContent>
-        <ModalHeader className="grid grid-cols-4 gap-1">
-          <span className="col-span-4">{taskTodo}</span>
-          <span className="col-span-4">
-            {dateStart ? formatDatetoStr(dateStart) : null} :{" "}
-            {dateEnd ? formatDatetoStr(dateEnd) : null}
-          </span>
-          <Code size="sm">{notes}</Code>
-        </ModalHeader>
-        <ModalBody className="grid grid-cols-2 gap-4">
-          <div>
-            <Textarea
-              className="max-w-lg"
-              label="Task Details"
-              placeholder="Enter the details here..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-            <Button
-              color="primary"
-              className="my-4"
-              onPress={() => handleAddMessage(onClose)}
-            >
-              Send
-            </Button>
-            <Divider />
-            <ScrollShadow hideScrollBar className="w-full max-h-96">
-              {replies.length === 0 ? (
-                <Card className="m-4 p-4">
-                  <p className="text-sm text-default-500">No replies yet.</p>
-                </Card>
-              ) : (
-                replies.map((reply, index) => (
-                  <Card key={index} className="mt-4 p-4">
-                    <div className="text-sm font-semibold text-default-800">
-                      {reply.userKey}
-                    </div>
-                    <div className="text-sm text-default-700 mt-1">
-                      {reply.message}
-                    </div>
-                    <div className="text-xs text-default-400 mt-2">
-                      {reply.date ? formatToDateTime(reply.date) : "No date"}
-                    </div>
-                  </Card>
-                ))
-              )}
-            </ScrollShadow>
-          </div>
-          <div className="flex gap-4">
-            <Divider orientation="vertical" />
-            <div className="border border-dashed rounded p-4 mt-4">
-              <DropZone
-                onDrop={handleDrop}
-                className="p-6 border border-gray-300 rounded text-center"
-              >
-                <p className="text-sm text-gray-600">Drag & drop files here</p>
-                <FileTrigger
-                  allowsMultiple
-                  acceptedFileTypes={[
-                    "image/png",
-                    "application/pdf",
-                    "image/jpeg",
-                    "text/csv",
-                  ]}
-                  onSelect={(files) => {
-                    if (files) {
-                      setFiles((prev) => [...prev, ...Array.from(files)]);
-                    }
-                  }}
-                ></FileTrigger>
-              </DropZone>
+    <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
+      <ul className="flex">
+        <li className="flex gap-2">
+          <HouseIcon />
+          <Link href={"/"}>
+            <span>Home</span>
+          </Link>
+          <span> / </span>{" "}
+        </li>
 
-              {files.length > 0 && (
-                <div className="mt-4 space-y-1">
-                  <p className="font-semibold text-sm">Files to Upload:</p>
-                  {files.map((file, i) => (
-                    <div key={i} className="text-sm text-gray-700">
-                      {file.name}
-                    </div>
-                  ))}
+        <li className="flex gap-2">
+          <UsersIcon />
+          <span>Task</span>
+          <span> / </span>{" "}
+        </li>
+        <li className="flex gap-2">
+          <span>List</span>
+        </li>
+      </ul>
 
-                  <Button
-                    onClick={uploadFiles}
-                    disabled={isUploading}
-                    className="mt-2 px-4 py-1 bg-blue-600 text-white rounded disabled:opacity-50"
-                  >
-                    {isUploading ? "Uploading..." : "Upload Files"}
-                  </Button>
-                </div>
-              )}
-            </div>
-            <div className="mt-4">
-              <p className="font-semibold text-sm mb-2">Attachments:</p>
-              {attachmentsData?.length > 0 ? (
-                attachmentsData.map((attachment: any, index: number) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between border rounded px-3 py-2 mb-2"
-                  >
-                    <span className="text-sm text-gray-700">
-                      {attachment.attachName}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="flex items-center gap-1"
-                      onClick={() =>
-                        handleDownload(
-                          attachment.projectName,
-                          attachment.attachName
-                        )
-                      }
-                    >
-                      <ExportIcon />
-                      Download
-                    </Button>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-gray-500">No attachments yet.</p>
-              )}
-            </div>
+      <h3 className="text-xl font-semibold">All Tasks</h3>
+      <div className="flex justify-between flex-wrap gap-4 items-center">
+        <div className="flex items-center gap-3 flex-wrap md:flex-nowrap">
+          <Input
+            isClearable
+            startContent={<SearchIcon />}
+            classNames={{
+              input: "w-full",
+              mainWrapper: "w-full",
+            }}
+            placeholder="Search Client/Sales Name"
+            value={filterValue}
+            onValueChange={setFilterValue}
+          />
+          <div className="flex items-center ">
+            <Tooltip content="View in fullscreen" color="secondary">
+              <button onClick={() => setIsFullScreen((prev) => !prev)}>
+                <EyeIcon size={20} fill="#979797" />
+              </button>
+            </Tooltip>
           </div>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+        </div>
+        <div className="flex flex-row gap-3.5 flex-wrap">
+          <AddTask />
+        </div>
+      </div>
+      <div
+        className={`${
+          isFullScreen
+            ? "fixed inset-0 z-[9999] bg-default p-4 overflow-auto shadow-xl rounded-none"
+            : "max-w-[95rem] mx-auto w-full"
+        } transition-all duration-300`}
+      >
+        <PMOTableWrapper
+          tasks={filteredTasks}
+          loading={isLoading}
+          fullScreen={isFullScreen}
+        />
+      </div>
+    </div>
   );
 };

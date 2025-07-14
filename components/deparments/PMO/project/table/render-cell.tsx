@@ -1,10 +1,10 @@
 import { Tooltip, Chip } from "@heroui/react";
 import React from "react";
-import { DeleteIcon } from "@/components/icons/table/delete-icon";
 import { EditIcon } from "@/components/icons/table/edit-icon";
 import { ProjectMonitoring } from "@/helpers/db";
 import { displayValue } from "@/helpers/displayValue";
 import { formatDateMMDDYYYY } from "@/helpers/formatDate";
+import { useRouter } from "next/navigation";
 
 interface Props {
   Tasks: ProjectMonitoring;
@@ -14,6 +14,8 @@ interface Props {
 
 export const RenderCell = ({ Tasks, columnKey, handleAddTask }: Props) => {
   const cellValue = Tasks[columnKey as keyof ProjectMonitoring];
+  const router = useRouter();
+
   switch (columnKey) {
     case "soNumber":
       return <span>{displayValue(cellValue)}</span>;
@@ -47,7 +49,7 @@ export const RenderCell = ({ Tasks, columnKey, handleAddTask }: Props) => {
           <div className="flex items-center gap-4 ">
             <div>
               <Tooltip content="Edit table" color="secondary">
-                <button onClick={() => handleAddTask(Tasks)}>
+                <button onClick={() => router.push(`/project/${Tasks.idkey}`)}>
                   <EditIcon size={20} fill="#979797" />
                 </button>
               </Tooltip>

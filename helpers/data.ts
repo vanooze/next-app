@@ -129,11 +129,22 @@ export const selectPmo = [
   },
   {
     key: `Ryan Joseph DL. Raymundo`,
-    label: `RRyan Joseph DL. Raymundo`,
+    label: `Ryan Joseph DL. Raymundo`,
   },
   {
     key: `NORIEL VILLAR`,
     label: `NORIEL VILLAR`,
+  },
+];
+
+export const selectFiltiredPmo = [
+  {
+    key: `Joshua A. Calimutan`,
+    label: `Joshua A. Calimutan`,
+  },
+  {
+    key: `Ryan Joseph DL. Raymundo`,
+    label: `Ryan Joseph DL. Raymundo`,
   },
 ];
 

@@ -6,13 +6,13 @@ import useSWR from "swr";
 import { fetcher } from "@/app/lib/fetcher";
 import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
 import { UsersIcon } from "@/components/icons/breadcrumb/users-icon";
-import { TableWrapper } from "@/components/deparments/PMO/table/table";
+import { TableWrapper } from "@/components/deparments/PMO/project/table/table";
 import { useUserContext } from "@/components/layout/UserContext";
 import { ProjectMonitoring } from "@/helpers/db";
 import { SearchIcon } from "@/components/icons/searchicon";
 import { EyeIcon } from "@/components/icons/table/eye-icon";
 
-export const Tasks = () => {
+export const Project = () => {
   const { user } = useUserContext();
   const [filterValue, setFilterValue] = useState("");
   const [debouncedFilterValue, setDebouncedFilterValue] = useState(filterValue);
@@ -22,7 +22,7 @@ export const Tasks = () => {
     data: tasks = [],
     error,
     isLoading,
-  } = useSWR<ProjectMonitoring[]>("/api/department/PMO/tasks", fetcher, {
+  } = useSWR<ProjectMonitoring[]>("/api/department/PMO/project", fetcher, {
     refreshInterval: 10000, // every 10 seconds
     revalidateOnFocus: true, // optional but useful
   });

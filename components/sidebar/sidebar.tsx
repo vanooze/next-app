@@ -24,11 +24,7 @@ export const SidebarWrapper = () => {
       {collapsed ? (
         <div className={Sidebar.Overlay()} onClick={setCollapsed} />
       ) : null}
-      <div
-        className={Sidebar({
-          collapsed: collapsed,
-        })}
-      >
+      <div className={`${Sidebar({ collapsed })} overflow-x-hidden`}>
         <div className={Sidebar.Header()}>
           <Company />
         </div>
@@ -45,13 +41,13 @@ export const SidebarWrapper = () => {
                 isActive={pathname === "/tasks"}
                 title="Task Designation"
                 icon={<AccountsIcon />}
-                href="tasks"
+                href="/tasks"
               />
               <SidebarItem
                 isActive={pathname === "/project"}
                 title="Project Monitoring"
                 icon={<ReportsIcon />}
-                href="project"
+                href="/project"
               />
               {/* <CollapseItems
                 icon={<BalanceIcon />}

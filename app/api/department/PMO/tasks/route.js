@@ -1,4 +1,4 @@
-import { executeQuery } from "@/app/lib/eform";
+import { executeQuery } from "@/app/lib/db";
 import { NextResponse } from "next/server";
 import { getUserFromToken } from "@/app/lib/auth";
 
@@ -13,33 +13,25 @@ export async function GET(req) {
     }
     const rows = await executeQuery(`
   SELECT
-    idkey, 
     id,
-    ctrlnmbr,
-    customer,
-    contactperson,
-    sysconsultant,
-    date,
-    CASE 
-        WHEN (accountingapprovedbystatus = 1 
-        AND accountingapprovedbystatus IS NOT NULL) 
-        AND (accountingapprovedby2status = 1 
-        AND accountingapprovedby2status IS NOT NULL)
-        THEN 'Approved'
-        ELSE 'Pending'
-    END AS status
-  FROM so
-  WHERE project = 'PROJECT'
+    client_name,
+    task_desc,
+    date_start,
+    date_end,
+    personnel,
+    date_finished,
+    status
+  FROM pmo_activity
 `);
 
     const tasks = rows.map((r) => ({
       id: r.id,
-      idkey: r.idkey,
-      soNumber: r.ctrlnmbr,
-      customer: r.customer,
-      contactPerson: r.contactperson,
-      sales: r.sysconsultant,
-      date: r.date,
+      clientName: r.client_name,
+      taskDesc: r.task_desc,
+      dateStart: r.date_start,
+      dateEnd: r.date_end,
+      personnel: r.personnel,
+      dateFinished: r.date_finished,
       status: r.status,
     }));
     return Response.json(tasks);
