@@ -5,8 +5,10 @@
 
 - Dark Mode Support
 - Full Responsive
+- Assigned Per Department
 - Home Page with Charts
-- Accounts Page
+- Task Designation Page
+- Project Monitoring
 - More pages coming soon...
 
 ```
