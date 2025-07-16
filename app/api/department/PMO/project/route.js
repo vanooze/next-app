@@ -25,6 +25,7 @@ export async function GET(req) {
         contactperson,
         sysconsultant,
         date,
+        access,
         CASE 
             WHEN (accountingapprovedbystatus = 1 
             AND accountingapprovedbystatus IS NOT NULL) 
@@ -49,6 +50,7 @@ export async function GET(req) {
       sales: r.sysconsultant,
       date: r.date,
       status: r.status,
+      access: r.access,
     }));
 
     return NextResponse.json(id ? tasks[0] : tasks);

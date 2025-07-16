@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardFooter,
   Image,
+  Spinner,
 } from "@heroui/react";
 import useSWR from "swr";
 import { DropZone, DropItem, FileTrigger } from "react-aria-components";
@@ -19,7 +20,7 @@ import { selectSales, selectPmo } from "@/helpers/data";
 import { ProjectMonitoring } from "@/helpers/db";
 import { useUserContext } from "@/components/layout/UserContext";
 
-interface SOProjectOrderProps {
+interface PreProjectProps {
   project: ProjectMonitoring | null;
 }
 
@@ -29,13 +30,14 @@ const fetcher = async (url: string) => {
   return Array.isArray(data) ? data : [data]; // Ensure array format
 };
 
-export default function SOProjectOrder({ project }: SOProjectOrderProps) {
+export default function PrePorjectAgreement({ project }: PreProjectProps) {
   const { user } = useUserContext();
   const [projectId, setProjectId] = useState<number | null>(null);
   const [projectName, setProjectName] = useState("");
-  const [assignedPersonnel, setAssignedPersonnel] = useState("");
-  const [details, setDetails] = useState("");
+  const [assignedPersonnel, setassignedPersonnel] = useState("");
+  const [PODetails, setPODetails] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [isPOLoading, setIsPOLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const headingClasses =
     "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
@@ -45,6 +47,37 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
       setProjectName(project.customer);
     }
   }, [project]);
+
+  useEffect(() => {
+    const fetchassignedPersonnel = async () => {
+      if (!projectId) return;
+      setIsPOLoading(true);
+      try {
+        const res = await fetch(
+          `/api/department/PMO/project_tasks/documentation/pre_project_agreement/personnel/get?projectId=${projectId}`
+        );
+        const data = await res.json();
+        if (data.assignedPersonnel) {
+          setassignedPersonnel(data.assignedPersonnel);
+        }
+      } catch (err) {
+        console.error("Failed to fetch assigned TOR", err);
+      } finally {
+        setIsPOLoading(false);
+      }
+    };
+
+    fetchassignedPersonnel();
+  }, [projectId]);
+
+  const canUpload =
+    user?.name === assignedPersonnel ||
+    user?.designation.includes("PMO TL") ||
+    user?.designation.includes("DOCUMENT CONTROLLER");
+
+  const canAssign =
+    user?.designation.includes("PMO TL") ||
+    user?.designation.includes("DOCUMENT CONTROLLER");
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/documentation/pre_project_agreement?id=${projectId}`
@@ -82,7 +115,7 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
         formData.append("projectId", projectId.toString());
         formData.append("projectName", projectName || "null");
         formData.append("assignedPersonnel", assignedPersonnel || "null");
-        formData.append("description", details || "null");
+        formData.append("description", PODetails || "null");
         formData.append("status", status);
         formData.append("attachDate", attachDate);
         formData.append("file", file);
@@ -101,8 +134,8 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
 
       // Reset form
       setFiles([]);
-      setAssignedPersonnel("");
-      setDetails("");
+      setassignedPersonnel("");
+      setPODetails("");
       alert("Submitted successfully!");
       mutate();
     } catch (err) {
@@ -119,106 +152,156 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
         Assign Pre Project Agreement to:
       </h1>
 
-      <Select
-        className="max-w-xs"
-        label="Designate  Pre Project Agreement to:"
-        variant="bordered"
-        items={selectSales}
-        scrollShadowProps={{ isEnabled: false }}
-        selectedKeys={new Set([assignedPersonnel])}
-        onSelectionChange={(keys) => {
-          const selected = Array.from(keys)[0];
-          if (typeof selected === "string") setAssignedPersonnel(selected);
-        }}
-      >
-        <SelectSection classNames={{ heading: headingClasses }} title="Sales">
-          {selectSales.map((item) => (
-            <SelectItem key={item.key}>{item.label}</SelectItem>
-          ))}
-        </SelectSection>
-        <SelectSection classNames={{ heading: headingClasses }} title="PMO">
-          {selectPmo.map((item) => (
-            <SelectItem key={item.key}>{item.label}</SelectItem>
-          ))}
-        </SelectSection>
-      </Select>
+      {isPOLoading ? (
+        <Spinner
+          classNames={{ label: "text-foreground mt-4" }}
+          label="loading..."
+          variant="wave"
+        />
+      ) : (
+        <Select
+          className="max-w-xs"
+          label="Designate Pre Project Agreement to:"
+          variant="bordered"
+          isDisabled={!canAssign}
+          items={selectSales}
+          scrollShadowProps={{ isEnabled: false }}
+          selectedKeys={new Set([assignedPersonnel])}
+          onSelectionChange={async (keys) => {
+            if (!canAssign) return;
+            const selected = Array.from(keys)[0];
+            if (typeof selected === "string") {
+              setassignedPersonnel(selected);
 
-      <h1 className="text-lg font-semibold"> Pre Project Agreement Details</h1>
-      <Textarea
-        className="max-w-lg"
-        label=" Pre Project Agreement Details"
-        placeholder="Enter the details here..."
-        value={details}
-        onChange={(e) => setDetails(e.target.value)}
-      />
-
-      <h1 className="text-lg font-semibold">Attachment</h1>
-      <div className="border border-dashed rounded max-w-lg">
-        <DropZone
-          onDrop={handleDrop}
-          className="p-6 border border-gray-300 rounded text-center"
-        >
-          <p className="text-sm text-gray-600">Drag & drop files here</p>
-          <FileTrigger
-            allowsMultiple
-            acceptedFileTypes={[
-              "image/png",
-              "image/jpeg",
-              "application/pdf",
-              "text/csv",
-            ]}
-            onSelect={(files) => {
-              if (files) {
-                setFiles((prev) => [...prev, ...Array.from(files)]);
+              if (projectId) {
+                try {
+                  await fetch(
+                    "/api/department/PMO/project_tasks/documentation/pre_project_agreement/personnel",
+                    {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        projectId,
+                        projectName,
+                        assignedPersonnel: selected,
+                      }),
+                    }
+                  );
+                } catch (err) {
+                  console.error(
+                    "Failed to update assigned Pre Project Agreement:",
+                    err
+                  );
+                }
               }
-            }}
-          ></FileTrigger>
-        </DropZone>
-
-        {files.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <p className="font-semibold text-sm">Files to Upload:</p>
-            {files.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
-              >
-                <span className="text-sm text-gray-700 truncate">
-                  {file.name}
-                </span>
-                <button
-                  onClick={() =>
-                    setFiles((prev) => prev.filter((_, i) => i !== index))
-                  }
-                  className="text-red-500 hover:text-red-700 text-sm ml-2"
-                >
-                  ✕
-                </button>
-              </div>
+            }
+          }}
+        >
+          <SelectSection classNames={{ heading: headingClasses }} title="Sales">
+            {selectSales.map((item) => (
+              <SelectItem key={item.key}>{item.label}</SelectItem>
             ))}
+          </SelectSection>
+          <SelectSection classNames={{ heading: headingClasses }} title="PMO">
+            {selectPmo.map((item) => (
+              <SelectItem key={item.key}>{item.label}</SelectItem>
+            ))}
+          </SelectSection>
+        </Select>
+      )}
+
+      {assignedPersonnel && canUpload && (
+        <>
+          {/* PO Details */}
+          <h1 className="text-lg font-semibold">
+            Pre Project Agreement Details
+          </h1>
+          <Textarea
+            className="max-w-lg"
+            label="Pre Project Agreement Details"
+            placeholder="Enter the details here..."
+            value={PODetails}
+            onChange={(e) => setPODetails(e.target.value)}
+          />
+
+          {/* PO Attachment */}
+          <h1 className="text-lg font-semibold">
+            Pre Project Agreement Attachment
+          </h1>
+          <div className="border border-dashed rounded max-w-lg">
+            <DropZone
+              onDrop={handleDrop}
+              className="p-6 border border-gray-300 rounded text-center"
+            >
+              <p className="text-sm text-gray-600">Drag & drop files here</p>
+              <FileTrigger
+                allowsMultiple
+                acceptedFileTypes={[
+                  "image/png",
+                  "image/jpeg",
+                  "application/pdf",
+                  "text/csv",
+                ]}
+                onSelect={(files) => {
+                  if (files) {
+                    setFiles((prev) => [...prev, ...Array.from(files)]);
+                  }
+                }}
+              ></FileTrigger>
+            </DropZone>
+
+            {files.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="font-semibold text-sm">Files to Upload:</p>
+                {files.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
+                  >
+                    <span className="text-sm text-gray-700 truncate">
+                      {file.name}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setFiles((prev) => prev.filter((_, i) => i !== index))
+                      }
+                      className="text-red-500 hover:text-red-700 text-sm ml-2"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      <Button
-        color="primary"
-        className="max-w-lg"
-        isDisabled={isUploading}
-        onPress={submitForm}
-      >
-        {isUploading ? "Uploading..." : "Submit"}
-      </Button>
-
+          {/* Submit Button */}
+          <Button
+            color="primary"
+            className="max-w-lg"
+            isDisabled={isUploading}
+            onPress={submitForm}
+          >
+            {isUploading ? "Uploading..." : "Submit"}
+          </Button>
+        </>
+      )}
       <Divider />
 
-      {isLoading && <p className="text-sm text-gray-500">Loading files...</p>}
+      {isLoading && (
+        <Spinner
+          classNames={{ label: "text-foreground mt-4" }}
+          label="loading files..."
+          variant="dots"
+        />
+      )}
       {error && (
         <p className="text-sm text-red-500">Failed to load uploaded files.</p>
       )}
 
+      {/* Uploaded Files Preview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
         {uploadedFiles.map((file: any, idx: number) => {
-          console.log(file);
           if (!file.attachmentName) return null;
           const sanitizedProjectName = String(projectName)
             .trim()
@@ -246,7 +329,7 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
                 className="absolute inset-0 z-0 w-full h-full object-cover"
                 src={isImage ? previewUrl : ""}
               />
-              <div className="absolute inset-0 bg-black/5 z-0" />{" "}
+              <div className="absolute inset-0 bg-black/5 z-0" />
               <CardHeader className="absolute z-10 flex-col items-start bg-black/40">
                 <h4 className="text-white font-semibold text-md break-words max-w-[90%]">
                   {file.attachmentName}
@@ -256,11 +339,9 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
                 <div>
                   <p className="text-black text-tiny">
                     {file.description && file.description !== "null" ? (
-                      <p className="text-black text-tiny">{file.description}</p>
+                      file.description
                     ) : (
-                      <p className="text-black text-tiny italic">
-                        No description
-                      </p>
+                      <span className="italic">No description</span>
                     )}
                   </p>
                 </div>

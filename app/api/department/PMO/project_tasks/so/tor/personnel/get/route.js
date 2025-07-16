@@ -1,0 +1,22 @@
+import { NextResponse } from "next/server";
+import { executeQuery } from "@/app/lib/db";
+
+export async function GET(req) {
+  const { searchParams } = new URL(req.url);
+  const projectId = searchParams.get("projectId");
+
+  if (!projectId) {
+    return NextResponse.json({ error: "Missing projectId" }, { status: 400 });
+  }
+
+  const result = await executeQuery(
+    `SELECT assigned_tor FROM tor WHERE project_id = ?`,
+    [projectId]
+  );
+
+  if (result.length > 0) {
+    return NextResponse.json({ assignedTor: result[0].assigned_tor });
+  }
+
+  return NextResponse.json({ assignedTor: "" });
+}

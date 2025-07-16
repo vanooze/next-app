@@ -28,6 +28,7 @@ export async function GET(req) {
         status
       FROM conceptual
       WHERE status = "1"
+      AND type="1"
       ${id ? "AND project_Id = ? " : ""}
     `,
       id ? [id] : []

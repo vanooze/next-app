@@ -40,6 +40,7 @@ export interface ProjectMonitoring {
   sales: string;
   date: string | null;
   status: string;
+  access: string | null;
 }
 
 export const ProjectMonitoringColumns = [
@@ -50,7 +51,6 @@ export const ProjectMonitoringColumns = [
   { name: "Date", uid: "date" },
   { name: "Status", uid: "status" },
   { name: "Actions", uid: "actions" },
-  { name: "Tasks", uid: "tasks" },
 ];
 
 // ------------------------- TASKS PER PROJECT -------------------------
@@ -125,3 +125,16 @@ export const PMOTasksColumn = [
   { name: "Date Finished", uid: "dateFinished" },
   { name: "Actions", uid: "actions" },
 ];
+
+// ------------------------- NOTIFICATION -------------------------
+
+export interface LogInput {
+  user_id: number | null;
+  name: string | null;
+  action: string;
+  table_name: string;
+  record_id: number;
+  description: string;
+  link: string;
+  seen: number;
+}

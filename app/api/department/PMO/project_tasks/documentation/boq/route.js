@@ -25,9 +25,11 @@ export async function GET(req) {
         attachment_name,
         attachment_type,
         date,
+        type,
         status
       FROM boq
       WHERE status = "1"
+      AND type = "1"
       ${id ? "AND project_Id = ? " : ""}
     `,
       id ? [id] : []

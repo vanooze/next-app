@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardFooter,
   Image,
+  Spinner,
 } from "@heroui/react";
 import useSWR from "swr";
 import { DropZone, DropItem, FileTrigger } from "react-aria-components";
@@ -36,6 +37,7 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
   const [assignedPO, setAssignedPO] = useState("");
   const [PODetails, setPODetails] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [isPOLoading, setIsPOLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const headingClasses =
     "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
@@ -45,6 +47,37 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
       setProjectName(project.customer);
     }
   }, [project]);
+
+  useEffect(() => {
+    const fetchAssignedPO = async () => {
+      if (!projectId) return;
+      setIsPOLoading(true);
+      try {
+        const res = await fetch(
+          `/api/department/PMO/project_tasks/so/po/personnel/get?projectId=${projectId}`
+        );
+        const data = await res.json();
+        if (data.assignedPo) {
+          setAssignedPO(data.assignedPo);
+        }
+      } catch (err) {
+        console.error("Failed to fetch assigned PO", err);
+      } finally {
+        setIsPOLoading(false);
+      }
+    };
+
+    fetchAssignedPO();
+  }, [projectId]);
+
+  const canUpload =
+    user?.name === assignedPO ||
+    user?.designation.includes("PMO TL") ||
+    user?.designation.includes("DOCUMENT CONTROLLER");
+
+  const canAssign =
+    user?.designation.includes("PMO TL") ||
+    user?.designation.includes("DOCUMENT CONTROLLER");
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/so/po?id=${projectId}`
@@ -117,106 +150,149 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
     <div className="flex w-full flex-col md:flex-nowrap gap-4">
       <h1 className="text-lg font-semibold">Assign Project PO to:</h1>
 
-      <Select
-        className="max-w-xs"
-        label="Designate PO to:"
-        variant="bordered"
-        items={selectSales}
-        scrollShadowProps={{ isEnabled: false }}
-        selectedKeys={new Set([assignedPO])}
-        onSelectionChange={(keys) => {
-          const selected = Array.from(keys)[0];
-          if (typeof selected === "string") setAssignedPO(selected);
-        }}
-      >
-        <SelectSection classNames={{ heading: headingClasses }} title="Sales">
-          {selectSales.map((item) => (
-            <SelectItem key={item.key}>{item.label}</SelectItem>
-          ))}
-        </SelectSection>
-        <SelectSection classNames={{ heading: headingClasses }} title="PMO">
-          {selectPmo.map((item) => (
-            <SelectItem key={item.key}>{item.label}</SelectItem>
-          ))}
-        </SelectSection>
-      </Select>
+      {isPOLoading ? (
+        <Spinner
+          classNames={{ label: "text-foreground mt-4" }}
+          label="loading..."
+          variant="wave"
+        />
+      ) : (
+        <Select
+          className="max-w-xs"
+          label="Designate PO to:"
+          variant="bordered"
+          isDisabled={!canAssign}
+          items={selectSales}
+          scrollShadowProps={{ isEnabled: false }}
+          selectedKeys={new Set([assignedPO])}
+          onSelectionChange={async (keys) => {
+            if (!canAssign) return;
+            const selected = Array.from(keys)[0];
+            if (typeof selected === "string") {
+              setAssignedPO(selected);
 
-      <h1 className="text-lg font-semibold">PO Details</h1>
-      <Textarea
-        className="max-w-lg"
-        label="PO Details"
-        placeholder="Enter the details here..."
-        value={PODetails}
-        onChange={(e) => setPODetails(e.target.value)}
-      />
-
-      <h1 className="text-lg font-semibold">PO Attachment</h1>
-      <div className="border border-dashed rounded max-w-lg">
-        <DropZone
-          onDrop={handleDrop}
-          className="p-6 border border-gray-300 rounded text-center"
-        >
-          <p className="text-sm text-gray-600">Drag & drop files here</p>
-          <FileTrigger
-            allowsMultiple
-            acceptedFileTypes={[
-              "image/png",
-              "image/jpeg",
-              "application/pdf",
-              "text/csv",
-            ]}
-            onSelect={(files) => {
-              if (files) {
-                setFiles((prev) => [...prev, ...Array.from(files)]);
+              if (projectId) {
+                try {
+                  await fetch(
+                    "/api/department/PMO/project_tasks/so/po/personnel",
+                    {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        projectId,
+                        projectName,
+                        assignedPo: selected,
+                      }),
+                    }
+                  );
+                } catch (err) {
+                  console.error("Failed to update assigned PO:", err);
+                }
               }
-            }}
-          ></FileTrigger>
-        </DropZone>
-
-        {files.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <p className="font-semibold text-sm">Files to Upload:</p>
-            {files.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
-              >
-                <span className="text-sm text-gray-700 truncate">
-                  {file.name}
-                </span>
-                <button
-                  onClick={() =>
-                    setFiles((prev) => prev.filter((_, i) => i !== index))
-                  }
-                  className="text-red-500 hover:text-red-700 text-sm ml-2"
-                >
-                  ✕
-                </button>
-              </div>
+            }
+          }}
+        >
+          <SelectSection classNames={{ heading: headingClasses }} title="Sales">
+            {selectSales.map((item) => (
+              <SelectItem key={item.key}>{item.label}</SelectItem>
             ))}
+          </SelectSection>
+          <SelectSection classNames={{ heading: headingClasses }} title="PMO">
+            {selectPmo.map((item) => (
+              <SelectItem key={item.key}>{item.label}</SelectItem>
+            ))}
+          </SelectSection>
+        </Select>
+      )}
+
+      {assignedPO && canUpload && (
+        <>
+          {/* PO Details */}
+          <h1 className="text-lg font-semibold">PO Details</h1>
+          <Textarea
+            className="max-w-lg"
+            label="PO Details"
+            placeholder="Enter the details here..."
+            value={PODetails}
+            onChange={(e) => setPODetails(e.target.value)}
+          />
+
+          {/* PO Attachment */}
+          <h1 className="text-lg font-semibold">PO Attachment</h1>
+          <div className="border border-dashed rounded max-w-lg">
+            <DropZone
+              onDrop={handleDrop}
+              className="p-6 border border-gray-300 rounded text-center"
+            >
+              <p className="text-sm text-gray-600">Drag & drop files here</p>
+              <FileTrigger
+                allowsMultiple
+                acceptedFileTypes={[
+                  "image/png",
+                  "image/jpeg",
+                  "application/pdf",
+                  "text/csv",
+                ]}
+                onSelect={(files) => {
+                  if (files) {
+                    setFiles((prev) => [...prev, ...Array.from(files)]);
+                  }
+                }}
+              ></FileTrigger>
+            </DropZone>
+
+            {files.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="font-semibold text-sm">Files to Upload:</p>
+                {files.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
+                  >
+                    <span className="text-sm text-gray-700 truncate">
+                      {file.name}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setFiles((prev) => prev.filter((_, i) => i !== index))
+                      }
+                      className="text-red-500 hover:text-red-700 text-sm ml-2"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      <Button
-        color="primary"
-        className="max-w-lg"
-        isDisabled={isUploading}
-        onPress={submitForm}
-      >
-        {isUploading ? "Uploading..." : "Submit"}
-      </Button>
-
+          {/* Submit Button */}
+          <Button
+            color="primary"
+            className="max-w-lg"
+            isDisabled={isUploading}
+            onPress={submitForm}
+          >
+            {isUploading ? "Uploading..." : "Submit"}
+          </Button>
+        </>
+      )}
       <Divider />
 
-      {isLoading && <p className="text-sm text-gray-500">Loading files...</p>}
+      {isLoading && (
+        <Spinner
+          classNames={{ label: "text-foreground mt-4" }}
+          label="loading files..."
+          variant="dots"
+        />
+      )}
       {error && (
         <p className="text-sm text-red-500">Failed to load uploaded files.</p>
       )}
 
+      {/* Uploaded Files Preview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
         {uploadedFiles.map((file: any, idx: number) => {
-          console.log(file);
           if (!file.attachmentName) return null;
           const sanitizedProjectName = String(projectName)
             .trim()
@@ -244,7 +320,7 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
                 className="absolute inset-0 z-0 w-full h-full object-cover"
                 src={isImage ? previewUrl : ""}
               />
-              <div className="absolute inset-0 bg-black/5 z-0" />{" "}
+              <div className="absolute inset-0 bg-black/5 z-0" />
               <CardHeader className="absolute z-10 flex-col items-start bg-black/40">
                 <h4 className="text-white font-semibold text-md break-words max-w-[90%]">
                   {file.attachmentName}
@@ -254,11 +330,9 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
                 <div>
                   <p className="text-black text-tiny">
                     {file.description && file.description !== "null" ? (
-                      <p className="text-black text-tiny">{file.description}</p>
+                      file.description
                     ) : (
-                      <p className="text-black text-tiny italic">
-                        No description
-                      </p>
+                      <span className="italic">No description</span>
                     )}
                   </p>
                 </div>

@@ -5,6 +5,7 @@ import { ProjectMonitoring } from "@/helpers/db";
 import { displayValue } from "@/helpers/displayValue";
 import { formatDateMMDDYYYY } from "@/helpers/formatDate";
 import { useRouter } from "next/navigation";
+import { useUserContext } from "@/components/layout/UserContext";
 
 interface Props {
   Tasks: ProjectMonitoring;
@@ -14,7 +15,22 @@ interface Props {
 
 export const RenderCell = ({ Tasks, columnKey, handleAddTask }: Props) => {
   const cellValue = Tasks[columnKey as keyof ProjectMonitoring];
+  const { user } = useUserContext();
   const router = useRouter();
+
+  const userHasAccess = (() => {
+    if (!user) return false;
+
+    const isManager =
+      user.designation.includes("PMO TL") ||
+      user.designation.includes("DOCUMENT CONTROLLER");
+
+    const accessList = Tasks.access
+      ? Tasks.access.split(",").map((name) => name.trim())
+      : [];
+
+    return isManager || accessList.includes(user.name);
+  })();
 
   switch (columnKey) {
     case "soNumber":
@@ -44,19 +60,15 @@ export const RenderCell = ({ Tasks, columnKey, handleAddTask }: Props) => {
         </Chip>
       );
     case "actions":
-      return (
-        <>
-          <div className="flex items-center gap-4 ">
-            <div>
-              <Tooltip content="Edit table" color="secondary">
-                <button onClick={() => router.push(`/project/${Tasks.idkey}`)}>
-                  <EditIcon size={20} fill="#979797" />
-                </button>
-              </Tooltip>
-            </div>
-          </div>
-        </>
-      );
+      return userHasAccess ? (
+        <div className="flex items-center gap-4">
+          <Tooltip content="See Details" color="secondary">
+            <button onClick={() => router.push(`/project/${Tasks.idkey}`)}>
+              <EditIcon size={20} fill="#979797" />
+            </button>
+          </Tooltip>
+        </div>
+      ) : null;
     default:
       return <span>{cellValue}</span>;
   }

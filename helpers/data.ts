@@ -1,3 +1,5 @@
+import { P } from "framer-motion/dist/types.d-B_QPEvFK";
+
 export const selectEboq = [
   { key: "B.TOPACIO", label: "B.TOPACIO" },
   { key: "M.GIGANTE", label: "M.GIGANTE" },
@@ -93,6 +95,18 @@ export const selectSales = [
     key: `Alliah Pearl Robles`,
     label: `Alliah Pearl Robles`,
   },
+  {
+    key: `Ida Ma. Catherine C. Madamba`,
+    label: `Ida Ma. Catherine C. Madamba`,
+  },
+  {
+    key: `Ma. Josephine R. Aguilar`,
+    label: `Ma. Josephine R. Aguilar`,
+  },
+  {
+    key: `Quennie V. Porciuncula`,
+    label: `Quennie V. Porciuncula`,
+  },
 ];
 
 export const selectDesign = [
@@ -148,6 +162,20 @@ export const selectFiltiredPmo = [
   },
 ];
 
+export const selectPurchasing = [
+  {
+    key: `Eva B. Badon`,
+    label: `Eva B. Badon`,
+  },
+  {
+    key: `Hereld Jean Jivi Aguyaoy`,
+    label: `Hereld Jean Jivi Aguyaoy`,
+  },
+  {
+    key: ``,
+    label: ``,
+  },
+];
 export const users = [
   {
     id: 1,
