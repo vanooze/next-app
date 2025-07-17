@@ -11,20 +11,18 @@ import {
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
 import React, { useEffect, useState, useMemo } from "react";
-import { ProjectMonitoringColumns } from "@/helpers/db";
+import { Items, ItemsColumns } from "@/helpers/db";
 import { RenderCell } from "./render-cell";
-import { AddTask } from "../action/add-task";
 import { useUserContext } from "@/components/layout/UserContext";
-import { ProjectMonitoring } from "@/helpers/db";
 
 interface TableWrapperProps {
-  tasks: ProjectMonitoring[];
+  items: Items[];
   loading: boolean;
   fullScreen: boolean;
 }
 
 export const TableWrapper: React.FC<TableWrapperProps> = ({
-  tasks,
+  items,
   loading,
   fullScreen,
 }) => {
@@ -32,9 +30,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   const { user } = useUserContext();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<ProjectMonitoring | null>(
-    null
-  );
+  const [selectedTask, setSelectedTask] = useState<Items | null>(null);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "date", // default sort column
     direction: "descending",
@@ -48,58 +44,28 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
   const rowsPerPage = 15;
 
-  const filteredTasks = useMemo(() => {
-    if (!user?.name) return [];
-
-    return tasks.filter((task) => {
-      const accessList =
-        task.access?.split(",").map((name) => name.trim()) || [];
-
-      const hasAccessByName = accessList.includes(user.name);
-      const hasAccessByRole =
-        user.designation?.includes("PMO TL") ||
-        user.designation?.includes("DOCUMENT CONTROLLER");
-
-      return hasAccessByName || hasAccessByRole;
-    });
-  }, [tasks, user]);
-
-  const visibleColumns = useMemo(() => {
-    return fullScreen
-      ? ProjectMonitoringColumns.filter((col) => col.uid !== "actions")
-      : ProjectMonitoringColumns;
-  }, [fullScreen]);
-
-  const handleOpenEdit = (task: ProjectMonitoring) => {
-    setSelectedTask(task);
-    setIsEditOpen(true);
-  };
-
-  const handleCloseEdit = () => {
-    setIsEditOpen(false);
-    setSelectedTask(null);
-  };
+  const visibleColumns = useMemo(() => ItemsColumns, []);
 
   const sortedTasks = useMemo(() => {
-    if (!Array.isArray(filteredTasks)) return [];
+    if (!Array.isArray(items)) return [];
 
     const { column, direction } = sortDescriptor;
-    if (!column) return filteredTasks;
+    if (!column) return items;
 
-    return [...filteredTasks].sort((a, b) => {
-      const aValue = a[column as keyof ProjectMonitoring];
-      const bValue = b[column as keyof ProjectMonitoring];
+    return [...items].sort((a, b) => {
+      const aValue = a[column as keyof Items];
+      const bValue = b[column as keyof Items];
 
-      if (column === "date") {
-        const aDate = aValue ? new Date(aValue as string).getTime() : null;
-        const bDate = bValue ? new Date(bValue as string).getTime() : null;
+      //   if (column === "date") {
+      //     const aDate = aValue ? new Date(aValue as string).getTime() : null;
+      //     const bDate = bValue ? new Date(bValue as string).getTime() : null;
 
-        if (aDate === null && bDate === null) return 0;
-        if (aDate === null) return direction === "ascending" ? -1 : 1;
-        if (bDate === null) return direction === "ascending" ? 1 : -1;
+      //     if (aDate === null && bDate === null) return 0;
+      //     if (aDate === null) return direction === "ascending" ? -1 : 1;
+      //     if (bDate === null) return direction === "ascending" ? 1 : -1;
 
-        return direction === "ascending" ? aDate - bDate : bDate - aDate;
-      }
+      //     return direction === "ascending" ? aDate - bDate : bDate - aDate;
+      //   }
 
       if (typeof aValue === "string" && typeof bValue === "string") {
         return direction === "ascending"
@@ -113,11 +79,11 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
       return 0;
     });
-  }, [filteredTasks, sortDescriptor]);
+  }, [items, sortDescriptor]);
 
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
 
-  const items = useMemo(() => {
+  const itemsPage = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
 
@@ -175,15 +141,14 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody emptyContent={"No rows to display."} items={items}>
+          <TableBody emptyContent={"No rows to display."} items={itemsPage}>
             {(item) => (
               <TableRow key={item.id}>
                 {visibleColumns.map((col) => (
                   <TableCell key={col.uid}>
                     <RenderCell
-                      Tasks={item}
-                      columnKey={col.uid as keyof ProjectMonitoring | "actions"}
-                      handleAddTask={handleOpenEdit}
+                      items={item}
+                      columnKey={col.uid as keyof Items}
                     />
                   </TableCell>
                 ))}
@@ -192,11 +157,6 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           </TableBody>
         </Table>
       )}
-      <AddTask
-        isOpen={isEditOpen}
-        onClose={handleCloseEdit}
-        task={selectedTask}
-      />
     </div>
   );
 };

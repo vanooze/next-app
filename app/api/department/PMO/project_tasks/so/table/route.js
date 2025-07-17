@@ -7,7 +7,7 @@ export async function GET(req) {
     const user = await getUserFromToken(req);
 
     // Optional: restrict access
-    if (!user || !user.department || !user.department.includes("PMO")) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

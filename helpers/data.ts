@@ -172,8 +172,8 @@ export const selectPurchasing = [
     label: `Hereld Jean Jivi Aguyaoy`,
   },
   {
-    key: ``,
-    label: ``,
+    key: `Angel May E. Granada`,
+    label: `Angel May E. Granada`,
   },
 ];
 export const users = [

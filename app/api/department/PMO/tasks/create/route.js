@@ -6,7 +6,7 @@ import { date } from "yup";
 export async function POST(req) {
   try {
     const user = await getUserFromToken(req);
-    if (!user || !user.department || !user.department.includes("PMO")) {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: "Unauthorized access" },
         { status: 403 }

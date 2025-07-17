@@ -23,7 +23,7 @@ import ProjectCompletion from "@/components/contents/projectCompletion/project_c
 import PostProject from "@/components/contents/postProject/post_project";
 import {
   selectDesign,
-  selectPmo,
+  selectFiltiredPmo,
   selectPurchasing,
   selectSales,
 } from "@/helpers/data";
@@ -111,17 +111,31 @@ export const ManageProject = ({ project }: ManageProjectProps) => {
     "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
 
   const canAssign =
-    user?.designation.includes("PMO TL") ||
-    user?.designation.includes("DOCUMENT CONTROLLER");
+    user?.designation.includes("PMO TL") || // Sir Noriel
+    user?.designation.includes("DOCUMENT CONTROLLER") || // Sir Jigz
+    user?.designation.includes("TECHNICAL ASSISTANT MANAGER") || // Sir John M
+    user?.designation.includes("IT SUPERVISOR") || // Sir Harold
+    user?.designation.includes("TECHNICAL SUPERVISOR") || // Sir Erwin B
+    user?.designation.includes("TECHNICAL ADMIN CONSULTANT") || // Ms. Eva
+    user?.designation.includes("DESIGN SUPERVISOR") || // Sir. Marvs
+    user?.designation.includes("TECHNICAL MANAGER") || // Sir. MJ
+    user?.name.includes("Kaye Kimberly L. Manuel");
 
   useEffect(() => {
     if (project) {
       setProjectCustomer(project.customer);
-      setProjectDate(
-        typeof project.date === "string"
-          ? safeParseDate(project.date)
-          : projectDate ?? null
-      );
+
+      if (typeof project.date === "string") {
+        setProjectDate(safeParseDate(project.date));
+      }
+
+      if (project.access) {
+        const initialAccess = project.access
+          .split(",")
+          .map((name) => name.trim())
+          .filter(Boolean);
+        setAccessUsers(new Set(initialAccess));
+      }
     }
   }, [project]);
 
@@ -149,7 +163,7 @@ export const ManageProject = ({ project }: ManageProjectProps) => {
             </h2>
             <Select
               selectionMode="multiple"
-              items={selectPmo}
+              items={selectFiltiredPmo}
               label="give access to this project to: "
               placeholder="Select users who can access this project"
               variant="bordered"
@@ -158,7 +172,9 @@ export const ManageProject = ({ project }: ManageProjectProps) => {
                 if (keys !== "all") {
                   setAccessUsers(keys as Set<string>);
                 } else {
-                  setAccessUsers(new Set(selectPmo.map((item) => item.key)));
+                  setAccessUsers(
+                    new Set(selectFiltiredPmo.map((item) => item.key))
+                  );
                 }
               }}
             >
@@ -166,7 +182,7 @@ export const ManageProject = ({ project }: ManageProjectProps) => {
                 classNames={{ heading: headingClasses }}
                 title="PMO"
               >
-                {selectPmo.map((item) => (
+                {selectFiltiredPmo.map((item) => (
                   <SelectItem key={item.key}>{item.label}</SelectItem>
                 ))}
               </SelectSection>

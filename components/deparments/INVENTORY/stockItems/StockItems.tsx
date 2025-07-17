@@ -1,29 +1,29 @@
 "use client";
+
 import { Button, Input, Tooltip } from "@heroui/react";
 import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/app/lib/fetcher";
 import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
-import { UsersIcon } from "@/components/icons/breadcrumb/users-icon";
-import { PMOTableWrapper } from "@/components/deparments/PMO/tasks/table/table";
-import { useUserContext } from "../../../layout/UserContext";
-import { PMOTasks } from "../../../../helpers/db";
-import { AddTask } from "@/components/deparments/PMO/tasks/action/add-task";
-import { SearchIcon } from "../../../icons/searchicon";
-import { EyeIcon } from "../../../icons/table/eye-icon";
+import { TableWrapper } from "@/components/deparments/INVENTORY/stockItems/table/table";
+import { useUserContext } from "@/components/layout/UserContext";
+import { Items } from "@/helpers/db";
+import { SearchIcon } from "@/components/icons/searchicon";
+import { EyeIcon } from "@/components/icons/table/eye-icon";
+import { ProductsIcon } from "@/components/icons/sidebar/products-icon";
 
-export const Tasks = () => {
+export const StockItems = () => {
   const { user } = useUserContext();
   const [filterValue, setFilterValue] = useState("");
   const [debouncedFilterValue, setDebouncedFilterValue] = useState(filterValue);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
   const {
-    data: tasks = [],
+    data: items = [],
     error,
     isLoading,
-  } = useSWR<PMOTasks[]>("/api/department/PMO/tasks", fetcher, {
+  } = useSWR<Items[]>("/api/department/INVENTORY/StockItems", fetcher, {
     refreshInterval: 10000, // every 10 seconds
     revalidateOnFocus: true, // optional but useful
   });
@@ -38,12 +38,12 @@ export const Tasks = () => {
     };
   }, [filterValue]);
 
-  const filteredTasks = debouncedFilterValue
-    ? tasks.filter((task) => {
+  const filtereditems = debouncedFilterValue
+    ? items.filter((items) => {
         const query = debouncedFilterValue.toLowerCase();
-        return task.clientName?.toLowerCase().includes(query);
+        return items.description?.toLowerCase().includes(query);
       })
-    : tasks;
+    : items;
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -65,16 +65,16 @@ export const Tasks = () => {
         </li>
 
         <li className="flex gap-2">
-          <UsersIcon />
-          <span>Task</span>
+          <ProductsIcon />
+          <span>Inventory</span>
           <span> / </span>{" "}
         </li>
         <li className="flex gap-2">
-          <span>List</span>
+          <span>Stock Items</span>
         </li>
       </ul>
 
-      <h3 className="text-xl font-semibold">All Tasks</h3>
+      <h3 className="text-xl font-semibold">Inventory</h3>
       <div className="flex justify-between flex-wrap gap-4 items-center">
         <div className="flex items-center gap-3 flex-wrap md:flex-nowrap">
           <Input
@@ -84,7 +84,7 @@ export const Tasks = () => {
               input: "w-full",
               mainWrapper: "w-full",
             }}
-            placeholder="Search Client Name"
+            placeholder="Search Item"
             value={filterValue}
             onValueChange={setFilterValue}
           />
@@ -96,9 +96,7 @@ export const Tasks = () => {
             </Tooltip>
           </div>
         </div>
-        <div className="flex flex-row gap-3.5 flex-wrap">
-          <AddTask />
-        </div>
+        <div className="flex flex-row gap-3.5 flex-wrap"></div>
       </div>
       <div
         className={`${
@@ -107,8 +105,8 @@ export const Tasks = () => {
             : "max-w-[95rem] mx-auto w-full"
         } transition-all duration-300`}
       >
-        <PMOTableWrapper
-          tasks={filteredTasks}
+        <TableWrapper
+          items={filtereditems}
           loading={isLoading}
           fullScreen={isFullScreen}
         />

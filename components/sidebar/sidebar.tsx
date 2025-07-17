@@ -2,9 +2,7 @@ import React from "react";
 import { Sidebar } from "./sidebar.styles";
 import { Company } from "./company";
 import { HomeIcon } from "../icons/sidebar/home-icon";
-import { BalanceIcon } from "../icons/sidebar/balance-icon";
 import { AccountsIcon } from "../icons/sidebar/accounts-icon";
-import { CustomersIcon } from "../icons/sidebar/customers-icon";
 import { ProductsIcon } from "../icons/sidebar/products-icon";
 import { ReportsIcon } from "../icons/sidebar/reports-icon";
 import { CollapseItems } from "./collapse-items";
@@ -19,6 +17,17 @@ export const SidebarWrapper = () => {
   const pathname = usePathname();
   const { collapsed, setCollapsed } = useSidebarContext();
 
+  const accessForProject =
+    user?.department.includes("SALES") ||
+    user?.department.includes("Design") ||
+    user?.department.includes("PURCHASING") ||
+    user?.department.includes("IT/DT Manager") ||
+    user?.department.includes("PMO") ||
+    user?.department.includes("TECHNICAL MANAGER") ||
+    user?.designation_status.includes("TECHNICAL SUPERVISOR") ||
+    user?.designation_status.includes("TECHNICAL ASSISTANT MANAGER");
+
+  const accessForInventory = user?.department.includes("ACCOUNTING&INVENTORY");
   return (
     <aside className="h-screen z-[20] sticky top-0">
       {collapsed ? (
@@ -43,12 +52,22 @@ export const SidebarWrapper = () => {
                 icon={<AccountsIcon />}
                 href="/tasks"
               />
-              <SidebarItem
-                isActive={pathname === "/project"}
-                title="Project Monitoring"
-                icon={<ReportsIcon />}
-                href="/project"
-              />
+              {accessForProject ? (
+                <SidebarItem
+                  isActive={pathname === "/project"}
+                  title="Project Monitoring"
+                  icon={<ReportsIcon />}
+                  href="/project"
+                />
+              ) : null}
+              {accessForInventory ? (
+                <SidebarItem
+                  isActive={pathname === "/inventory"}
+                  title="Inventory"
+                  icon={<ProductsIcon />}
+                  href="/inventory"
+                />
+              ) : null}
               {/* <CollapseItems
                 icon={<BalanceIcon />}
                 items={["TMIG", "IT/DT", "Marketing"]}

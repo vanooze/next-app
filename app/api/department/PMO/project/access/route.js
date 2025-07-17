@@ -5,7 +5,7 @@ import { getUserFromToken } from "@/app/lib/auth";
 export async function POST(req) {
   try {
     const user = await getUserFromToken(req);
-    if (!user || !user.department.includes("PMO")) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 

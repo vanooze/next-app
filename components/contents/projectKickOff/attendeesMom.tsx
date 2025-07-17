@@ -278,6 +278,7 @@ export default function AttendeesMom({ project }: AttendeesMOMProps) {
           </Button>
         </>
       )}
+      <Divider />
       {isLoading && (
         <Spinner
           classNames={{ label: "text-foreground mt-4" }}

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { getUserFromToken } from "@/app/lib/auth";
 import { executeQuery } from "@/app/lib/db";
 import fs from "fs";
 import path from "path";

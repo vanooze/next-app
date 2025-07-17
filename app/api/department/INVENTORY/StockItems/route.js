@@ -17,41 +17,43 @@ export async function GET(req) {
 
     const rows = await executeQuery(
       `
-      SELECT
-        project_id,
-        project_name,
-        assigned_personnel,
-        description,      
-        attachment_name,
-        attachment_type,
-        date,
-        type,
-        status
-      FROM boq
-      WHERE status = "1"
-      AND type = "2"
-      ${id ? "AND project_Id = ? " : ""}
+      SELECT 
+      id,
+      inventory_id,
+      description,
+      type,
+      subassembly,
+      item_class,
+      posting_class,
+      tax_category,
+      default_warehouse,
+      base_unit,
+      default_price,
+      item_status
+      ${id ? "WHERE id = ?" : ""}
     `,
       id ? [id] : []
     );
 
-    const tasks = rows.map((r) => ({
-      projectId: r.project_id,
-      projectName: r.project_name,
-      assignedPersonnel: r.assigned_personnel,
+    const items = rows.map((r) => ({
+      id: r.id,
+      inventoryId: r.inventory_id,
       description: r.description,
-      attachmentName: r.attachment_name,
-      attachmentType: r.attachment_type,
-      date: r.date,
       type: r.type,
-      status: r.status,
+      subassembly: r.subassembly,
+      itemClass: r.item_class,
+      taxCategory: r.tax_category,
+      defaultWarehouse: r.default_warehouse,
+      baseUnit: r.base_unit,
+      defaultPrice: r.default_price,
+      status: r.item_status,
     }));
 
-    return NextResponse.json(tasks);
+    return NextResponse.json(id ? items[0] : items);
   } catch (error) {
     console.error("API Error: ", error);
     return NextResponse.json(
-      { error: "Failed to create task" },
+      { error: "Failed to fetch table" },
       { status: 500 }
     );
   }
