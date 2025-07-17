@@ -5,7 +5,7 @@ import { getUserFromToken } from "@/app/lib/auth";
 export async function POST(req) {
   try {
     const user = await getUserFromToken(req);
-    if (!user || !user.department || !user.department.includes("PMO")) {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: "Unauthorized access" },
         { status: 403 }
@@ -19,9 +19,9 @@ export async function POST(req) {
       action,
       table_name,
       record_id,
+      title,
       description,
       link,
-      seen,
     } = body;
 
     if (
@@ -30,6 +30,7 @@ export async function POST(req) {
       !action ||
       !table_name ||
       record_id == null ||
+      !title ||
       !description ||
       !link
     ) {
@@ -47,8 +48,9 @@ export async function POST(req) {
         table_name, 
         record_id, 
         description, 
-        link, 
-        seen)
+        title,
+        link
+        )
         VALUES 
         (?, ?, ?, ?, ?, ?, ?, ?)
       `;
@@ -59,9 +61,9 @@ export async function POST(req) {
       action,
       table_name,
       record_id,
+      title,
       description,
       link,
-      seen,
     ]);
 
     return NextResponse.json({ success: true, insertId: result.insertId });

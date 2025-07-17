@@ -136,6 +136,29 @@ export const selectDesign = [
   },
 ];
 
+export const selectFiliteredDesign = [
+  {
+    key: `Jan Ronnell V. Camero`,
+    label: `Jan Ronnell V. Camero`,
+  },
+  {
+    key: `Jilian Mark H. Ardinel`,
+    label: `Jilian Mark H. Ardinel`,
+  },
+  {
+    key: `Marcial A. Gigante III`,
+    label: `Marcial A. Gigante III`,
+  },
+  {
+    key: `John Eden Ross V. Cola`,
+    label: `John Eden Ross V. Cola`,
+  },
+  {
+    key: `BILLY JOEL TOPACIO`,
+    label: `BILLY JOEL TOPACIO`,
+  },
+];
+
 export const selectPmo = [
   {
     key: `Joshua A. Calimutan`,

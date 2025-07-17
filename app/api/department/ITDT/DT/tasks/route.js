@@ -11,7 +11,9 @@ export async function GET(req) {
         { status: 403 }
       );
     }
-    const rows = await executeQuery("SELECT * FROM design_activity");
+    const rows = await executeQuery(
+      "SELECT * FROM design_activity WHERE deleted = 0"
+    );
     const tasks = rows.map((r) => ({
       id: r.id,
       clientName: r.client_name,

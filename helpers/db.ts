@@ -134,9 +134,19 @@ export interface LogInput {
   action: string;
   table_name: string;
   record_id: number;
+  title: string;
   description: string;
   link: string;
-  seen: number;
+  delete: number;
+}
+
+export interface NotificationItem {
+  id: number;
+  title: string;
+  description: string;
+  seen: boolean;
+  link: string;
+  delete: number;
 }
 
 // ------------------------- STOCK ITEMS -------------------------

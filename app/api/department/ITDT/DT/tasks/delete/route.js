@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { executeQuery } from "@/app/lib/db";
 import { getUserFromToken } from "@/app/lib/auth";
 
-export async function DELETE(req) {
+export async function POST(req) {
   try {
     const user = await getUserFromToken(req);
 
@@ -21,7 +21,7 @@ export async function DELETE(req) {
       );
     }
 
-    const query = `DELETE FROM design_activity WHERE id = ?`;
+    const query = `UPDATE design_activity SET deleted = 1 WHERE id = ?`;
     const result = await executeQuery(query, [id]);
 
     return NextResponse.json({

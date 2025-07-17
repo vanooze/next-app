@@ -1,19 +1,25 @@
-import { executeQuery } from "@/app/lib/db";
 import { NextResponse } from "next/server";
-import { getUserFromToken } from "@/app/lib/auth";
+import { executeQuery } from "@/app/lib/db";
 
-export async function POST(req) {
+export async function PATCH(req) {
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+
+  if (!id) {
+    return NextResponse.json(
+      { error: "Missing notification id" },
+      { status: 400 }
+    );
+  }
+
   try {
-    const { id } = await req.json();
-
-    if (!id)
-      return NextResponse.json({ error: "Missing log ID" }, { status: 400 });
-
-    await db.execute(`UPDATE activity_logs SET seen = TRUE WHERE id = ?`, [id]);
-
+    await executeQuery(
+      "UPDATE activity_logs SET seen = 1 WHERE id = ? AND deleted = 0",
+      [id]
+    );
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error marking log as seen:", error);
+  } catch (err) {
+    console.error(err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

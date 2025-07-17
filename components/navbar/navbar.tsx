@@ -2,7 +2,7 @@ import { Input, Link, Navbar, NavbarContent } from "@heroui/react";
 import React from "react";
 import { SearchIcon } from "../icons/searchicon";
 import { BurguerButton } from "./burguer-button";
-import { NotificationsDropdown } from "./notifications-dropdown";
+// import { NotificationsDropdown } from "./notifications-dropdown";
 import { UserDropdown } from "./user-dropdown";
 import { DarkModeSwitch } from "./darkmodeswitch";
 
@@ -42,7 +42,7 @@ export const NavbarWrapper = ({ children }: Props) => {
           <div>
             <DarkModeSwitch />
           </div>
-          <NotificationsDropdown />
+          {/* <NotificationsDropdown /> */}
           <NavbarContent>
             <UserDropdown />
           </NavbarContent>

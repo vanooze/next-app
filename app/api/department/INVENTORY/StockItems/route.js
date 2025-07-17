@@ -30,6 +30,7 @@ export async function GET(req) {
       base_unit,
       default_price,
       item_status
+      FROM stock_items
       ${id ? "WHERE id = ?" : ""}
     `,
       id ? [id] : []

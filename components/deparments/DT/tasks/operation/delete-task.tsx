@@ -27,7 +27,7 @@ export const DeleteTask = ({ isOpen, onClose, taskId }: DeleteTaskProps) => {
   const handleDeleteTask = async () => {
     try {
       const res = await fetch("/api/department/ITDT/DT/tasks/delete", {
-        method: "DELETE",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: taskId }),
       });

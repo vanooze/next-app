@@ -12,7 +12,7 @@ export async function GET(req) {
 
   try {
     const logs = await executeQuery({
-      query: `SELECT * FROM activity_logs WHERE name = ? AND seen = FALSE ORDER BY created_at DESC`,
+      query: `SELECT * FROM activity_logs WHERE name = ? AND deleted = 0 ORDER BY created_at DESC`,
       values: [name],
     });
 
