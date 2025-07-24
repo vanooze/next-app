@@ -39,7 +39,7 @@ export async function POST(req) {
       });
     } else {
       const result = await executeQuery(
-        `INSERT INTO pre_project_agreement (project_id, project_name, assigned_personnel) VALUES (?, ?, ?)`,
+        `INSERT INTO pre_project_agreement (project_id, assigned_personnel) VALUES ( ?, ?)`,
         [projectId, projectName, assignedPersonnel]
       );
 

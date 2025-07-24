@@ -11,7 +11,7 @@ import {
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
 import React, { useEffect, useState, useMemo } from "react";
-import { Items, ItemsColumns } from "@/helpers/db";
+import { Items, ItemsColumns } from "@/helpers/acumatica";
 import { RenderCell } from "./render-cell";
 import { useUserContext } from "@/components/layout/UserContext";
 
@@ -102,7 +102,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
             classNames={{ label: "text-foreground mt-4" }}
             size="lg"
             variant="wave"
-            label="Loading tasks..."
+            label="Loading items..."
           />
         </div>
       ) : (

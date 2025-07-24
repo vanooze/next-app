@@ -9,7 +9,7 @@ import {
 } from "@heroui/react";
 import { DropZone, DropItem, FileTrigger } from "react-aria-components";
 import { selectSales } from "@/helpers/data";
-import { ProjectMonitoring } from "@/helpers/db";
+import { Projects } from "@/helpers/acumatica";
 import React, { useState } from "react";
 import BOQ from "./boq";
 import SOW from "./sow";
@@ -17,7 +17,7 @@ import PreProjectAgreement from "./pre_project_agreement";
 import Conceptual from "./conceptual";
 
 interface DocumentationProps {
-  project: ProjectMonitoring | null;
+  project: Projects | null;
 }
 
 function Documentation({ project }: DocumentationProps) {

@@ -35,7 +35,7 @@ export async function POST(req) {
       return NextResponse.json({ success: true, message: "PO updated" });
     } else {
       const result = await executeQuery(
-        `INSERT INTO po (project_id, project_name, assigned_po) VALUES (?, ?, ?)`,
+        `INSERT INTO po (project_id, assigned_po) VALUES (?, ?)`,
         [projectId, projectName, assignedPo]
       );
 

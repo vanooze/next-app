@@ -24,7 +24,7 @@ export const Tasks = () => {
     error,
     isLoading,
   } = useSWR<dtTask[]>("/api/department/ITDT/DT/tasks", fetcher, {
-    refreshInterval: 10000, // every 10 seconds
+    refreshInterval: 120000, // every 120 seconds
     revalidateOnFocus: true, // optional but useful
   });
 

@@ -41,7 +41,7 @@ export async function POST(req) {
       });
     } else {
       const result = await executeQuery(
-        `INSERT INTO boq (project_id, project_name, assigned_personnel, type) VALUES (?, ?, ?, ?)`,
+        `INSERT INTO boq (project_id, assigned_personnel, type) VALUES (?, ?, ?)`,
         [projectId, projectName, assignedPersonnel, boqType]
       );
 

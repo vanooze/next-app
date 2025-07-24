@@ -1,6 +1,6 @@
 import { Tooltip, Chip } from "@heroui/react";
 import React from "react";
-import { Items } from "@/helpers/db";
+import { Items } from "@/helpers/acumatica";
 import { displayValue } from "@/helpers/displayValue";
 import { useRouter } from "next/navigation";
 import { useUserContext } from "@/components/layout/UserContext";

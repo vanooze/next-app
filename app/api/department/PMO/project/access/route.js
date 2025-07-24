@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { executeQuery } from "@/app/lib/eform";
+import { executeQuery } from "@/app/lib/db";
 import { getUserFromToken } from "@/app/lib/auth";
 
 export async function POST(req) {
@@ -21,7 +21,7 @@ export async function POST(req) {
 
     const updatedAccess = accessList.join(", ");
 
-    await executeQuery("UPDATE so SET access = ? WHERE idkey = ?", [
+    await executeQuery("UPDATE so SET access = ? WHERE project_id = ?", [
       updatedAccess,
       projectId,
     ]);

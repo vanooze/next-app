@@ -15,14 +15,13 @@ export async function POST(req) {
     const formData = await req.formData();
 
     const projectId = formData.get("projectId");
-    const projectName = formData.get("projectName");
     const assignedPo = formData.get("assignedPersonnel");
     const description = formData.get("description");
     const status = formData.get("status");
     const attachDate = formData.get("attachDate");
     const file = formData.get("file");
 
-    if (!projectId || !projectName) {
+    if (!projectId) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -40,17 +39,8 @@ export async function POST(req) {
     ) {
       const buffer = Buffer.from(await file.arrayBuffer());
       fileType = file.type;
-      const sanitizedProjectName = String(projectName)
-        .toLowerCase()
-        .replace(/\s+/g, "_")
-        .replace(/[^a-z0-9_\-]/gi, "");
 
-      const dirPath = path.join(
-        process.cwd(),
-        "public",
-        "uploads",
-        sanitizedProjectName
-      );
+      const dirPath = path.join(process.cwd(), "public", "uploads", projectId);
       if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true });
       }
@@ -62,12 +52,11 @@ export async function POST(req) {
 
     await executeQuery(
       `INSERT INTO pre_project_agreement (
-        project_id, project_name, assigned_personnel, description, 
+        project_id, assigned_personnel, description, 
         attachment_name, attachment_type, date, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES ( ?, ?, ?, ?, ?, ?, ?)`,
       [
         projectId,
-        projectName,
         assignedPo || null,
         description || null,
         filename,

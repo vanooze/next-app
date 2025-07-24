@@ -9,7 +9,7 @@ import {
 } from "@heroui/react";
 import { DropZone, DropItem, FileTrigger } from "react-aria-components";
 import { selectSales } from "@/helpers/data";
-import { ProjectMonitoring } from "@/helpers/db";
+import { Projects } from "@/helpers/acumatica";
 import React, { useState } from "react";
 import SOProjectOrder from "./so_project_order";
 import SOTor from "./so_tor";
@@ -17,7 +17,7 @@ import SOProposal from "./so_proposal";
 import SOProjectTurnOver from "./so_project_turn_over";
 
 interface SalesOrderProps {
-  project: ProjectMonitoring | null;
+  project: Projects | null;
 }
 
 function SalesOrder({ project }: SalesOrderProps) {

@@ -35,7 +35,7 @@ export async function POST(req) {
       return NextResponse.json({ success: true, message: "TOR updated" });
     } else {
       const result = await executeQuery(
-        `INSERT INTO tor (project_id, project_name, assigned_tor) VALUES (?, ?, ?)`,
+        `INSERT INTO tor (project_id, assigned_tor) VALUES (?, ?)`,
         [projectId, projectName, assignedTor]
       );
 

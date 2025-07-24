@@ -17,11 +17,11 @@ import {
 import useSWR from "swr";
 import { DropZone, DropItem, FileTrigger } from "react-aria-components";
 import { selectSales, selectPmo } from "@/helpers/data";
-import { ProjectMonitoring } from "@/helpers/db";
+import { Projects } from "@/helpers/acumatica";
 import { useUserContext } from "@/components/layout/UserContext";
 
 interface ProjectTurnOverProps {
-  project: ProjectMonitoring | null;
+  project: Projects | null;
 }
 
 const fetcher = async (url: string) => {
@@ -32,8 +32,7 @@ const fetcher = async (url: string) => {
 
 export default function ProjectTurnOver({ project }: ProjectTurnOverProps) {
   const { user } = useUserContext();
-  const [projectId, setProjectId] = useState<number | null>(null);
-  const [projectName, setProjectName] = useState("");
+  const [projectId, setProjectId] = useState<string | null>("");
   const [assignedPersonnel, setassignedPersonnel] = useState("");
   const [PODetails, setPODetails] = useState("");
   const [files, setFiles] = useState<File[]>([]);
@@ -43,8 +42,7 @@ export default function ProjectTurnOver({ project }: ProjectTurnOverProps) {
     "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
   useEffect(() => {
     if (project) {
-      setProjectId(project.soNumber);
-      setProjectName(project.customer);
+      setProjectId(project.projectId);
     }
   }, [project]);
 
@@ -113,7 +111,6 @@ export default function ProjectTurnOver({ project }: ProjectTurnOverProps) {
       for (const file of files) {
         const formData = new FormData();
         formData.append("projectId", projectId.toString());
-        formData.append("projectName", projectName || "null");
         formData.append("assignedPersonnel", assignedPersonnel || "null");
         formData.append("description", PODetails || "null");
         formData.append("status", status);
@@ -180,7 +177,6 @@ export default function ProjectTurnOver({ project }: ProjectTurnOverProps) {
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
                         projectId,
-                        projectName,
                         assignedPersonnel: selected,
                       }),
                     }
@@ -299,11 +295,6 @@ export default function ProjectTurnOver({ project }: ProjectTurnOverProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
         {uploadedFiles.map((file: any, idx: number) => {
           if (!file.attachmentName) return null;
-          const sanitizedProjectName = String(projectName)
-            .trim()
-            .toLowerCase()
-            .replace(/\s+/g, "_")
-            .replace(/[^a-z0-9_\-]/gi, "");
           const isImage = [
             "image/png",
             "image/jpeg",
@@ -311,7 +302,7 @@ export default function ProjectTurnOver({ project }: ProjectTurnOverProps) {
             "image/webp",
             "image/gif",
           ].includes(file.attachmentType);
-          const previewUrl = `/uploads/${sanitizedProjectName}/${file.attachmentName}`;
+          const previewUrl = `/uploads/${file.projectId}/${file.attachmentName}`;
 
           return (
             <Card

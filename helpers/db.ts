@@ -148,34 +148,3 @@ export interface NotificationItem {
   link: string;
   delete: number;
 }
-
-// ------------------------- STOCK ITEMS -------------------------
-
-export interface Items {
-  id: number;
-  inventoryId: string | null;
-  description: string | null;
-  type: string | null;
-  subassembly: string | null;
-  itemClass: string | null;
-  postingClass: string | null;
-  taxCategory: string | null;
-  defaultWarehouse: string | null;
-  baseUnit: string | null;
-  defaultPrice: string | null;
-  status: string | null;
-}
-
-export const ItemsColumns = [
-  { name: "Inventory ID", uid: "inventoryId" },
-  { name: "Description", uid: "description" },
-  { name: "Type", uid: "type" },
-  { name: "Subassembly", uid: "subassembly" },
-  { name: "Item Class", uid: "itemClass" },
-  { name: "Posting Class", uid: "postingclass" },
-  { name: "Tax Category", uid: "taxCategory" },
-  { name: "Default Warehouse", uid: "defaultWarehouse" },
-  { name: "Base Unit", uid: "baseUnit" },
-  { name: "Default Price", uid: "defaultPrice" },
-  { name: "Status", uid: "status" },
-];

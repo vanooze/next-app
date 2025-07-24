@@ -7,7 +7,7 @@ import {
   Textarea,
   Button,
 } from "@heroui/react";
-import { ProjectMonitoring } from "@/helpers/db";
+import { Projects } from "@/helpers/acumatica";
 import React, { useState } from "react";
 import BOQ from "./boq";
 import Conceptual from "./conceptual";
@@ -15,7 +15,7 @@ import AttendeesMom from "./attendeesMom";
 import Procurement from "./procurement";
 
 interface PreProjectKickOffProps {
-  project: ProjectMonitoring | null;
+  project: Projects | null;
 }
 
 function PreProjectKickOff({ project }: PreProjectKickOffProps) {

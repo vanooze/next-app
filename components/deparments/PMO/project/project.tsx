@@ -8,7 +8,7 @@ import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
 import { UsersIcon } from "@/components/icons/breadcrumb/users-icon";
 import { TableWrapper } from "@/components/deparments/PMO/project/table/table";
 import { useUserContext } from "@/components/layout/UserContext";
-import { ProjectMonitoring } from "@/helpers/db";
+import { Projects } from "@/helpers/acumatica";
 import { SearchIcon } from "@/components/icons/searchicon";
 import { EyeIcon } from "@/components/icons/table/eye-icon";
 
@@ -22,8 +22,8 @@ export const Project = () => {
     data: tasks = [],
     error,
     isLoading,
-  } = useSWR<ProjectMonitoring[]>("/api/department/PMO/project", fetcher, {
-    refreshInterval: 10000, // every 10 seconds
+  } = useSWR<Projects[]>("/api/department/PMO/project", fetcher, {
+    refreshInterval: 120000, // every 120 seconds
     revalidateOnFocus: true, // optional but useful
   });
 
@@ -41,8 +41,8 @@ export const Project = () => {
     ? tasks.filter((task) => {
         const query = debouncedFilterValue.toLowerCase();
         return (
-          task.customer?.toLowerCase().includes(query) ||
-          task.sales?.toLowerCase().includes(query)
+          task.projectId?.toLowerCase().includes(query) ||
+          task.template?.toLowerCase().includes(query)
         );
       })
     : tasks;

@@ -8,7 +8,7 @@ import { fetcher } from "@/app/lib/fetcher";
 import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
 import { TableWrapper } from "@/components/deparments/INVENTORY/stockItems/table/table";
 import { useUserContext } from "@/components/layout/UserContext";
-import { Items } from "@/helpers/db";
+import { Items } from "@/helpers/acumatica";
 import { SearchIcon } from "@/components/icons/searchicon";
 import { EyeIcon } from "@/components/icons/table/eye-icon";
 import { ProductsIcon } from "@/components/icons/sidebar/products-icon";
@@ -24,7 +24,7 @@ export const StockItems = () => {
     error,
     isLoading,
   } = useSWR<Items[]>("/api/department/INVENTORY/StockItems", fetcher, {
-    refreshInterval: 10000, // every 10 seconds
+    refreshInterval: 120000, // every 120 seconds
     revalidateOnFocus: true, // optional but useful
   });
 

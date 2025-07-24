@@ -11,14 +11,13 @@ import {
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
 import React, { useEffect, useState, useMemo } from "react";
-import { ProjectMonitoringColumns } from "@/helpers/db";
+import { projectColumns } from "@/helpers/acumatica";
 import { RenderCell } from "./render-cell";
-import { AddTask } from "../action/add-task";
 import { useUserContext } from "@/components/layout/UserContext";
-import { ProjectMonitoring } from "@/helpers/db";
+import { Projects } from "@/helpers/acumatica";
 
 interface TableWrapperProps {
-  tasks: ProjectMonitoring[];
+  tasks: Projects[];
   loading: boolean;
   fullScreen: boolean;
 }
@@ -32,9 +31,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   const { user } = useUserContext();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<ProjectMonitoring | null>(
-    null
-  );
+  const [selectedTask, setSelectedTask] = useState<Projects | null>(null);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "date", // default sort column
     direction: "descending",
@@ -66,11 +63,11 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
   const visibleColumns = useMemo(() => {
     return fullScreen
-      ? ProjectMonitoringColumns.filter((col) => col.uid !== "actions")
-      : ProjectMonitoringColumns;
+      ? projectColumns.filter((col) => col.uid !== "actions")
+      : projectColumns;
   }, [fullScreen]);
 
-  const handleOpenEdit = (task: ProjectMonitoring) => {
+  const handleOpenEdit = (task: Projects) => {
     setSelectedTask(task);
     setIsEditOpen(true);
   };
@@ -87,8 +84,8 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     if (!column) return filteredTasks;
 
     return [...filteredTasks].sort((a, b) => {
-      const aValue = a[column as keyof ProjectMonitoring];
-      const bValue = b[column as keyof ProjectMonitoring];
+      const aValue = a[column as keyof Projects];
+      const bValue = b[column as keyof Projects];
 
       if (column === "date") {
         const aDate = aValue ? new Date(aValue as string).getTime() : null;
@@ -182,8 +179,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
                   <TableCell key={col.uid}>
                     <RenderCell
                       Tasks={item}
-                      columnKey={col.uid as keyof ProjectMonitoring | "actions"}
-                      handleAddTask={handleOpenEdit}
+                      columnKey={col.uid as keyof Projects | "actions"}
                     />
                   </TableCell>
                 ))}
@@ -192,11 +188,6 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           </TableBody>
         </Table>
       )}
-      <AddTask
-        isOpen={isEditOpen}
-        onClose={handleCloseEdit}
-        task={selectedTask}
-      />
     </div>
   );
 };

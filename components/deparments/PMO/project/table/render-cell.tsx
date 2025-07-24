@@ -1,20 +1,19 @@
 import { Tooltip, Chip } from "@heroui/react";
 import React from "react";
 import { EditIcon } from "@/components/icons/table/edit-icon";
-import { ProjectMonitoring } from "@/helpers/db";
+import { Projects } from "@/helpers/acumatica";
 import { displayValue } from "@/helpers/displayValue";
 import { formatDateMMDDYYYY } from "@/helpers/formatDate";
 import { useRouter } from "next/navigation";
 import { useUserContext } from "@/components/layout/UserContext";
 
 interface Props {
-  Tasks: ProjectMonitoring;
-  columnKey: keyof ProjectMonitoring | "actions";
-  handleAddTask: (task: ProjectMonitoring) => void;
+  Tasks: Projects;
+  columnKey: keyof Projects | "actions";
 }
 
-export const RenderCell = ({ Tasks, columnKey, handleAddTask }: Props) => {
-  const cellValue = Tasks[columnKey as keyof ProjectMonitoring];
+export const RenderCell = ({ Tasks, columnKey }: Props) => {
+  const cellValue = Tasks[columnKey as keyof Projects];
   const { user } = useUserContext();
   const router = useRouter();
 
@@ -33,25 +32,17 @@ export const RenderCell = ({ Tasks, columnKey, handleAddTask }: Props) => {
   })();
 
   switch (columnKey) {
-    case "soNumber":
+    case "projectId":
       return <span>{displayValue(cellValue)}</span>;
-    case "customer":
-      return <span>{displayValue(cellValue)}</span>;
-    case "contactPerson":
-      return <span>{displayValue(cellValue)}</span>;
-    case "sales":
-      return <span>{displayValue(cellValue)}</span>;
-    case "date":
-      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
     case "status":
       return (
         <Chip
           size="sm"
           variant="flat"
           color={
-            cellValue === "Approved"
+            cellValue === "Completed"
               ? "success"
-              : cellValue === "Pending"
+              : cellValue === "Active"
               ? "warning"
               : "danger"
           }
@@ -59,11 +50,25 @@ export const RenderCell = ({ Tasks, columnKey, handleAddTask }: Props) => {
           <span className="capitalize text-xs">{cellValue}</span>
         </Chip>
       );
+    case "template":
+      return <span>{displayValue(cellValue)}</span>;
+    case "customerId":
+      return <span>{displayValue(cellValue)}</span>;
+    case "startDate":
+      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
+    case "description":
+      return <span>{displayValue(cellValue)}</span>;
+    case "createdOn":
+      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
+    case "currency":
+      return <span>{displayValue(cellValue)}</span>;
+    case "projectManager":
+      return <span>{displayValue(cellValue)}</span>;
     case "actions":
       return userHasAccess ? (
         <div className="flex items-center gap-4">
           <Tooltip content="See Details" color="secondary">
-            <button onClick={() => router.push(`/project/${Tasks.idkey}`)}>
+            <button onClick={() => router.push(`/project/${Tasks.id}`)}>
               <EditIcon size={20} fill="#979797" />
             </button>
           </Tooltip>
