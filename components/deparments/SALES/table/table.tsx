@@ -23,7 +23,7 @@ interface TableWrapperProps {
   fullScreen: boolean;
 }
 
-export const TableWrapper: React.FC<TableWrapperProps> = ({
+export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
   tasks,
   loading,
   fullScreen,

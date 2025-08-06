@@ -2,7 +2,6 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { TableWrapper } from "../deparments/DT/tasks/table/table";
 import { Card0 } from "./card";
 import { Card1 } from "./card1";
 import { Card2 } from "./card2";
@@ -12,45 +11,71 @@ import NextLink from "next/link";
 import { useUserContext } from "../layout/UserContext";
 import { useTasksByDepartment } from "@/components/hooks/useTasksByDepartment";
 import { usePMOTasks } from "@/components/hooks/usePmoTasks";
-import { PMOTableWrapper } from "@/components/deparments/PMO/tasks/table/table";
-import { PMOTasks, dtTask } from "@/helpers/db";
+import { useSalesManagement } from "@/components/hooks/useSalesManagement";
+
+import { TableWrapper as DesignTable } from "../deparments/DT/tasks/table/table";
+import { PMOTableWrapper } from "../deparments/PMO/tasks/table/table";
+import { SalesTableWrapper } from "../deparments/SALES/table/table";
+
+import { PMOTasks, dtTask, SalesManagement } from "@/helpers/db";
 
 // Dynamic chart imports
 const ColumnChart = dynamic(
   () => import("../charts/column").then((mod) => mod.Column),
   { ssr: false }
 );
-
 const PMOColumnChart = dynamic(
   () => import("../charts/pmocolumn").then((mod) => mod.PMOColumn),
+  { ssr: false }
+);
+const SalesColumnChart = dynamic(
+  () => import("../charts/salescolumn").then((mod) => mod.SalesColumn),
   { ssr: false }
 );
 
 export const Content = () => {
   const { user } = useUserContext();
-  const isPMO = user?.department === "PMO";
+  const department = user?.department;
+
+  const isPMO = department === "PMO";
+  const isSales = department === "SALES";
 
   const { tasks: designTasks, loading: designLoading } = useTasksByDepartment(
-    user?.department || ""
+    department || ""
   );
   const { tasks: pmoTasks, loading: pmoLoading } = usePMOTasks();
+  const { tasks: salesTasks, loading: salesLoading } = useSalesManagement();
 
-  const tasks = isPMO ? pmoTasks : designTasks;
-  const loading = isPMO ? pmoLoading : designLoading;
+  const tasks = isPMO ? pmoTasks : isSales ? salesTasks : designTasks;
+  const loading = isPMO ? pmoLoading : isSales ? salesLoading : designLoading;
 
   const now = new Date();
 
-  // Type-safe filtering
-  const OnPendingTasks = tasks.filter(
-    (task) => task.status === "Pending"
-  ).length;
-  const onRushTasks = tasks.filter((task) => task.status === "Priority").length;
-  const OverdueTasks = tasks.filter((task) => task.status === "Overdue").length;
+  const onPendingTasks = tasks.filter((task) => {
+    if (isSales) return task.status === "On Going";
+    return task.status === "Pending";
+  }).length;
 
-  const FinishedTasks = tasks.filter((task) => {
-    const finishedDate = isPMO
-      ? (task as PMOTasks).dateFinished
-      : (task as dtTask).sirMJH;
+  const onRushTasks = tasks.filter((task) => {
+    if (isSales) return task.status === "On Hold";
+    return task.status === "Priority";
+  }).length;
+
+  const overdueTasks = tasks.filter((task) => {
+    if (isSales) return task.status === "Lost Account";
+    return task.status === "Overdue";
+  }).length;
+
+  const finishedTasks = tasks.filter((task) => {
+    let finishedDate: string | null;
+
+    if (isPMO) {
+      finishedDate = (task as PMOTasks).dateFinished;
+    } else if (isSales) {
+      finishedDate = (task as SalesManagement).sirMJH;
+    } else {
+      finishedDate = (task as dtTask).sirMJH;
+    }
 
     if (!finishedDate) return false;
 
@@ -59,6 +84,38 @@ export const Content = () => {
       (1000 * 60 * 60 * 24);
     return diffDays <= 30;
   }).length;
+
+  const renderChart = () => {
+    if (isPMO) return <PMOColumnChart tasks={pmoTasks} />;
+    if (isSales) return <SalesColumnChart tasks={salesTasks} />;
+    return <ColumnChart tasks={designTasks} />;
+  };
+
+  const renderTable = () => {
+    if (isPMO)
+      return (
+        <PMOTableWrapper
+          tasks={pmoTasks}
+          loading={pmoLoading}
+          fullScreen={false}
+        />
+      );
+    if (isSales)
+      return (
+        <SalesTableWrapper
+          tasks={salesTasks}
+          loading={salesLoading}
+          fullScreen={false}
+        />
+      );
+    return (
+      <DesignTable
+        tasks={designTasks}
+        loading={designLoading}
+        fullScreen={false}
+      />
+    );
+  };
 
   return (
     <div className="h-full lg:px-6">
@@ -69,9 +126,9 @@ export const Content = () => {
             <h3 className="text-xl font-semibold">Tasks</h3>
             <div className="grid md:grid-cols-2 grid-cols-1 2xl:grid-cols-4 gap-5 w-full">
               <Card0 Rush={onRushTasks} />
-              <Card1 Pending={OnPendingTasks} />
-              <Card2 Overdue={OverdueTasks} />
-              <Card3 Finished={FinishedTasks} />
+              <Card1 Pending={onPendingTasks} />
+              <Card2 Overdue={overdueTasks} />
+              <Card3 Finished={finishedTasks} />
             </div>
           </div>
 
@@ -79,11 +136,7 @@ export const Content = () => {
           <div className="h-full flex flex-col gap-2">
             <h3 className="text-xl font-semibold">Statistics</h3>
             <div className="w-full bg-default-50 shadow-lg rounded-2xl p-6">
-              {isPMO ? (
-                <PMOColumnChart tasks={pmoTasks} />
-              ) : (
-                <ColumnChart tasks={designTasks} />
-              )}
+              {renderChart()}
             </div>
           </div>
         </div>
@@ -97,19 +150,7 @@ export const Content = () => {
             View All
           </Link>
         </div>
-        {isPMO ? (
-          <PMOTableWrapper
-            tasks={pmoTasks}
-            loading={pmoLoading}
-            fullScreen={false}
-          />
-        ) : (
-          <TableWrapper
-            tasks={designTasks}
-            loading={designLoading}
-            fullScreen={false}
-          />
-        )}
+        {renderTable()}
       </div>
     </div>
   );

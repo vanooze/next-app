@@ -68,7 +68,7 @@ export interface SalesManagement {
 export const SalesManagementColumns = [
   { name: "Status", uid: "status" },
   { name: "Client Name", uid: "clientName" },
-  { name: "Project Description", uid: "projectrDesc" },
+  { name: "Project Description", uid: "projectDesc" },
   { name: "Date Received", uid: "dateReceived" },
   { name: "Sir MJ/Harold", uid: "sirMJH" },
   { name: "Sales Personnel", uid: "salesPersonnel" },

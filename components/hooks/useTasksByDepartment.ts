@@ -44,7 +44,7 @@ export function useTasksByDepartment(department: string, apiSubPath = "tasks") {
     shouldFetch ? [`tasks`, department, apiSubPath] : null,
     () => fetchTasks(paths, apiSubPath),
     {
-      refreshInterval: 5000, // optional: auto-refresh every 5s
+      refreshInterval: 1200000, // optional: auto-refresh every 2 mins
       revalidateOnFocus: true, // revalidate on tab focus
     }
   );

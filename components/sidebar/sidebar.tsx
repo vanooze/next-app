@@ -30,7 +30,7 @@ export const SidebarWrapper = () => {
 
   const accessForTask =
     user?.department?.includes("PMO") || user?.department?.includes("DT");
-  const accessForSales = user?.department?.includes("SALES");
+  const accessForSales = user?.position?.includes("SALES");
   const accessForInventory = user?.department.includes("ACCOUNTING&INVENTORY");
 
   return (

@@ -10,7 +10,7 @@ import { useUserContext } from "@/components/layout/UserContext";
 import { SearchIcon } from "@/components/icons/searchicon";
 import { EyeIcon } from "@/components/icons/table/eye-icon";
 import { SalesManagement } from "@/helpers/db";
-import { TableWrapper } from "./table/table";
+import { SalesTableWrapper } from "./table/table";
 
 export const Sales = () => {
   const { user } = useUserContext();
@@ -113,7 +113,7 @@ export const Sales = () => {
             : "max-w-[95rem] mx-auto w-full"
         } transition-all duration-300`}
       >
-        <TableWrapper
+        <SalesTableWrapper
           tasks={filteredTasks}
           loading={isLoading}
           fullScreen={isFullScreen}

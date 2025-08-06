@@ -1,3 +1,4 @@
+
 DELIMITER $$
 
 ALTER DEFINER=`zanie`@`%` EVENT `update_design_activity_status_daily` 
@@ -31,7 +32,7 @@ DO BEGIN
         da.date_received,
         da.sir_mjh,
         da.sales_personnel,
-        'Ongoing' AS status,
+        'On Going' AS status,
         0 AS deleted
     FROM design_activity da
     WHERE 
