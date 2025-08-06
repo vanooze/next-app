@@ -19,6 +19,14 @@ export const selectStatus = [
   { key: "Finished", label: "Finished" },
 ];
 
+export const selectSalesStatus = [
+  { key: "Lost Account", label: "Lost Account" },
+  { key: "Overdue", label: "Overdue" },
+  { key: "On Going", label: "On Going" },
+  { key: "On Hold", label: "On Hold" },
+  { key: "Finished", label: "Finished" },
+];
+
 export const selectTMIG = [
   {
     key: `CHRISTOPHER JAPITANA`,
@@ -100,16 +108,20 @@ export const selectSales = [
     label: `Ida Ma. Catherine C. Madamba`,
   },
   {
-    key: `Ma. Josephine R. Aguilar`,
-    label: `Ma. Josephine R. Aguilar`,
-  },
-  {
     key: `Quennie V. Porciuncula`,
     label: `Quennie V. Porciuncula`,
   },
 ];
 
 export const selectDesign = [
+  {
+    key: `MARVINNE ESTACIO`,
+    label: `MARVINNE ESTACIO`,
+  },
+  {
+    key: `BILLY JOEL TOPACIO`,
+    label: `BILLY JOEL TOPACIO`,
+  },
   {
     key: `Jan Ronnell V. Camero`,
     label: `Jan Ronnell V. Camero`,
@@ -126,14 +138,27 @@ export const selectDesign = [
     key: `John Eden Ross V. Cola`,
     label: `John Eden Ross V. Cola`,
   },
-  {
-    key: `BILLY JOEL TOPACIO`,
-    label: `BILLY JOEL TOPACIO`,
-  },
-  {
-    key: `MARVINNE ESTACIO`,
-    label: `MARVINNE ESTACIO`,
-  },
+];
+
+export const selectProgrammer = [
+  { key: `RAMON CHRISTOPHER CO`, label: `RAMON CHRISTOPHER CO` },
+  { key: `Christian Alulod`, label: `Christian Alulod` },
+  { key: `Ivan Bradley Balo`, label: `Ivan Bradley Balo` },
+];
+
+export const selectTechnical = [
+  { key: `HAROLD DAVID`, label: `HAROLD DAVID` },
+  { key: `ERWIN DEL ROSARIO`, label: `ERWIN DEL ROSARIO` },
+  { key: `ELIEZER MANUEL HERRERA`, label: `ELIEZER MANUEL HERRERA` },
+  { key: `ASHLY ALVARO`, label: `ASHLY ALVARO` },
+  { key: `Aaron Vincent A. Opinaldo`, label: `Aaron Vincent A. Opinaldo` },
+];
+
+export const selectFiliteredTechnical = [
+  { key: `ERWIN DEL ROSARIO`, label: `ERWIN DEL ROSARIO` },
+  { key: `ELIEZER MANUEL HERRERA`, label: `ELIEZER MANUEL HERRERA` },
+  { key: `ASHLY ALVARO`, label: `ASHLY ALVARO` },
+  { key: `Aaron Vincent A. Opinaldo`, label: `Aaron Vincent A. Opinaldo` },
 ];
 
 export const selectFiliteredDesign = [
@@ -199,6 +224,7 @@ export const selectPurchasing = [
     label: `Angel May E. Granada`,
   },
 ];
+
 export const users = [
   {
     id: 1,

@@ -55,6 +55,7 @@ export const projectColumns = [
   { name: "Created On", uid: "createdOn" },
   { name: "Currency", uid: "currency" },
   { name: "Project Manager", uid: "projectManager" },
+  { name: "Actions", uid: "actions" },
 ];
 
 // ------------------------- SALES -------------------------

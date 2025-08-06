@@ -13,9 +13,9 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const { projectId, projectName, assignedPersonnel, type } = body;
+    const { projectId, assignedPersonnel, type } = body;
 
-    if (!projectId || !projectName || !assignedPersonnel) {
+    if (!projectId || !assignedPersonnel) {
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
         { status: 400 }
@@ -42,7 +42,7 @@ export async function POST(req) {
     } else {
       const result = await executeQuery(
         `INSERT INTO conceptual (project_id, assigned_personnel, type) VALUES (?, ?,?)`,
-        [projectId, projectName, assignedPersonnel, conceptualType]
+        [projectId, assignedPersonnel, conceptualType]
       );
 
       return NextResponse.json({

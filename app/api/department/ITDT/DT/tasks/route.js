@@ -5,7 +5,7 @@ import { getUserFromToken } from "@/app/lib/auth";
 export async function GET(req) {
   try {
     const user = await getUserFromToken(req);
-    if (!user || !user.department || !user.department.includes("Design")) {
+    if (!user || !user.department) {
       return NextResponse.json(
         { error: "Unauthorized access" },
         { status: 403 }

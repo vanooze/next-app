@@ -13,7 +13,11 @@ import BOQ from "./boq";
 import Conceptual from "./conceptual";
 import AttendeesMom from "./attendeesMom";
 import Procurement from "./procurement";
-
+import Contractors from "./contractors";
+import ManPower from "./manPower";
+import Budget from "./budget";
+import Chart from "./chart";
+import RiskManagement from "./riskManagement";
 interface PreProjectKickOffProps {
   project: Projects | null;
 }
@@ -34,6 +38,21 @@ function PreProjectKickOff({ project }: PreProjectKickOffProps) {
         </Tab>
         <Tab key="Procurement" title="Procurement">
           <Procurement project={project} />
+        </Tab>
+        <Tab key="Contractors" title="Contractors">
+          <Contractors project={project} />
+        </Tab>
+        <Tab key="RiskManagement" title="Risk Management">
+          <RiskManagement />
+        </Tab>
+        <Tab key="ManPowerAllocation" title="Man Power Allocation">
+          <ManPower project={project} />
+        </Tab>
+        <Tab key="Budget" title="Budget">
+          <Budget project={project} />
+        </Tab>
+        <Tab key="GanntChart" title="Gannt Chart">
+          <Chart project={project} />
         </Tab>
         {/* <Tab key="See All" title="See All">
           <SOSeeAll />

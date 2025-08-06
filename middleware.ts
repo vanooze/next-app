@@ -21,7 +21,12 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
 
   const isAuthPage = pathname === "/login" || pathname === "/register";
-  const isProtectedPage = pathname === "/";
+  const isProtectedPage = ["/", "/tasks", "/project", "/inventory"].includes(
+    pathname
+  );
+  const isPublicUploadPage = /^\/contract\/upload\/[^\/]+$/.test(pathname); // regex match for /contract/upload/[token]
+
+  if (isPublicUploadPage) return NextResponse.next();
 
   const user = token ? await verifyToken(token) : null;
 
@@ -37,5 +42,13 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/tasks", "/login", "/register"],
+  matcher: [
+    "/",
+    "/login",
+    "/register",
+    "/tasks",
+    "/project",
+    "/inventory",
+    "/contract/:path*",
+  ],
 };

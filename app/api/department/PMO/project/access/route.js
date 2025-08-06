@@ -21,7 +21,7 @@ export async function POST(req) {
 
     const updatedAccess = accessList.join(", ");
 
-    await executeQuery("UPDATE so SET access = ? WHERE project_id = ?", [
+    await executeQuery("UPDATE projects SET access = ? WHERE project_id = ?", [
       updatedAccess,
       projectId,
     ]);

@@ -13,9 +13,9 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const { projectId, projectName, assignedPo } = body;
+    const { projectId, assignedPo } = body;
 
-    if (!projectId || !projectName || !assignedPo) {
+    if (!projectId || !assignedPo) {
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
         { status: 400 }
@@ -36,7 +36,7 @@ export async function POST(req) {
     } else {
       const result = await executeQuery(
         `INSERT INTO po (project_id, assigned_po) VALUES (?, ?)`,
-        [projectId, projectName, assignedPo]
+        [projectId, assignedPo]
       );
 
       return NextResponse.json({

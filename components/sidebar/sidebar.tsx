@@ -11,6 +11,7 @@ import { SidebarMenu } from "./sidebar-menu";
 import { useSidebarContext } from "../layout/layout-context";
 import { usePathname } from "next/navigation";
 import { useUserContext } from "../layout/UserContext";
+import { BalanceIcon } from "../icons/sidebar/balance-icon";
 
 export const SidebarWrapper = () => {
   const { user, loading } = useUserContext();
@@ -23,11 +24,15 @@ export const SidebarWrapper = () => {
     user?.department.includes("PURCHASING") ||
     user?.department.includes("IT/DT Manager") ||
     user?.department.includes("PMO") ||
-    user?.department.includes("TECHNICAL MANAGER") ||
+    user?.designation_status.includes("TECHNICAL MANAGER") ||
     user?.designation_status.includes("TECHNICAL SUPERVISOR") ||
     user?.designation_status.includes("TECHNICAL ASSISTANT MANAGER");
 
+  const accessForTask =
+    user?.department?.includes("PMO") || user?.department?.includes("DT");
+  const accessForSales = user?.department?.includes("SALES");
   const accessForInventory = user?.department.includes("ACCOUNTING&INVENTORY");
+
   return (
     <aside className="h-screen z-[20] sticky top-0">
       {collapsed ? (
@@ -46,12 +51,14 @@ export const SidebarWrapper = () => {
               href="/"
             />
             <SidebarMenu title="Main Menu">
-              <SidebarItem
-                isActive={pathname === "/tasks"}
-                title="Task Designation"
-                icon={<AccountsIcon />}
-                href="/tasks"
-              />
+              {accessForTask ? (
+                <SidebarItem
+                  isActive={pathname === "/tasks"}
+                  title="Task Designation"
+                  icon={<AccountsIcon />}
+                  href="/tasks"
+                />
+              ) : null}
               {accessForProject ? (
                 <SidebarItem
                   isActive={pathname === "/project"}
@@ -60,6 +67,15 @@ export const SidebarWrapper = () => {
                   href="/project"
                 />
               ) : null}
+              {accessForSales ? (
+                <SidebarItem
+                  isActive={pathname === "/sales"}
+                  title="Sales Management"
+                  icon={<BalanceIcon />}
+                  href="/sales"
+                />
+              ) : null}
+
               {accessForInventory ? (
                 <SidebarItem
                   isActive={pathname === "/inventory"}
@@ -68,11 +84,6 @@ export const SidebarWrapper = () => {
                   href="/inventory"
                 />
               ) : null}
-              {/* <CollapseItems
-                icon={<BalanceIcon />}
-                items={["TMIG", "IT/DT", "Marketing"]}
-                title="Departments"
-              /> */}
               {/* <SidebarItem
                 isActive={pathname === "/reports"}
                 title="Reports"

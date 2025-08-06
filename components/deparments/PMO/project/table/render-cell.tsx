@@ -22,7 +22,8 @@ export const RenderCell = ({ Tasks, columnKey }: Props) => {
 
     const isManager =
       user.designation.includes("PMO TL") ||
-      user.designation.includes("DOCUMENT CONTROLLER");
+      user.designation.includes("DOCUMENT CONTROLLER") ||
+      user.designation?.includes("TECHNICAL MANAGER");
 
     const accessList = Tasks.access
       ? Tasks.access.split(",").map((name) => name.trim())
@@ -68,7 +69,7 @@ export const RenderCell = ({ Tasks, columnKey }: Props) => {
       return userHasAccess ? (
         <div className="flex items-center gap-4">
           <Tooltip content="See Details" color="secondary">
-            <button onClick={() => router.push(`/project/${Tasks.id}`)}>
+            <button onClick={() => router.push(`/project/${Tasks.projectId}`)}>
               <EditIcon size={20} fill="#979797" />
             </button>
           </Tooltip>

@@ -17,12 +17,6 @@ const TaskPage = () => {
   if (user.department?.includes("PMO")) {
     return <PMOTasks />;
   }
-
-  return (
-    <div className="text-center py-10 text-red-600 font-medium">
-      Unauthorized or Unknown Department
-    </div>
-  );
 };
 
 export default TaskPage;

@@ -55,7 +55,8 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       const hasAccessByName = accessList.includes(user.name);
       const hasAccessByRole =
         user.designation?.includes("PMO TL") ||
-        user.designation?.includes("DOCUMENT CONTROLLER");
+        user.designation?.includes("DOCUMENT CONTROLLER") ||
+        user.designation?.includes("TECHNICAL MANAGER");
 
       return hasAccessByName || hasAccessByRole;
     });

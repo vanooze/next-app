@@ -167,7 +167,6 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
             const selected = Array.from(keys)[0];
             if (typeof selected === "string") {
               setAssignedPO(selected);
-
               if (projectId) {
                 try {
                   await fetch(

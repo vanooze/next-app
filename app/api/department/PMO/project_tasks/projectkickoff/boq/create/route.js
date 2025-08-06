@@ -54,7 +54,7 @@ export async function POST(req) {
       `INSERT INTO boq (
         project_id, assigned_personnel, description, 
         attachment_name, attachment_type, date, type, status
-      ) VALUES ( ?, ?, ?, ?, ?, ?, ?,?)`,
+      ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         projectId,
         assignedPo || null,

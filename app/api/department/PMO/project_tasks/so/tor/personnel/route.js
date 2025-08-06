@@ -13,9 +13,9 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const { projectId, projectName, assignedTor } = body;
+    const { projectId, assignedTor } = body;
 
-    if (!projectId || !projectName || !assignedTor) {
+    if (!projectId || !assignedTor) {
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
         { status: 400 }
@@ -36,7 +36,7 @@ export async function POST(req) {
     } else {
       const result = await executeQuery(
         `INSERT INTO tor (project_id, assigned_tor) VALUES (?, ?)`,
-        [projectId, projectName, assignedTor]
+        [projectId, assignedTor]
       );
 
       return NextResponse.json({

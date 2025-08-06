@@ -6,7 +6,7 @@ export async function POST(req) {
   try {
     const user = await getUserFromToken(req);
 
-    if (!user || !user.department || !user.department.includes("Design")) {
+    if (!user || !user.department) {
       return NextResponse.json(
         { success: false, error: "Unauthorized access" },
         { status: 403 }

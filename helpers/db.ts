@@ -53,6 +53,29 @@ export const ProjectMonitoringColumns = [
   { name: "Actions", uid: "actions" },
 ];
 
+// ------------------------- SALES MANAGEMENT -------------------------
+export interface SalesManagement {
+  id: number;
+  clientName: string;
+  projectDesc: string;
+  dateReceived: string | null;
+  sirMJH: string | null;
+  salesPersonnel: string;
+  notes: string | null;
+  status: string;
+}
+
+export const SalesManagementColumns = [
+  { name: "Status", uid: "status" },
+  { name: "Client Name", uid: "clientName" },
+  { name: "Project Description", uid: "projectrDesc" },
+  { name: "Date Received", uid: "dateReceived" },
+  { name: "Sir MJ/Harold", uid: "sirMJH" },
+  { name: "Sales Personnel", uid: "salesPersonnel" },
+  { name: "Notes", uid: "notes" },
+  { name: "Actions", uid: "actions" },
+];
+
 // ------------------------- TASKS PER PROJECT -------------------------
 
 export interface ProjectTask {

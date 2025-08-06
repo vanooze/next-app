@@ -84,49 +84,29 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   const sortedTasks = useMemo(() => {
     if (!Array.isArray(tasks)) return [];
 
-    const { column, direction } = sortDescriptor;
-    if (!column) return tasks;
-
-    return [...tasks].sort((a, b) => {
-      const aValue = a[column as keyof dtTask];
-      const bValue = b[column as keyof dtTask];
-
-      // Sort by status using custom priority
-      if (column === "status") {
-        const aPriority =
-          statusPriority[aValue as keyof typeof statusPriority] ?? 99;
-        const bPriority =
-          statusPriority[bValue as keyof typeof statusPriority] ?? 99;
-
-        return direction === "ascending"
-          ? aPriority - bPriority
-          : bPriority - aPriority;
-      }
-
-      if (column === "dateReceived") {
-        const aDate = aValue ? new Date(aValue as string).getTime() : null;
-        const bDate = bValue ? new Date(bValue as string).getTime() : null;
-
-        if (aDate === null && bDate === null) return 0;
-        if (aDate === null) return direction === "ascending" ? -1 : 1;
-        if (bDate === null) return direction === "ascending" ? 1 : -1;
-
-        return direction === "ascending" ? aDate - bDate : bDate - aDate;
-      }
-
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return direction === "ascending"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
-
-      if (typeof aValue === "number" && typeof bValue === "number") {
-        return direction === "ascending" ? aValue - bValue : bValue - aValue;
-      }
-
-      return 0;
+    const statusSorted = [...tasks].sort((a, b) => {
+      const aPriority =
+        statusPriority[a.status as keyof typeof statusPriority] ?? 99;
+      const bPriority =
+        statusPriority[b.status as keyof typeof statusPriority] ?? 99;
+      return aPriority - bPriority;
     });
-  }, [tasks, sortDescriptor]);
+
+    const finishedSorted = statusSorted
+      .filter((task) => task.status === "Finished")
+      .sort((a, b) => {
+        const aDate = a.sirMJH ? new Date(a.sirMJH).getTime() : 0;
+        const bDate = b.sirMJH ? new Date(b.sirMJH).getTime() : 0;
+        return bDate - aDate;
+      });
+
+    const result = [
+      ...statusSorted.filter((task) => task.status !== "Finished"),
+      ...finishedSorted,
+    ];
+
+    return result;
+  }, [tasks]);
 
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
 
