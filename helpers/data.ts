@@ -1,4 +1,14 @@
-import { P } from "framer-motion/dist/types.d-B_QPEvFK";
+export const selectReport = [
+  { key: "Electrical", label: "Electrical" },
+  { key: "Structural", label: "Structural" },
+  { key: "Cabling/Conduit", label: "Cabling/Conduit" },
+  { key: "LED Wall", label: "LED Wall" },
+  { key: "Document Changes", label: "Document Changes" },
+  { key: "Cladding", label: "Cladding" },
+  { key: "Safety", label: "Safety" },
+  { key: "Concerns", label: "Concerns" },
+  { key: "Others", label: "Others" },
+];
 
 export const selectEboq = [
   { key: "B.TOPACIO", label: "B.TOPACIO" },

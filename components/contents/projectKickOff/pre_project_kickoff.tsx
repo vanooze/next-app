@@ -37,13 +37,13 @@ function PreProjectKickOff({ project }: PreProjectKickOffProps) {
           <Conceptual project={project} />
         </Tab>
         <Tab key="Procurement" title="Procurement">
-          <Procurement project={project} />
+          <Procurement />
         </Tab>
         <Tab key="Contractors" title="Contractors">
           <Contractors project={project} />
         </Tab>
         <Tab key="RiskManagement" title="Risk Management">
-          <RiskManagement />
+          <RiskManagement projectId={project?.projectId} />
         </Tab>
         <Tab key="ManPowerAllocation" title="Man Power Allocation">
           <ManPower project={project} />

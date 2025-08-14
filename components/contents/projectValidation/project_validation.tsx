@@ -6,7 +6,7 @@ import ManPower from "./manpower";
 import Plans from "./plans";
 import Equipment from "./equipment";
 import Contractors from "./contractors";
-import RiskAssessment from "./risk_assessment";
+import RiskAssessmentTable from "./risk_assessment";
 
 interface ProjectValidationProps {
   project: Projects | null;
@@ -26,7 +26,7 @@ function ProjectValidation({ project }: ProjectValidationProps) {
           <Contractors project={project} />
         </Tab>
         <Tab key="riskAssessment" title="Risk Assessment">
-          <RiskAssessment />
+          <RiskAssessmentTable projectId={project?.projectId} />
         </Tab>
         <Tab key="manPower" title="Man Power">
           <ManPower project={project} />

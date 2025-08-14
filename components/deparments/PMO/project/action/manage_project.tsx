@@ -214,10 +214,10 @@ export const ManageProject = ({ project }: ManageProjectProps) => {
         <ProjectValidation project={project} />
       </Tab>
       <Tab key="Project Execution" title="Project Execution">
-        <ProjectExecution />
+        <ProjectExecution project={project} />
       </Tab>
       <Tab key="Project Completion" title="Project Completion">
-        <ProjectCompletion />
+        <ProjectCompletion project={project} />
       </Tab>
       <Tab key="Post Project" title="Post Project">
         <PostProject />

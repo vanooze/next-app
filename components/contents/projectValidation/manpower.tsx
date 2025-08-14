@@ -90,13 +90,6 @@ export default function ManPower({ project }: ManPowerProps) {
                       <td key={col} className="px-4 py-2 border-b">
                         {name ? (
                           <label className="inline-flex items-center gap-2">
-                            <Checkbox
-                              size="sm"
-                              isSelected={checkedMap[key] || false}
-                              onValueChange={(checked) =>
-                                handleCheckChange(key, checked)
-                              }
-                            />
                             <span>{name}</span>
                           </label>
                         ) : (

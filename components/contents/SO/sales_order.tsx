@@ -1,16 +1,6 @@
-import {
-  Divider,
-  Select,
-  SelectItem,
-  Tab,
-  Tabs,
-  Textarea,
-  Button,
-} from "@heroui/react";
-import { DropZone, DropItem, FileTrigger } from "react-aria-components";
-import { selectSales } from "@/helpers/data";
+import { Divider, Tab, Tabs } from "@heroui/react";
 import { Projects } from "@/helpers/acumatica";
-import React, { useState } from "react";
+import React from "react";
 import SOProjectOrder from "./so_project_order";
 import SOTor from "./so_tor";
 import SOProposal from "./so_proposal";
