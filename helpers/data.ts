@@ -37,6 +37,13 @@ export const selectSalesStatus = [
   { key: "Finished", label: "Finished" },
 ];
 
+export const selectPOStatus = [
+  { key: "APPROVED", label: "APPROVED" },
+  { key: "DISAPPROVED", label: "DISAPPROVED" },
+  { key: "CANCELLED", label: "CANCELLED" },
+  { key: "PENDING", label: "PENDING" },
+  { key: "ON HOLD", label: "ON HOLD" },
+];
 export const selectTMIG = [
   {
     key: `CHRISTOPHER JAPITANA`,

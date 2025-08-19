@@ -23,7 +23,8 @@ export const RenderCell = ({ Tasks, columnKey }: Props) => {
     const isManager =
       user.designation.includes("PMO TL") ||
       user.designation.includes("DOCUMENT CONTROLLER") ||
-      user.designation?.includes("TECHNICAL MANAGER");
+      user.designation?.includes("TECHNICAL MANAGER") ||
+      user.restriction === "9";
 
     const accessList = Tasks.access
       ? Tasks.access.split(",").map((name) => name.trim())

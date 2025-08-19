@@ -1,0 +1,38 @@
+import { NextResponse } from "next/server";
+import { executeQuery } from "@/app/lib/db";
+import { getUserFromToken } from "@/app/lib/auth";
+
+export async function POST(req) {
+  try {
+    const user = await getUserFromToken(req);
+
+    if (!user || !user.department) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized access" },
+        { status: 403 }
+      );
+    }
+    const { id } = await req.json();
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const query = `UPDATE po_monitoring SET status = "0" WHERE id = ?`;
+    const result = await executeQuery(query, [id]);
+
+    return NextResponse.json({
+      success: true,
+      affectedRows: result.affectedRows,
+    });
+  } catch (err) {
+    console.error("Error deleting item:", err);
+    return NextResponse.json(
+      { success: false, error: "Failed to delete item" },
+      { status: 500 }
+    );
+  }
+}

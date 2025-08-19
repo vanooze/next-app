@@ -6,12 +6,12 @@ import { Card0 } from "./card";
 import { Card1 } from "./card1";
 import { Card2 } from "./card2";
 import { Card3 } from "./card3";
-import { Link } from "@heroui/react";
+import { Link, Tabs, Tab } from "@heroui/react";
 import NextLink from "next/link";
 import { useUserContext } from "../layout/UserContext";
-import { useTasksByDepartment } from "@/components/hooks/useTasksByDepartment";
 import { usePMOTasks } from "@/components/hooks/usePmoTasks";
 import { useSalesManagement } from "@/components/hooks/useSalesManagement";
+import { useDesignTasks } from "../hooks/useDesignTasks";
 
 import { TableWrapper as DesignTable } from "../deparments/DT/tasks/table/table";
 import { PMOTableWrapper } from "../deparments/PMO/tasks/table/table";
@@ -19,7 +19,6 @@ import { SalesTableWrapper } from "../deparments/SALES/table/table";
 
 import { PMOTasks, dtTask, SalesManagement } from "@/helpers/db";
 
-// Dynamic chart imports
 const ColumnChart = dynamic(
   () => import("../charts/column").then((mod) => mod.Column),
   { ssr: false }
@@ -36,122 +35,147 @@ const SalesColumnChart = dynamic(
 export const Content = () => {
   const { user } = useUserContext();
   const department = user?.department;
+  const restriction = user?.restriction;
 
-  const isPMO = department === "PMO";
-  const isSales = department === "SALES";
-
-  const { tasks: designTasks, loading: designLoading } = useTasksByDepartment(
-    department || ""
-  );
+  const { tasks: designTasks, loading: designLoading } = useDesignTasks();
   const { tasks: pmoTasks, loading: pmoLoading } = usePMOTasks();
   const { tasks: salesTasks, loading: salesLoading } = useSalesManagement();
 
-  const tasks = isPMO ? pmoTasks : isSales ? salesTasks : designTasks;
-  const loading = isPMO ? pmoLoading : isSales ? salesLoading : designLoading;
-
   const now = new Date();
 
-  const onPendingTasks = tasks.filter((task) => {
-    if (isSales) return task.status === "On Going";
-    return task.status === "Pending";
-  }).length;
+  // 🔹 Helper to calculate task stats
+  const getStats = (tasks: any[], type: "PMO" | "SALES" | "DESIGN") => {
+    const onPendingTasks = tasks.filter((task) => {
+      if (type === "SALES") return task.status === "On Going";
+      return task.status === "Pending";
+    }).length;
 
-  const onRushTasks = tasks.filter((task) => {
-    if (isSales) return task.status === "On Hold";
-    return task.status === "Priority";
-  }).length;
+    const onRushTasks = tasks.filter((task) => {
+      if (type === "SALES") return task.status === "On Hold";
+      return task.status === "Priority";
+    }).length;
 
-  const overdueTasks = tasks.filter((task) => {
-    if (isSales) return task.status === "Lost Account";
-    return task.status === "Overdue";
-  }).length;
+    const overdueTasks = tasks.filter((task) => {
+      if (type === "SALES") return task.status === "Lost Account";
+      return task.status === "Overdue";
+    }).length;
 
-  const finishedTasks = tasks.filter((task) => {
-    let finishedDate: string | null;
+    const finishedTasks = tasks.filter((task) => {
+      let finishedDate: string | null;
 
-    if (isPMO) {
-      finishedDate = (task as PMOTasks).dateFinished;
-    } else if (isSales) {
-      finishedDate = (task as SalesManagement).sirMJH;
-    } else {
-      finishedDate = (task as dtTask).sirMJH;
-    }
+      if (type === "PMO") {
+        finishedDate = (task as PMOTasks).dateFinished;
+      } else if (type === "SALES") {
+        finishedDate = (task as SalesManagement).sirMJH;
+      } else {
+        finishedDate = (task as dtTask).sirMJH;
+      }
 
-    if (!finishedDate) return false;
+      if (!finishedDate) return false;
 
-    const diffDays =
-      (now.getTime() - new Date(finishedDate).getTime()) /
-      (1000 * 60 * 60 * 24);
-    return diffDays <= 30;
-  }).length;
+      const diffDays =
+        (now.getTime() - new Date(finishedDate).getTime()) /
+        (1000 * 60 * 60 * 24);
+      return diffDays <= 30;
+    }).length;
 
-  const renderChart = () => {
-    if (isPMO) return <PMOColumnChart tasks={pmoTasks} />;
-    if (isSales) return <SalesColumnChart tasks={salesTasks} />;
-    return <ColumnChart tasks={designTasks} />;
+    return { onPendingTasks, onRushTasks, overdueTasks, finishedTasks };
   };
 
-  const renderTable = () => {
-    if (isPMO)
-      return (
-        <PMOTableWrapper
-          tasks={pmoTasks}
-          loading={pmoLoading}
-          fullScreen={false}
-        />
-      );
-    if (isSales)
-      return (
-        <SalesTableWrapper
-          tasks={salesTasks}
-          loading={salesLoading}
-          fullScreen={false}
-        />
-      );
+  const renderDepartment = (
+    type: "PMO" | "SALES" | "DESIGN",
+    tasks: any[],
+    loading: boolean
+  ) => {
+    const { onPendingTasks, onRushTasks, overdueTasks, finishedTasks } =
+      getStats(tasks, type);
+
+    const renderChart = () => {
+      if (type === "PMO") return <PMOColumnChart tasks={tasks} />;
+      if (type === "SALES") return <SalesColumnChart tasks={tasks} />;
+      if (type === "DESIGN") return <ColumnChart tasks={tasks} />;
+      return null;
+    };
+
+    const renderTable = () => {
+      if (type === "PMO")
+        return (
+          <PMOTableWrapper tasks={tasks} loading={loading} fullScreen={false} />
+        );
+      if (type === "SALES")
+        return (
+          <SalesTableWrapper
+            tasks={tasks}
+            loading={loading}
+            fullScreen={false}
+          />
+        );
+      if (type === "DESIGN")
+        return (
+          <DesignTable tasks={tasks} loading={loading} fullScreen={false} />
+        );
+      return null;
+    };
+
     return (
-      <DesignTable
-        tasks={designTasks}
-        loading={designLoading}
-        fullScreen={false}
-      />
+      <div className="h-full lg:px-6">
+        <div className="flex justify-center gap-4 xl:gap-6 pt-3 px-4 lg:px-0 flex-wrap xl:flex-nowrap sm:pt-10 max-w-[90rem] mx-auto w-full">
+          <div className="mt-6 gap-6 flex flex-col w-full">
+            {/* Cards */}
+            <div className="flex flex-col gap-2">
+              <h3 className="text-xl font-semibold">{type} Tasks</h3>
+              <div className="grid md:grid-cols-2 grid-cols-1 2xl:grid-cols-4 gap-5 w-full">
+                <Card0 Rush={onRushTasks} />
+                <Card1 Pending={onPendingTasks} />
+                <Card2 Overdue={overdueTasks} />
+                <Card3 Finished={finishedTasks} />
+              </div>
+            </div>
+
+            {/* Chart */}
+            <div className="h-full flex flex-col gap-2">
+              <h3 className="text-xl font-semibold">Statistics</h3>
+              <div className="w-full bg-default-50 shadow-lg rounded-2xl p-6">
+                {renderChart()}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="flex flex-col justify-center w-full py-5 px-4 lg:px-0 max-w-[90rem] mx-auto gap-3">
+          <div className="flex flex-wrap justify-between">
+            <h3 className="text-xl font-semibold">Tasks Designation</h3>
+            <Link href="/tasks" as={NextLink} color="primary">
+              View All
+            </Link>
+          </div>
+          {renderTable()}
+        </div>
+      </div>
     );
   };
 
-  return (
-    <div className="h-full lg:px-6">
-      <div className="flex justify-center gap-4 xl:gap-6 pt-3 px-4 lg:px-0 flex-wrap xl:flex-nowrap sm:pt-10 max-w-[90rem] mx-auto w-full">
-        <div className="mt-6 gap-6 flex flex-col w-full">
-          {/* Cards */}
-          <div className="flex flex-col gap-2">
-            <h3 className="text-xl font-semibold">Tasks</h3>
-            <div className="grid md:grid-cols-2 grid-cols-1 2xl:grid-cols-4 gap-5 w-full">
-              <Card0 Rush={onRushTasks} />
-              <Card1 Pending={onPendingTasks} />
-              <Card2 Overdue={overdueTasks} />
-              <Card3 Finished={finishedTasks} />
-            </div>
-          </div>
+  if (restriction === "9") {
+    return (
+      <Tabs aria-label="Departments" variant="underlined">
+        <Tab key="PMO" title="PMO">
+          {renderDepartment("PMO", pmoTasks, pmoLoading)}
+        </Tab>
+        <Tab key="SALES" title="Sales">
+          {renderDepartment("SALES", salesTasks, salesLoading)}
+        </Tab>
+        <Tab key="DESIGN" title="Design">
+          {renderDepartment("DESIGN", designTasks, designLoading)}
+        </Tab>
+      </Tabs>
+    );
+  }
 
-          {/* Chart */}
-          <div className="h-full flex flex-col gap-2">
-            <h3 className="text-xl font-semibold">Statistics</h3>
-            <div className="w-full bg-default-50 shadow-lg rounded-2xl p-6">
-              {renderChart()}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="flex flex-col justify-center w-full py-5 px-4 lg:px-0 max-w-[90rem] mx-auto gap-3">
-        <div className="flex flex-wrap justify-between">
-          <h3 className="text-xl font-semibold">Tasks Designation</h3>
-          <Link href="/tasks" as={NextLink} color="primary">
-            View All
-          </Link>
-        </div>
-        {renderTable()}
-      </div>
-    </div>
-  );
+  // 🔹 Else → Just show based on user's department
+  if (department === "PMO")
+    return renderDepartment("PMO", pmoTasks, pmoLoading);
+  if (department === "SALES")
+    return renderDepartment("SALES", salesTasks, salesLoading);
+  return renderDepartment("DESIGN", designTasks, designLoading);
 };

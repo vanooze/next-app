@@ -76,6 +76,41 @@ export const SalesManagementColumns = [
   { name: "Actions", uid: "actions" },
 ];
 
+// ------------------------- PO MONITORING -------------------------
+export interface POMonitoring {
+  id: number;
+  poDate: string | null;
+  poNumber: string | null;
+  supplier: string;
+  items: string;
+  qty: number;
+  uom: string;
+  price: number;
+  total: number;
+  terms: string;
+  poStatus: string;
+  remarks: string | null;
+  purpose: string;
+  requester: string;
+}
+
+export const POMonitoringColumns = [
+  { name: "Status", uid: "poStatus" },
+  { name: "Date", uid: "poDate" },
+  { name: "PO Number", uid: "poNumber" },
+  { name: "Supplier", uid: "supplier" },
+  { name: "Item", uid: "items" },
+  { name: "QTY", uid: "qty" },
+  { name: "UOM", uid: "uom" },
+  { name: "Price", uid: "price" },
+  { name: "Total", uid: "total" },
+  { name: "Terms", uid: "terms" },
+  { name: "Remarks", uid: "remarks" },
+  { name: "Purpose", uid: "purpose" },
+  { name: "Request by:", uid: "requester" },
+  { name: "Actions", uid: "actions" },
+];
+
 // ------------------------- TASKS PER PROJECT -------------------------
 
 export interface ProjectTask {

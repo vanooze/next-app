@@ -220,7 +220,7 @@ export const ManageProject = ({ project }: ManageProjectProps) => {
         <ProjectCompletion project={project} />
       </Tab>
       <Tab key="Post Project" title="Post Project">
-        <PostProject />
+        <PostProject project={project} />
       </Tab>
     </Tabs>
   );

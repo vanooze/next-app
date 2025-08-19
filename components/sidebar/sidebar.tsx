@@ -18,6 +18,7 @@ export const SidebarWrapper = () => {
   const pathname = usePathname();
   const { collapsed, setCollapsed } = useSidebarContext();
 
+  const SUPERADMIN = user?.restriction === "9";
   const accessForProject =
     user?.department.includes("SALES") ||
     user?.department.includes("Design") ||
@@ -26,12 +27,19 @@ export const SidebarWrapper = () => {
     user?.department.includes("PMO") ||
     user?.designation_status.includes("TECHNICAL MANAGER") ||
     user?.designation_status.includes("TECHNICAL SUPERVISOR") ||
-    user?.designation_status.includes("TECHNICAL ASSISTANT MANAGER");
+    user?.designation_status.includes("TECHNICAL ASSISTANT MANAGER") ||
+    SUPERADMIN;
 
   const accessForTask =
-    user?.department?.includes("PMO") || user?.department?.includes("DT");
-  const accessForSales = user?.position?.includes("SALES");
-  const accessForInventory = user?.department.includes("ACCOUNTING&INVENTORY");
+    user?.department?.includes("PMO") ||
+    user?.department?.includes("DT") ||
+    SUPERADMIN;
+  const accessForSales = user?.position?.includes("SALES") || SUPERADMIN;
+
+  const accessForInventory =
+    user?.department.includes("ACCOUNTING&INVENTORY") ||
+    user?.department.includes("PURCHASING") ||
+    SUPERADMIN;
 
   return (
     <aside className="h-screen z-[20] sticky top-0">
@@ -75,21 +83,16 @@ export const SidebarWrapper = () => {
                   href="/sales"
                 />
               ) : null}
-
               {accessForInventory ? (
-                <SidebarItem
-                  isActive={pathname === "/inventory"}
-                  title="Inventory"
+                <CollapseItems
                   icon={<ProductsIcon />}
-                  href="/inventory"
+                  items={[
+                    { label: "PO Monitoring", href: "/inventory/purchasing" },
+                    { label: "Stock Items", href: "/inventory/stockItems" },
+                  ]}
+                  title="Inventory"
                 />
               ) : null}
-              {/* <SidebarItem
-                isActive={pathname === "/reports"}
-                title="Reports"
-                icon={<ReportsIcon />}
-                href="reports"
-              /> */}
             </SidebarMenu>
           </div>
         </div>

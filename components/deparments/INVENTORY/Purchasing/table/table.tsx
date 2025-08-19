@@ -11,13 +11,15 @@ import {
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
 import React, { useEffect, useState, useMemo } from "react";
-import { projectColumns } from "@/helpers/acumatica";
+import { POMonitoringColumns } from "../../../../../helpers/db";
 import { RenderCell } from "./render-cell";
+import { EditTask } from "../operation/edit-task";
 import { useUserContext } from "@/components/layout/UserContext";
-import { Projects } from "@/helpers/acumatica";
+import { POMonitoring } from "../../../../../helpers/db";
+import { DeleteTask } from "../operation/delete-task";
 
 interface TableWrapperProps {
-  tasks: Projects[];
+  tasks: POMonitoring[];
   loading: boolean;
   fullScreen: boolean;
 }
@@ -29,9 +31,12 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 }) => {
   const [page, setPage] = useState(1);
   const { user } = useUserContext();
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<POMonitoring | null>(null);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "date", // default sort column
-    direction: "descending",
+    column: "status", // default sort column
+    direction: "ascending",
   });
   const [isUserSorted, setIsUserSorted] = useState(false);
 
@@ -42,64 +47,41 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
   const rowsPerPage = 15;
 
-  const filteredTasks = useMemo(() => {
-    if (!user?.name) return [];
-
-    return tasks.filter((task) => {
-      const accessList =
-        task.access?.split(",").map((name) => name.trim()) || [];
-
-      const hasAccessByName = accessList.includes(user.name);
-      const hasAccessByRole =
-        user.designation?.includes("PMO TL") ||
-        user.designation?.includes("DOCUMENT CONTROLLER") ||
-        user.designation?.includes("TECHNICAL MANAGER") ||
-        user.restriction === "9";
-
-      return hasAccessByName || hasAccessByRole;
-    });
-  }, [tasks, user]);
-
   const visibleColumns = useMemo(() => {
     return fullScreen
-      ? projectColumns.filter((col) => col.uid !== "actions")
-      : projectColumns;
+      ? POMonitoringColumns.filter((col) => col.uid !== "actions")
+      : POMonitoringColumns;
   }, [fullScreen]);
 
+  const handleOpenEdit = (task: POMonitoring) => {
+    setSelectedTask(task);
+    setIsEditOpen(true);
+  };
+
+  const handleCloseEdit = () => {
+    setIsEditOpen(false);
+    setSelectedTask(null);
+  };
+
+  const handleOpenDelete = (task: POMonitoring) => {
+    setSelectedTask(task);
+    setIsDeleteOpen(true);
+  };
+
+  const handleCloseDelete = () => {
+    setIsDeleteOpen(false);
+    setSelectedTask(null);
+  };
+
   const sortedTasks = useMemo(() => {
-    if (!Array.isArray(filteredTasks)) return [];
+    if (!Array.isArray(tasks)) return [];
 
-    const { column, direction } = sortDescriptor;
-    if (!column) return filteredTasks;
-
-    return [...filteredTasks].sort((a, b) => {
-      const aValue = a[column as keyof Projects];
-      const bValue = b[column as keyof Projects];
-
-      if (column === "date") {
-        const aDate = aValue ? new Date(aValue as string).getTime() : null;
-        const bDate = bValue ? new Date(bValue as string).getTime() : null;
-
-        if (aDate === null && bDate === null) return 0;
-        if (aDate === null) return direction === "ascending" ? -1 : 1;
-        if (bDate === null) return direction === "ascending" ? 1 : -1;
-
-        return direction === "ascending" ? aDate - bDate : bDate - aDate;
-      }
-
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return direction === "ascending"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
-
-      if (typeof aValue === "number" && typeof bValue === "number") {
-        return direction === "ascending" ? aValue - bValue : bValue - aValue;
-      }
-
-      return 0;
+    return [...tasks].sort((a, b) => {
+      const aDate = a.poDate ? new Date(a.poDate).getTime() : 0;
+      const bDate = b.poDate ? new Date(b.poDate).getTime() : 0;
+      return bDate - aDate;
     });
-  }, [filteredTasks, sortDescriptor]);
+  }, [tasks]);
 
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
 
@@ -167,8 +149,10 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
                 {visibleColumns.map((col) => (
                   <TableCell key={col.uid}>
                     <RenderCell
-                      Tasks={item}
-                      columnKey={col.uid as keyof Projects | "actions"}
+                      POMonitoring={item}
+                      columnKey={col.uid as keyof POMonitoring | "actions"}
+                      handleEditTask={handleOpenEdit}
+                      handleDeleteTask={handleOpenDelete}
                     />
                   </TableCell>
                 ))}
@@ -177,6 +161,16 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           </TableBody>
         </Table>
       )}
+      <EditTask
+        isOpen={isEditOpen}
+        onClose={handleCloseEdit}
+        task={selectedTask}
+      />
+      <DeleteTask
+        isOpen={isDeleteOpen}
+        onClose={handleCloseDelete}
+        taskId={selectedTask?.id ?? 0}
+      />
     </div>
   );
 };

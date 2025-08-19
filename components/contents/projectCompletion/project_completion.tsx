@@ -165,10 +165,19 @@ function CheckboxRow({
   );
 }
 
+interface ProjectCompletionProps {
+  project: Projects | null;
+}
 // Main component
-export default function ProjectCompletion({ project }: { project: Projects }) {
-  const projectId = project.projectId;
+export default function ProjectCompletion({ project }: ProjectCompletionProps) {
+  const [projectId, setProjectId] = useState<string | null>(null);
   const { files, loading } = useProjectFiles(projectId);
+
+  useEffect(() => {
+    if (project) {
+      setProjectId(project.projectId);
+    }
+  }, [project]);
 
   return (
     <div>
