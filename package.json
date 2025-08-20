@@ -3,14 +3,17 @@
    "version": "0.1.0",
    "private": true,
    "scripts": {
-      "dev": "next dev",
-      "build": "next build",
-      "start": "next start",
-      "lint": "next lint",
-      "lan": "next dev -H 0.0.0.0 -p 3001",
-      "server:dev": "tsx mcp-server/server.ts",
-      "server:inspect": "set DANGEROUSLY_OMIT_AUTH=true && npx @modelcontextprotocol/inspector -- npm run server:dev"
-   },
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint",
+  "lan": "next dev -H 0.0.0.0 -p 3001",
+
+  "server:dev": "tsx mcp-server/server.ts",                  
+  "server:build": "tsc -p tsconfig.server.json",             
+  "server:build:watch": "tsc -p tsconfig.server.json --watch",
+  "server:inspect": "set DANGEROUSLY_OMIT_AUTH=true && npx @modelcontextprotocol/inspector -- node dist/server.js"
+},
    "dependencies": {
       "@heroui/react": "^2.7.10",
       "@heroui/system": "^2.4.17",
