@@ -1,9 +1,10 @@
 import { executeQuery } from "@/app/lib/db";
 import { NextResponse } from "next/server";
-import { getUserFromToken } from "@/app/lib/auth";
 
 export async function GET(req) {
   try {
+    const { searchParams } = new URL(req.url);
+    const ids = searchParams.getAll("id");
     const user = await getUserFromToken(req);
     // if (!user || !user.department) {
     //   return NextResponse.json(
@@ -11,9 +12,17 @@ export async function GET(req) {
     //     { status: 403 }
     //   );
     // }
+
+    if (!ids || ids.length === 0) {
+      return NextResponse.json({ error: "No id(s) provided" }, { status: 400 });
+    }
+
+    const placeholders = ids.map(() => "?").join(",");
     const rows = await executeQuery(
-      "SELECT * FROM design_activity WHERE deleted = 0"
+      `SELECT * FROM design_activity WHERE deleted = 0 AND id IN (${placeholders})`,
+      ids
     );
+
     const tasks = rows.map((r) => ({
       id: r.id,
       clientName: r.client_name,
@@ -28,9 +37,13 @@ export async function GET(req) {
       sirMJH: r.sir_mjh,
       status: r.status,
     }));
-    return Response.json(tasks);
+
+    return NextResponse.json(tasks);
   } catch (error) {
     console.error("API Error: ", error);
-    return Response.json({ error: "Failed to fetch table" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch tasks" },
+      { status: 500 }
+    );
   }
 }

@@ -3,24 +3,21 @@
    "version": "0.1.0",
    "private": true,
    "scripts": {
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start",
-  "lint": "next lint",
-  "lan": "next dev -H 0.0.0.0 -p 3001",
-
-  "server:dev": "tsx mcp-server/server.ts",                  
-  "server:build": "tsc -p tsconfig.server.json",             
-  "server:build:watch": "tsc -p tsconfig.server.json --watch",
-  "server:inspect": "set DANGEROUSLY_OMIT_AUTH=true && npx @modelcontextprotocol/inspector -- node dist/server.js"
-},
+      "dev": "next dev",
+      "build": "next build",
+      "start": "next start",
+      "lint": "next lint",
+      "lan": "next dev -H 0.0.0.0 -p 3001",
+      "server:dev": "tsx mcp-server/server.ts",
+      "server:build": "tsc -p tsconfig.server.json",
+      "server:build:watch": "tsc -p tsconfig.server.json --watch",
+      "server:inspect": "set DANGEROUSLY_OMIT_AUTH=true && npx @modelcontextprotocol/inspector -- node dist/server.js"
+   },
    "dependencies": {
       "@heroui/react": "^2.7.10",
       "@heroui/system": "^2.4.17",
       "@heroui/theme": "^2.4.17",
       "@heroui/toast": "^2.0.11",
-      "@modelcontextprotocol/inspector": "^0.16.5",
-      "@modelcontextprotocol/sdk": "^1.17.3",
       "@react-aria/gridlist": "^3.13.2",
       "@react-aria/utils": "^3.29.1",
       "@react-stately/data": "^3.13.1",
@@ -41,8 +38,7 @@
       "react-aria-components": "^1.10.1",
       "react-dom": "18.2.0",
       "swr": "^2.3.3",
-      "yup": "^1.4.0",
-      "zod": "^3.25.76"
+      "yup": "^1.4.0"
    },
    "devDependencies": {
       "@types/node": "18.7.18",
