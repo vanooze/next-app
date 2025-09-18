@@ -10,6 +10,7 @@ import {
   CardFooter,
   Image,
   Spinner,
+  form,
 } from "@heroui/react";
 import useSWR from "swr";
 import { DropZone, DropItem, FileTrigger } from "react-aria-components";
@@ -28,6 +29,7 @@ const fetcher = async (url: string) => {
 
 export default function COP({ project }: COPProps) {
   const { user } = useUserContext();
+  const [uploader, setUploader] = useState(user?.name);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [Details, setDetails] = useState("");
   const [files, setFiles] = useState<File[]>([]);
@@ -74,6 +76,7 @@ export default function COP({ project }: COPProps) {
       for (const file of files) {
         const formData = new FormData();
         formData.append("projectId", projectId.toString());
+        formData.append("uploader", uploader || "Unknown");
         formData.append("description", Details || "null");
         formData.append("status", status);
         formData.append("attachDate", attachDate);
@@ -104,89 +107,93 @@ export default function COP({ project }: COPProps) {
     }
   };
 
+  const canUpload =
+    user?.department.includes("PMO") || user?.department.includes("TMIG");
+
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">
-      {/* PO Details */}
-      <h1 className="text-lg font-semibold">
-        Certificate of Good Performance Details
-      </h1>
-      <Textarea
-        className="max-w-lg"
-        label="Certificate of Good Performance Details"
-        placeholder="Enter the details here..."
-        value={Details}
-        onChange={(e) => setDetails(e.target.value)}
-      />
+      {canUpload && (
+        <>
+          <h1 className="text-lg font-semibold">
+            Certificate of Good Performance Details
+          </h1>
+          <Textarea
+            className="max-w-lg"
+            label="Certificate of Good Performance Details"
+            placeholder="Enter the details here..."
+            value={Details}
+            onChange={(e) => setDetails(e.target.value)}
+          />
 
-      {/* PO Attachment */}
-      <h1 className="text-lg font-semibold">
-        Certificate of Good Performance Attachment
-      </h1>
-      <div className="border border-dashed rounded max-w-lg">
-        <DropZone
-          onDrop={handleDrop}
-          className="p-6 border border-gray-300 rounded text-center"
-        >
-          <p className="text-sm text-gray-600">Drag & drop files here</p>
-          <FileTrigger
-            allowsMultiple
-            acceptedFileTypes={[
-              "image/png",
-              "image/jpeg",
-              "application/pdf",
-              "text/csv",
-            ]}
-            onSelect={(files) => {
-              if (files) {
-                setFiles((prev) => [...prev, ...Array.from(files)]);
-              }
-            }}
-          ></FileTrigger>
-        </DropZone>
-
-        {files.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <p className="font-semibold text-sm">Files to Upload:</p>
-            {files.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
-              >
-                <span className="text-sm text-gray-700 truncate">
-                  {file.name}
-                </span>
-                <button
-                  onClick={() =>
-                    setFiles((prev) => prev.filter((_, i) => i !== index))
+          <h1 className="text-lg font-semibold">
+            Certificate of Good Performance Attachment
+          </h1>
+          <div className="border border-dashed rounded max-w-lg">
+            <DropZone
+              onDrop={handleDrop}
+              className="p-6 border border-gray-300 rounded text-center"
+            >
+              <p className="text-sm text-gray-600">Drag & drop files here</p>
+              <FileTrigger
+                allowsMultiple
+                acceptedFileTypes={[
+                  "image/png",
+                  "image/jpeg",
+                  "application/pdf",
+                  "text/csv",
+                ]}
+                onSelect={(files) => {
+                  if (files) {
+                    setFiles((prev) => [...prev, ...Array.from(files)]);
                   }
-                  className="text-red-500 hover:text-red-700 text-sm ml-2"
-                >
-                  ✕
-                </button>
+                }}
+              ></FileTrigger>
+            </DropZone>
+
+            {files.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="font-semibold text-sm">Files to Upload:</p>
+                {files.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
+                  >
+                    <span className="text-sm text-gray-700 truncate">
+                      {file.name}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setFiles((prev) => prev.filter((_, i) => i !== index))
+                      }
+                      className="text-red-500 hover:text-red-700 text-sm ml-2"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Submit Button */}
-      <Button
-        color="primary"
-        className="max-w-lg"
-        isDisabled={isUploading}
-        onPress={submitForm}
-      >
-        {isUploading ? "Uploading..." : "Submit"}
-      </Button>
+          {/* Submit Button */}
+          <Button
+            color="primary"
+            className="max-w-lg"
+            isDisabled={isUploading}
+            onPress={submitForm}
+          >
+            {isUploading ? "Uploading..." : "Submit"}
+          </Button>
 
-      <a
-        href="/form/COP.docx"
-        download
-        className="text-blue-600 text-sm hover:underline mt-2 max-w-lg"
-      >
-        📄 Download COP Format (docx)
-      </a>
-
+          <a
+            href="/form/COP.docx"
+            download
+            className="text-blue-600 text-sm hover:underline mt-2 max-w-lg"
+          >
+            📄 Download COP Format (docx)
+          </a>
+        </>
+      )}
       <Divider />
 
       {/* Uploaded Files Preview */}
@@ -211,7 +218,7 @@ export default function COP({ project }: COPProps) {
             "image/webp",
             "image/gif",
           ].includes(file.attachmentType);
-          const previewUrl = `/uploads/${file.projectId}/${file.attachmentName}`;
+          const previewUrl = `/uploads/${file.projectId}/completion/${file.attachmentName}`;
 
           return (
             <Card
@@ -234,10 +241,27 @@ export default function COP({ project }: COPProps) {
               <CardFooter className="absolute bg-white/30 backdrop-blur-sm bottom-0 border-t border-white/30 z-10 justify-between p-2">
                 <div>
                   <p className="text-black text-tiny">
-                    {file.description && file.description !== "null" ? (
-                      file.description
+                    {file.description &&
+                    file.description.toLowerCase() !== "null" ? (
+                      <>
+                        {file.description}
+                        {file.uploader &&
+                          file.uploader.toLowerCase() !== "null" && (
+                            <span className="ml-1 italic text-gray-500">
+                              — {file.uploader}
+                            </span>
+                          )}
+                      </>
                     ) : (
-                      <span className="italic">No description</span>
+                      <>
+                        <span className="italic">No description</span>
+                        {file.uploader &&
+                          file.uploader.toLowerCase() !== "null" && (
+                            <span className="ml-1 italic text-gray-500">
+                              — {file.uploader}
+                            </span>
+                          )}
+                      </>
                     )}
                   </p>
                 </div>

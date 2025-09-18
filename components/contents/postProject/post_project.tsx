@@ -5,6 +5,7 @@ import ContractorEvaluation from "./contractors_evaluation";
 import ManPowerCount from "./manpower_count";
 import ValueEng from "./value_eng";
 import PostProjectReview from "./post_project_review";
+import NcCapa from "./nccapa";
 
 interface PostProjectProprs {
   project: Projects | null;
@@ -15,7 +16,7 @@ function PostProject({ project }: PostProjectProprs) {
     <div>
       <Divider className="mb-4" />
       <Tabs placement="top" variant="solid" size="md">
-        <Tab key="Value Engineer" title="Value Engineer">
+        <Tab key="Value Engineering" title="Value Engineering">
           <ValueEng project={project} />
         </Tab>
         <Tab key="Contractor Evaluation" title="Contractor Evaluation">
@@ -26,6 +27,9 @@ function PostProject({ project }: PostProjectProprs) {
         </Tab>
         <Tab key="Post Project Review" title="Post Project Review">
           <PostProjectReview project={project} />
+        </Tab>
+        <Tab key="NC/CAPA" title="NC/CAPA">
+          <NcCapa project={project} />
         </Tab>
       </Tabs>
     </div>

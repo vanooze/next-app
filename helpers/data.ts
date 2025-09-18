@@ -1,13 +1,12 @@
 export const selectReport = [
-  { key: "Electrical", label: "Electrical" },
-  { key: "Structural", label: "Structural" },
-  { key: "Cabling/Conduit", label: "Cabling/Conduit" },
-  { key: "LED Wall", label: "LED Wall" },
-  { key: "Document Changes", label: "Document Changes" },
-  { key: "Cladding", label: "Cladding" },
-  { key: "Safety", label: "Safety" },
-  { key: "Concerns", label: "Concerns" },
-  { key: "Others", label: "Others" },
+  { key: "Daily Updates", label: "Daily Updates" },
+  { key: "PIB", label: "PIB" },
+  { key: "WAR", label: "WAR" },
+];
+
+export const selectPostReviewFileType = [
+  { key: "NC", label: "NC" },
+  { key: "CAPA", label: "CAPA" },
 ];
 
 export const selectEboq = [

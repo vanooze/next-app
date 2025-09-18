@@ -5,17 +5,12 @@ import useSWR from "swr";
 import { useState, useMemo } from "react";
 import {
   RiskRow,
-  Likelihood,
-  Severity,
   Status,
-  Owner,
-  likelihoodOptions,
-  severityOptions,
   statusOptions,
-  ownerOptions,
   riskLevelScores,
   initialData, // import your template rows
 } from "@/helpers/db";
+import { useUserContext } from "@/components/layout/UserContext";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -36,8 +31,12 @@ export default function RiskAssessmentTable({
     fetcher,
     { revalidateOnFocus: false }
   );
-
+  const { user } = useUserContext();
   const [saving, setSaving] = useState(false);
+  const canAssign =
+    user?.designation?.includes("PMO TL") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
+    user?.name === "Kaye Kimberly L. Manuel";
 
   const risks = useMemo(() => {
     if (!dbRisks) return initialData;
@@ -48,16 +47,15 @@ export default function RiskAssessmentTable({
   }, [dbRisks]);
 
   const updateField = <K extends keyof RiskRow>(
-    id: number,
+    riskId: string,
     field: K,
     value: RiskRow[K]
   ) => {
     const updated = risks.map((row) =>
-      row.id === id ? { ...row, [field]: value } : row
+      row.riskId === riskId ? { ...row, [field]: value } : row
     );
     mutateRisks(updated, false);
   };
-
   const handleSave = async () => {
     if (!risks || !projectId) return;
     setSaving(true);
@@ -122,35 +120,89 @@ export default function RiskAssessmentTable({
         </thead>
 
         <tbody className="divide-y divide-gray-100">
-          {risks.map((row) => (
-            <tr key={row.id}>
-              <td className="px-4 py-2">{row.riskId}</td>
-              <td className="px-4 py-2">{row.description}</td>
-              <td className="px-4 py-2">{row.potentialImpact}</td>
-              <td className="px-4 py-2">{row.likelihood}</td>
-              <td className="px-4 py-2 text-center">
-                {
-                  riskLevelScores[
+          {risks.map((row) => {
+            const likelihoodColor =
+              row.likelihood === "Low"
+                ? "text-green-600 font-semibold"
+                : row.likelihood === "Medium"
+                ? "text-orange-500 font-semibold"
+                : row.likelihood === "High"
+                ? "text-red-600 font-semibold"
+                : "";
+
+            const severityColor =
+              row.severity === "Low"
+                ? "text-green-600 font-semibold"
+                : row.severity === "Medium"
+                ? "text-orange-500 font-semibold"
+                : row.severity === "High"
+                ? "text-red-600 font-semibold"
+                : "";
+
+            return (
+              <tr key={row.id}>
+                <td className="px-4 py-2">{row.riskId}</td>
+                <td className="px-4 py-2">{row.description}</td>
+                <td className="px-4 py-2">{row.potentialImpact}</td>
+
+                {/* Likelihood w/ color */}
+                <td className={`px-4 py-2 ${likelihoodColor}`}>
+                  {row.likelihood}
+                </td>
+                <td className="px-4 py-2 text-center">
+                  {
+                    riskLevelScores[
+                      row.likelihood as keyof typeof riskLevelScores
+                    ]
+                  }
+                </td>
+
+                {/* Severity w/ color */}
+                <td className={`px-4 py-2 ${severityColor}`}>{row.severity}</td>
+                <td className="px-4 py-2 text-center">
+                  {
+                    riskLevelScores[
+                      row.severity as keyof typeof riskLevelScores
+                    ]
+                  }
+                </td>
+
+                {/* Total */}
+                <td className="px-4 py-2 text-center">
+                  {riskLevelScores[
                     row.likelihood as keyof typeof riskLevelScores
-                  ]
-                }
-              </td>
-              <td className="px-4 py-2">{row.severity}</td>
-              <td className="px-4 py-2 text-center">
-                {riskLevelScores[row.severity as keyof typeof riskLevelScores]}
-              </td>
-              <td className="px-4 py-2 text-center">
-                {riskLevelScores[
-                  row.likelihood as keyof typeof riskLevelScores
-                ] +
-                  riskLevelScores[row.severity as keyof typeof riskLevelScores]}
-              </td>
-              <td className="px-4 py-2">{row.isoClause}</td>
-              <td className="px-4 py-2">{row.mitigation}</td>
-              <td className="px-4 py-2">{row.owner}</td>
-              <td className="px-4 py-2">{row.status}</td>
-            </tr>
-          ))}
+                  ] +
+                    riskLevelScores[
+                      row.severity as keyof typeof riskLevelScores
+                    ]}
+                </td>
+
+                <td className="px-4 py-2">{row.isoClause}</td>
+                <td className="px-4 py-2">{row.mitigation}</td>
+                <td className="px-4 py-2">{row.owner}</td>
+                <td className="px-4 py-2">
+                  {canAssign ? (
+                    <Select
+                      aria-label="Status"
+                      variant="bordered"
+                      size="sm"
+                      selectedKeys={new Set([row.status])}
+                      onSelectionChange={(keys) => {
+                        const value = Array.from(keys)[0] as Status;
+                        updateField(row.riskId, "status", value);
+                      }}
+                    >
+                      {statusOptions.map((item) => (
+                        <SelectItem key={item.value}>{item.label}</SelectItem>
+                      ))}
+                    </Select>
+                  ) : (
+                    <span>{row.status}</span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 

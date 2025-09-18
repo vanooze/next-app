@@ -27,8 +27,6 @@ export const Login = () => {
         throw new Error(data.error || "Login failed");
       }
       setLoading(true);
-      console.log("Token being set:", data.token);
-      // Redirect after short delay
       setTimeout(() => {
         router.push("/");
         setLoading(false);

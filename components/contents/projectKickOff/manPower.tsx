@@ -26,7 +26,7 @@ interface ManPowerProps {
 const fetcher = async (url: string) => {
   const res = await fetch(url);
   const data = await res.json();
-  return Array.isArray(data) ? data : [data]; // Ensure array format
+  return Array.isArray(data) ? data : [data];
 };
 
 export default function ManPower({ project }: ManPowerProps) {
@@ -41,6 +41,14 @@ export default function ManPower({ project }: ManPowerProps) {
   useEffect(() => {
     if (project) setProjectId(project.projectId);
   }, [project]);
+
+  const canAssign =
+    user?.designation?.includes("PMO TL") ||
+    user?.designation?.includes("TECHNICAL ASSISTANT MANAGER") ||
+    user?.designation?.includes("IT SUPERVISOR") ||
+    user?.designation?.includes("TMIG SUPERVISOR") ||
+    user?.designation?.includes("TECHNICAL SUPERVISOR") ||
+    user?.designation?.includes("DESIGN SUPERVISOR");
 
   const headingClasses =
     "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
@@ -97,7 +105,7 @@ export default function ManPower({ project }: ManPowerProps) {
       const data = await res.json();
       console.log("Man Power Allocated:", data);
 
-      await mutate(); // Revalidate the current SWR key
+      await mutate();
     } catch (err) {
       console.error(err);
     } finally {
@@ -107,128 +115,128 @@ export default function ManPower({ project }: ManPowerProps) {
 
   return (
     <>
-      <div className="grid grid-cols-4 gap-4">
-        {/* Person In Charge */}
-        <div>
-          <Select
-            label="Person In Charge"
-            selectionMode="multiple"
-            placeholder="Select a PIC for this project"
-            variant="bordered"
-            items={selectPmo}
-            scrollShadowProps={{ isEnabled: false }}
-            selectedKeys={personInCharge}
-            onSelectionChange={(keys) => {
-              setPersonInCharge(
-                keys === "all"
-                  ? new Set(selectPmo.map((item) => item.key))
-                  : (keys as Set<string>)
-              );
-            }}
-          >
-            {[
-              { title: "PMO", data: selectPmo },
-              { title: "Technical", data: selectTMIG },
-            ].map(({ title, data }) => (
-              <SelectSection
-                key={title}
-                classNames={{ heading: headingClasses }}
-                title={title}
-              >
-                {data.map((item) => (
-                  <SelectItem key={item.key}>{item.label}</SelectItem>
-                ))}
-              </SelectSection>
-            ))}
-          </Select>
-          <p className="text-small text-default-500 p-1">
-            Selected: {Array.from(personInCharge).join(" | ")}
-          </p>
-        </div>
+      {canAssign && (
+        <div className="grid grid-cols-4 gap-4">
+          <div>
+            <Select
+              label="Person In Charge"
+              selectionMode="multiple"
+              placeholder="Select a PIC for this project"
+              variant="bordered"
+              items={selectPmo}
+              scrollShadowProps={{ isEnabled: false }}
+              selectedKeys={personInCharge}
+              onSelectionChange={(keys) => {
+                setPersonInCharge(
+                  keys === "all"
+                    ? new Set(selectPmo.map((item) => item.key))
+                    : (keys as Set<string>)
+                );
+              }}
+            >
+              {[
+                { title: "PMO", data: selectPmo },
+                { title: "Technical", data: selectTMIG },
+              ].map(({ title, data }) => (
+                <SelectSection
+                  key={title}
+                  classNames={{ heading: headingClasses }}
+                  title={title}
+                >
+                  {data.map((item) => (
+                    <SelectItem key={item.key}>{item.label}</SelectItem>
+                  ))}
+                </SelectSection>
+              ))}
+            </Select>
+            <p className="text-small text-default-500 p-1">
+              Selected: {Array.from(personInCharge).join(" | ")}
+            </p>
+          </div>
 
-        {/* PMO Officer */}
-        <div>
-          <Select
-            label="Add PMO Officer"
-            placeholder="Select PMO"
-            variant="bordered"
-            items={selectPmo}
-            scrollShadowProps={{ isEnabled: false }}
-            selectedKeys={new Set([pmoOfficers])}
-            onSelectionChange={(keys) =>
-              setPmoOfficers(Array.from(keys)[0] as string)
-            }
-          >
-            {(item) => <SelectItem key={item.key}>{item.label}</SelectItem>}
-          </Select>
-        </div>
+          <div>
+            <Select
+              label="Add PMO Officer"
+              placeholder="Select PMO"
+              variant="bordered"
+              items={selectPmo}
+              scrollShadowProps={{ isEnabled: false }}
+              selectedKeys={new Set([pmoOfficers])}
+              onSelectionChange={(keys) =>
+                setPmoOfficers(Array.from(keys)[0] as string)
+              }
+            >
+              {(item) => <SelectItem key={item.key}>{item.label}</SelectItem>}
+            </Select>
+          </div>
 
-        {/* Technicals */}
-        <div>
-          <Select
-            selectionMode="multiple"
-            items={selectTMIG}
-            label="Add Technicals"
-            placeholder="Select Technical"
-            variant="bordered"
-            selectedKeys={technicals}
-            onSelectionChange={(keys) => {
-              setTechnicals(
-                keys === "all"
-                  ? new Set(selectTMIG.map((item) => item.key))
-                  : (keys as Set<string>)
-              );
-            }}
-          >
-            {[
-              { title: "Design", data: selectDesign },
-              { title: "Technical", data: selectTechnical },
-              { title: "Programmer", data: selectProgrammer },
-              { title: "TMIG", data: selectTMIG },
-            ].map(({ title, data }) => (
-              <SelectSection
-                key={title}
-                classNames={{ heading: headingClasses }}
-                title={title}
-              >
-                {data.map((item) => (
-                  <SelectItem key={item.key}>{item.label}</SelectItem>
-                ))}
-              </SelectSection>
-            ))}
-          </Select>
-          <p className="text-small text-default-500 p-1">
-            Selected: {Array.from(technicals).join(" | ")}
-          </p>
-        </div>
+          <div>
+            <Select
+              selectionMode="multiple"
+              items={selectTMIG}
+              label="Add Technicals"
+              placeholder="Select Technical"
+              variant="bordered"
+              selectedKeys={technicals}
+              onSelectionChange={(keys) => {
+                setTechnicals(
+                  keys === "all"
+                    ? new Set(selectTMIG.map((item) => item.key))
+                    : (keys as Set<string>)
+                );
+              }}
+            >
+              {[
+                { title: "Design", data: selectDesign },
+                { title: "Technical", data: selectTechnical },
+                { title: "Programmer", data: selectProgrammer },
+                { title: "TMIG", data: selectTMIG },
+              ].map(({ title, data }) => (
+                <SelectSection
+                  key={title}
+                  classNames={{ heading: headingClasses }}
+                  title={title}
+                >
+                  {data.map((item) => (
+                    <SelectItem key={item.key}>{item.label}</SelectItem>
+                  ))}
+                </SelectSection>
+              ))}
+            </Select>
+            <p className="text-small text-default-500 p-1">
+              Selected: {Array.from(technicals).join(" | ")}
+            </p>
+          </div>
 
-        {/* Freelancers */}
-        <div>
-          <Textarea
-            label="Freelances"
-            labelPlacement="inside"
-            placeholder="Enter names"
-            value={freelances}
-            maxRows={3}
-            variant="bordered"
-            isClearable
-            onValueChange={setFreelances}
-          />
-          <p className="text-default-500 text-small">
-            Freelances: {freelances}
-          </p>
+          <div>
+            <Textarea
+              label="Freelances"
+              labelPlacement="inside"
+              placeholder="Enter names"
+              value={freelances}
+              maxRows={3}
+              variant="bordered"
+              isClearable
+              onValueChange={setFreelances}
+            />
+            <p className="text-default-500 text-small">
+              Freelances: {freelances}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
-      <Button
-        color="primary"
-        className="max-w-lg mt-2"
-        isDisabled={!project?.projectId}
-        isLoading={saving}
-        onPress={handleAddManPower}
-      >
-        {saving ? "Saving..." : "Submit"}
-      </Button>
+      {canAssign && (
+        <Button
+          color="primary"
+          className="max-w-lg mt-2"
+          isDisabled={!project?.projectId}
+          isLoading={saving}
+          onPress={handleAddManPower}
+        >
+          {saving ? "Saving..." : "Submit"}
+        </Button>
+      )}
 
       <Divider className="m-4" />
       <div className="mt-4">

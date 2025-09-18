@@ -28,7 +28,7 @@ export async function GET(req) {
         currency,
         project_manager,
         access
-        FROM projects
+        FROM projects_manual
       ${id ? "WHERE project_id = ?" : ""}
     `,
       id ? [id] : []

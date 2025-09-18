@@ -53,7 +53,17 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       const hasAccessByRole =
         user.designation?.includes("PMO TL") ||
         user.designation?.includes("DOCUMENT CONTROLLER") ||
+        user.designation?.includes("TECHNICAL ASSISTANT MANAGER") ||
+        user.designation?.includes("IT SUPERVISOR") ||
+        user.designation?.includes("TMIG SUPERVISOR") ||
+        user.designation?.includes("TECHNICAL SUPERVISOR") ||
+        user.designation?.includes("TECHNICAL ADMIN CONSULTANT") ||
+        user.designation?.includes("DESIGN SUPERVISOR") ||
         user.designation?.includes("TECHNICAL MANAGER") ||
+        user.department?.includes("TMIG") ||
+        user.department?.includes("DESIGN") ||
+        user.department?.includes("PMO") ||
+        user?.name === "Kaye Kimberly L. Manuel" ||
         user.restriction === "9";
 
       return hasAccessByName || hasAccessByRole;
@@ -109,6 +119,9 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
     return sortedTasks.slice(start, end);
   }, [page, sortedTasks]);
+
+  console.log("User Context:", user);
+  console.log("Filtered tasks:", filteredTasks);
 
   return (
     <div

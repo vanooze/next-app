@@ -11,6 +11,7 @@ import { useUserContext } from "@/components/layout/UserContext";
 import { Projects } from "@/helpers/acumatica";
 import { SearchIcon } from "@/components/icons/searchicon";
 import { EyeIcon } from "@/components/icons/table/eye-icon";
+import { AddProject } from "@/components/deparments/PMO/project/action/addProject";
 
 export const Project = () => {
   const { user } = useUserContext();
@@ -42,7 +43,7 @@ export const Project = () => {
         const query = debouncedFilterValue.toLowerCase();
         return (
           task.projectId?.toLowerCase().includes(query) ||
-          task.template?.toLowerCase().includes(query)
+          task.description?.toLowerCase().includes(query)
         );
       })
     : tasks;
@@ -86,7 +87,7 @@ export const Project = () => {
               input: "w-full",
               mainWrapper: "w-full",
             }}
-            placeholder="Search Customer/Sales Name"
+            placeholder="Search Project ID / Description"
             value={filterValue}
             onValueChange={setFilterValue}
           />
@@ -98,7 +99,9 @@ export const Project = () => {
             </Tooltip>
           </div>
         </div>
-        <div className="flex flex-row gap-3.5 flex-wrap"></div>
+        <div className="flex flex-row gap-3.5 flex-wrap">
+          <AddProject />
+        </div>
       </div>
       <div
         className={`${

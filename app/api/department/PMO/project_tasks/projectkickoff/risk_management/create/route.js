@@ -21,60 +21,34 @@ export async function POST(req) {
     }
 
     for (const risk of risks) {
-      const existing = await executeQuery(
-        `SELECT id FROM risk_management WHERE project_id = ? AND risk_id = ?`,
-        [projectId, risk.riskId]
-      );
-
-      if (existing.length > 0) {
-        await executeQuery(
-          `
-          UPDATE risk_management
-          SET 
-            description = ?,
-            potential_impact = ?,
-            likelihood = ?,
-            severity = ?,
-            iso_clause = ?,
-            mitigation = ?,
-            owner = ?,
-            status = ?
-          WHERE project_id = ? AND risk_id = ?
-          `,
-          [
-            risk.description || null,
-            risk.potentialImpact || null,
-            risk.likelihood || null,
-            risk.severity || null,
-            risk.isoClause || null,
-            risk.mitigation || null,
-            risk.owner || null,
-            risk.status || null,
-            projectId,
-            risk.riskId,
-          ]
-        );
-      } else {
-        await executeQuery(
-          `
-          INSERT INTO risk_management 
+      await executeQuery(
+        `
+        INSERT INTO risk_management 
           (project_id, risk_id, description, potential_impact, likelihood, severity, iso_clause, mitigation, owner, status, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE())
-          `,
-          [
-            projectId,
-            risk.riskId || null,
-            risk.description || null,
-            risk.potentialImpact || null,
-            risk.likelihood || null,
-            risk.severity || null,
-            risk.isoClause || null,
-            risk.mitigation || null,
-            risk.owner || null,
-            risk.status || null,
-          ]
-        );
-      }
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE())
+        ON DUPLICATE KEY UPDATE
+          description = VALUES(description),
+          potential_impact = VALUES(potential_impact),
+          likelihood = VALUES(likelihood),
+          severity = VALUES(severity),
+          iso_clause = VALUES(iso_clause),
+          mitigation = VALUES(mitigation),
+          owner = VALUES(owner),
+          status = VALUES(status)
+        `,
+        [
+          projectId,
+          risk.riskId || null,
+          risk.description || null,
+          risk.potentialImpact || null,
+          risk.likelihood || null,
+          risk.severity || null,
+          risk.isoClause || null,
+          risk.mitigation || null,
+          risk.owner || null,
+          risk.status || null,
+        ]
+      );
     }
 
     return NextResponse.json({ message: "Risks saved successfully" });

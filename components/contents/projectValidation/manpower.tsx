@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import useSWR from "swr";
 import { Projects } from "@/helpers/acumatica";
 import { Spinner, Checkbox } from "@heroui/react";
-
 interface ManPowerProps {
   project: Projects | null;
 }
@@ -17,7 +16,6 @@ const fetcher = async (url: string) => {
 
 export default function ManPower({ project }: ManPowerProps) {
   const [projectId, setProjectId] = useState<string | null>(null);
-
   useEffect(() => {
     if (project) setProjectId(project.projectId);
   }, [project]);

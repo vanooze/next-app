@@ -16,7 +16,7 @@ import {
 } from "@heroui/react";
 import useSWR from "swr";
 import { DropZone, DropItem, FileTrigger } from "react-aria-components";
-import { selectSales, selectPmo } from "@/helpers/data";
+import { selectSales, selectPmo, selectDesign } from "@/helpers/data";
 import { Projects } from "@/helpers/acumatica";
 import { useUserContext } from "@/components/layout/UserContext";
 
@@ -69,13 +69,9 @@ export default function Conceptual({ project }: ConceptualProps) {
   }, [projectId]);
 
   const canUpload =
-    user?.name === assignedPersonnel ||
-    user?.designation.includes("PMO TL") ||
-    user?.designation.includes("DOCUMENT CONTROLLER");
+    user?.name === assignedPersonnel || user?.designation.includes("PMO TL");
 
-  const canAssign =
-    user?.designation.includes("PMO TL") ||
-    user?.designation.includes("DOCUMENT CONTROLLER");
+  const canAssign = user?.designation.includes("PMO TL");
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/projectkickoff/conceptual?id=${projectId}`
@@ -200,83 +196,89 @@ export default function Conceptual({ project }: ConceptualProps) {
               <SelectItem key={item.key}>{item.label}</SelectItem>
             ))}
           </SelectSection>
+          <SelectSection
+            classNames={{ heading: headingClasses }}
+            title="Design"
+          >
+            {selectDesign.map((item) => (
+              <SelectItem key={item.key}>{item.label}</SelectItem>
+            ))}
+          </SelectSection>
         </Select>
       )}
 
-      {assignedPersonnel && canUpload && (
-        <>
-          {/* PO Details */}
-          <h1 className="text-lg font-semibold">Signed Conceptual Details</h1>
-          <Textarea
-            className="max-w-lg"
-            label="Signed Conceptual Details"
-            placeholder="Enter the details here..."
-            value={PODetails}
-            onChange={(e) => setPODetails(e.target.value)}
-          />
+      {assignedPersonnel ||
+        (canUpload && (
+          <>
+            <h1 className="text-lg font-semibold">Signed Conceptual Details</h1>
+            <Textarea
+              className="max-w-lg"
+              label="Signed Conceptual Details"
+              placeholder="Enter the details here..."
+              value={PODetails}
+              onChange={(e) => setPODetails(e.target.value)}
+            />
+            <h1 className="text-lg font-semibold">
+              Signed Conceptual Attachment
+            </h1>
+            <div className="border border-dashed rounded max-w-lg">
+              <DropZone
+                onDrop={handleDrop}
+                className="p-6 border border-gray-300 rounded text-center"
+              >
+                <p className="text-sm text-gray-600">Drag & drop files here</p>
+                <FileTrigger
+                  allowsMultiple
+                  acceptedFileTypes={[
+                    "image/png",
+                    "image/jpeg",
+                    "application/pdf",
+                    "text/csv",
+                  ]}
+                  onSelect={(files) => {
+                    if (files) {
+                      setFiles((prev) => [...prev, ...Array.from(files)]);
+                    }
+                  }}
+                ></FileTrigger>
+              </DropZone>
 
-          {/* PO Attachment */}
-          <h1 className="text-lg font-semibold">
-            Signed Conceptual Attachment
-          </h1>
-          <div className="border border-dashed rounded max-w-lg">
-            <DropZone
-              onDrop={handleDrop}
-              className="p-6 border border-gray-300 rounded text-center"
-            >
-              <p className="text-sm text-gray-600">Drag & drop files here</p>
-              <FileTrigger
-                allowsMultiple
-                acceptedFileTypes={[
-                  "image/png",
-                  "image/jpeg",
-                  "application/pdf",
-                  "text/csv",
-                ]}
-                onSelect={(files) => {
-                  if (files) {
-                    setFiles((prev) => [...prev, ...Array.from(files)]);
-                  }
-                }}
-              ></FileTrigger>
-            </DropZone>
-
-            {files.length > 0 && (
-              <div className="mt-4 space-y-2">
-                <p className="font-semibold text-sm">Files to Upload:</p>
-                {files.map((file, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
-                  >
-                    <span className="text-sm text-gray-700 truncate">
-                      {file.name}
-                    </span>
-                    <button
-                      onClick={() =>
-                        setFiles((prev) => prev.filter((_, i) => i !== index))
-                      }
-                      className="text-red-500 hover:text-red-700 text-sm ml-2"
+              {files.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="font-semibold text-sm">Files to Upload:</p>
+                  {files.map((file, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
                     >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                      <span className="text-sm text-gray-700 truncate">
+                        {file.name}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setFiles((prev) => prev.filter((_, i) => i !== index))
+                        }
+                        className="text-red-500 hover:text-red-700 text-sm ml-2"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          {/* Submit Button */}
-          <Button
-            color="primary"
-            className="max-w-lg"
-            isDisabled={isUploading}
-            onPress={submitForm}
-          >
-            {isUploading ? "Uploading..." : "Submit"}
-          </Button>
-        </>
-      )}
+            {/* Submit Button */}
+            <Button
+              color="primary"
+              className="max-w-lg"
+              isDisabled={isUploading}
+              onPress={submitForm}
+            >
+              {isUploading ? "Uploading..." : "Submit"}
+            </Button>
+          </>
+        ))}
       <Divider />
 
       {isLoading && (
@@ -301,7 +303,7 @@ export default function Conceptual({ project }: ConceptualProps) {
             "image/webp",
             "image/gif",
           ].includes(file.attachmentType);
-          const previewUrl = `/uploads/${file.projectId}/${file.attachmentName}`;
+          const previewUrl = `/uploads/${file.projectId}/kickoff/${file.attachmentName}`;
 
           return (
             <Card
@@ -324,10 +326,27 @@ export default function Conceptual({ project }: ConceptualProps) {
               <CardFooter className="absolute bg-white/30 backdrop-blur-sm bottom-0 border-t border-white/30 z-10 justify-between p-2">
                 <div>
                   <p className="text-black text-tiny">
-                    {file.description && file.description !== "null" ? (
-                      file.description
+                    {file.description &&
+                    file.description.toLowerCase() !== "null" ? (
+                      <>
+                        {file.description}
+                        {file.assignedPersonnel &&
+                          file.assignedPersonnel.toLowerCase() !== "null" && (
+                            <span className="ml-1 italic text-gray-500">
+                              — {file.assignedPersonnel}
+                            </span>
+                          )}
+                      </>
                     ) : (
-                      <span className="italic">No description</span>
+                      <>
+                        <span className="italic">No description</span>
+                        {file.assignedPersonnel &&
+                          file.assignedPersonnel.toLowerCase() !== "null" && (
+                            <span className="ml-1 italic text-gray-500">
+                              — {file.assignedPersonnel}
+                            </span>
+                          )}
+                      </>
                     )}
                   </p>
                 </div>

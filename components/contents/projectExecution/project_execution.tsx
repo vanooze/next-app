@@ -4,7 +4,7 @@ import { Projects } from "@/helpers/acumatica";
 import Reports from "./reports";
 import Chart from "./project_chart";
 import ManPower from "./manpower_delegation";
-import PIB from "./pib";
+import Accounting from "./accounting";
 
 interface ProjectExecutionProps {
   project: Projects | null;
@@ -20,13 +20,12 @@ function ProjectExecution({ project }: ProjectExecutionProps) {
         <Tab key="Reporting" title="Reporting">
           <Reports project={project} />
         </Tab>
-        <Tab key="PIB" title="PIB">
-          <PIB project={project} />
-        </Tab>
         <Tab key="Gannt Chart" title="Gannt Chart">
           <Chart project={project} />
         </Tab>
-        <Tab key="Accounting" title="Accounting"></Tab>
+        <Tab key="Accounting" title="Accounting">
+          <Accounting project={project} />
+        </Tab>
       </Tabs>
     </div>
   );

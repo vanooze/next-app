@@ -19,7 +19,7 @@ export async function GET(req) {
       `
       SELECT
         project_id,
-        assigned_personnel,
+        uploader,
         description,      
         attachment_name,
         attachment_type,
@@ -34,7 +34,7 @@ export async function GET(req) {
 
     const tasks = rows.map((r) => ({
       projectId: r.project_id,
-      assignedPersonnel: r.assigned_personnel,
+      uploader: r.uploader,
       description: r.description,
       attachmentName: r.attachment_name,
       attachmentType: r.attachment_type,

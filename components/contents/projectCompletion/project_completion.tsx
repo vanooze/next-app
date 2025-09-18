@@ -2,8 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { Divider, Tab, Tabs, Checkbox, Link, Spinner } from "@heroui/react";
-
-import PIB from "./pib";
 import WAR from "./war";
 import COC from "./coc";
 import COA from "./coa";
@@ -16,7 +14,6 @@ import Trainee from "./trainee_acceptance";
 import BuiltPlans from "./built_plans";
 import { Projects } from "@/helpers/acumatica";
 
-// Summary tab configuration
 const summaryConfig = [
   { label: "W.A.R.", key: "war" },
   { label: "P.I.B. Summary", key: "pib" },
@@ -139,10 +136,8 @@ function CheckboxRow({
 
   return (
     <tr className="border-b">
-      {/* First column: the label */}
       <td className="py-2 px-4 font-medium">{label}</td>
 
-      {/* Second column: files or dash */}
       <td className="py-2 px-4">
         {hasFile
           ? files!.map((f, i) => (
@@ -188,9 +183,6 @@ export default function ProjectCompletion({ project }: ProjectCompletionProps) {
         </Tab>
         <Tab key="W.A.R." title="W.A.R.">
           <WAR project={project} />
-        </Tab>
-        <Tab key="P.I.B. Summary" title="P.I.B. Summary">
-          <PIB project={project} />
         </Tab>
         <Tab key="COC" title="COC">
           <COC project={project} />

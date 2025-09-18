@@ -43,8 +43,8 @@ export async function GET(req) {
       attachmentName: r.attachment_name,
       attachmentType: r.attachment_type,
       createdAt: r.created_at,
-      type: r.type,
       status: r.status,
+      type: r.type,
     }));
 
     return NextResponse.json(tasks);

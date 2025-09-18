@@ -2,12 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import {
-  Select,
-  SelectItem,
   Textarea,
   Button,
   Divider,
-  SelectSection,
   Card,
   CardHeader,
   CardFooter,
@@ -16,7 +13,6 @@ import {
 } from "@heroui/react";
 import useSWR from "swr";
 import { DropZone, DropItem, FileTrigger } from "react-aria-components";
-import { selectSales, selectPmo } from "@/helpers/data";
 import { Projects } from "@/helpers/acumatica";
 import { useUserContext } from "@/components/layout/UserContext";
 
@@ -33,49 +29,17 @@ const fetcher = async (url: string) => {
 export default function PrePorjectAgreement({ project }: PreProjectProps) {
   const { user } = useUserContext();
   const [projectId, setProjectId] = useState<string | null>("");
-  const [assignedPersonnel, setassignedPersonnel] = useState("");
+  const [assignedPersonnel, setassignedPersonnel] = useState(user?.name);
   const [PODetails, setPODetails] = useState("");
   const [files, setFiles] = useState<File[]>([]);
-  const [isPOLoading, setIsPOLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  const headingClasses =
-    "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
   useEffect(() => {
     if (project) {
       setProjectId(project.projectId);
     }
   }, [project]);
 
-  useEffect(() => {
-    const fetchassignedPersonnel = async () => {
-      if (!projectId) return;
-      setIsPOLoading(true);
-      try {
-        const res = await fetch(
-          `/api/department/PMO/project_tasks/documentation/pre_project_agreement/personnel/get?projectId=${projectId}`
-        );
-        const data = await res.json();
-        if (data.assignedPersonnel) {
-          setassignedPersonnel(data.assignedPersonnel);
-        }
-      } catch (err) {
-        console.error("Failed to fetch assigned TOR", err);
-      } finally {
-        setIsPOLoading(false);
-      }
-    };
-
-    fetchassignedPersonnel();
-  }, [projectId]);
-
-  const canUpload =
-    user?.name === assignedPersonnel ||
-    user?.designation.includes("PMO TL") ||
-    user?.designation.includes("DOCUMENT CONTROLLER");
-
-  const canAssign =
-    user?.designation.includes("PMO TL") ||
-    user?.designation.includes("DOCUMENT CONTROLLER");
+  const canUpload = user?.designation.includes("DESIGN SUPERVISOR");
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/documentation/pre_project_agreement?id=${projectId}`
@@ -145,70 +109,8 @@ export default function PrePorjectAgreement({ project }: PreProjectProps) {
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">
-      <h1 className="text-lg font-semibold">
-        Assign Pre Project Agreement to:
-      </h1>
-
-      {isPOLoading ? (
-        <Spinner
-          classNames={{ label: "text-foreground mt-4" }}
-          label="loading..."
-          variant="wave"
-        />
-      ) : (
-        <Select
-          className="max-w-xs"
-          label="Designate Pre Project Agreement to:"
-          variant="bordered"
-          isDisabled={!canAssign}
-          items={selectSales}
-          scrollShadowProps={{ isEnabled: false }}
-          selectedKeys={new Set([assignedPersonnel])}
-          onSelectionChange={async (keys) => {
-            if (!canAssign) return;
-            const selected = Array.from(keys)[0];
-            if (typeof selected === "string") {
-              setassignedPersonnel(selected);
-
-              if (projectId) {
-                try {
-                  await fetch(
-                    "/api/department/PMO/project_tasks/documentation/pre_project_agreement/personnel",
-                    {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        projectId,
-                        assignedPersonnel: selected,
-                      }),
-                    }
-                  );
-                } catch (err) {
-                  console.error(
-                    "Failed to update assigned Pre Project Agreement:",
-                    err
-                  );
-                }
-              }
-            }
-          }}
-        >
-          <SelectSection classNames={{ heading: headingClasses }} title="Sales">
-            {selectSales.map((item) => (
-              <SelectItem key={item.key}>{item.label}</SelectItem>
-            ))}
-          </SelectSection>
-          <SelectSection classNames={{ heading: headingClasses }} title="PMO">
-            {selectPmo.map((item) => (
-              <SelectItem key={item.key}>{item.label}</SelectItem>
-            ))}
-          </SelectSection>
-        </Select>
-      )}
-
       {assignedPersonnel && canUpload && (
         <>
-          {/* PO Details */}
           <h1 className="text-lg font-semibold">
             Pre Project Agreement Details
           </h1>
@@ -219,8 +121,6 @@ export default function PrePorjectAgreement({ project }: PreProjectProps) {
             value={PODetails}
             onChange={(e) => setPODetails(e.target.value)}
           />
-
-          {/* PO Attachment */}
           <h1 className="text-lg font-semibold">
             Pre Project Agreement Attachment
           </h1>
@@ -306,7 +206,7 @@ export default function PrePorjectAgreement({ project }: PreProjectProps) {
             "image/webp",
             "image/gif",
           ].includes(file.attachmentType);
-          const previewUrl = `/uploads/${file.projectId}/${file.attachmentName}`;
+          const previewUrl = `/uploads/${file.projectId}/documentation/${file.attachmentName}`;
 
           return (
             <Card
@@ -329,10 +229,27 @@ export default function PrePorjectAgreement({ project }: PreProjectProps) {
               <CardFooter className="absolute bg-white/30 backdrop-blur-sm bottom-0 border-t border-white/30 z-10 justify-between p-2">
                 <div>
                   <p className="text-black text-tiny">
-                    {file.description && file.description !== "null" ? (
-                      file.description
+                    {file.description &&
+                    file.description.toLowerCase() !== "null" ? (
+                      <>
+                        {file.description}
+                        {file.assignedPersonnel &&
+                          file.assignedPersonnel.toLowerCase() !== "null" && (
+                            <span className="ml-1 italic text-gray-500">
+                              — {file.assignedPersonnel}
+                            </span>
+                          )}
+                      </>
                     ) : (
-                      <span className="italic">No description</span>
+                      <>
+                        <span className="italic">No description</span>
+                        {file.assignedPersonnel &&
+                          file.assignedPersonnel.toLowerCase() !== "null" && (
+                            <span className="ml-1 italic text-gray-500">
+                              — {file.assignedPersonnel}
+                            </span>
+                          )}
+                      </>
                     )}
                   </p>
                 </div>

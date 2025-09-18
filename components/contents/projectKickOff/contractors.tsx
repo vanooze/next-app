@@ -45,7 +45,6 @@ export default function Contractors({ project }: ContractorsProp) {
   const [startDate, setStartDate] = useState<CalendarDate | null>(null);
   const [endDate, setEndDate] = useState<CalendarDate | null>(null);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
-
   const { user } = useUserContext();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const targetRef = useRef(null);
@@ -204,8 +203,12 @@ export default function Contractors({ project }: ContractorsProp) {
             {uploadedFiles.map((file: any, idx: number) => {
               if (!file.attachmentName) return null;
 
-              const previewUrl = `/uploads/${file.projectId}/${file.attachmentName}`;
-              const isLocked = file.status === "Open" || "Close";
+              const previewUrl = `/uploads/${file.projectId}/kickoff/${file.attachmentName}`;
+              const isLocked =
+                file.status === "Open" || file.status === "Close";
+              const hasAccess =
+                user?.designation.includes("PMO TL") ||
+                user?.name === "Hereld Jean Jivi Aguyaoy";
               const isImage = [
                 "image/png",
                 "image/jpeg",
@@ -219,7 +222,9 @@ export default function Contractors({ project }: ContractorsProp) {
                   key={idx}
                   isFooterBlurred
                   className={`relative h-[300px] w-full overflow-hidden ${
-                    isLocked ? "opacity-60 pointer-events-none" : ""
+                    isLocked && hasAccess
+                      ? "opacity-60 pointer-events-none"
+                      : ""
                   }`}
                 >
                   {isImage && (
@@ -238,7 +243,7 @@ export default function Contractors({ project }: ContractorsProp) {
                     </h4>
                   </CardHeader>
                   <CardFooter className="absolute bg-white/30 backdrop-blur-sm bottom-0 border-t border-white/30 z-10 justify-between p-2">
-                    {!isLocked && (
+                    {!isLocked && hasAccess && (
                       <a
                         href={previewUrl}
                         target="_blank"

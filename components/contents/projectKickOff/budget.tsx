@@ -44,8 +44,9 @@ export default function Budget({ project }: BudgetProps) {
   }, [project]);
 
   const canAddBudget =
-    user?.name.includes("HAROLD DAVID") ||
-    user?.name.includes("MARVIN JIMENEZ");
+    user?.name === "HAROLD DAVID" ||
+    user?.name === "MARVIN JIMENEZ" ||
+    user?.name === "JOHN MAGNO";
 
   useEffect(() => {
     if (!project?.projectId) return;

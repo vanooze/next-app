@@ -30,7 +30,7 @@ export async function GET(req) {
         c.type,
         p.description
       FROM contract c
-      LEFT JOIN projects p ON p.project_id = c.project_id
+      LEFT JOIN projects_manual p ON p.project_id = c.project_id
       ${token ? "WHERE c.link_token = ?" : ""}
       `,
       token ? [token] : []

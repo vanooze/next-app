@@ -15,10 +15,9 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
-    // ✅ Table names updated
     const tabConfig = {
       war: { table: "war" },
-      pib: { table: "pib" },
+      pib: { table: "reports", type: "PIB" },
       dr: { table: "dr" },
       Warranty: { table: "warranty" },
       builtPlans: { table: "built_plans" },
@@ -40,24 +39,33 @@ export async function GET(req) {
 
     for (const [tabName, { table, type }] of Object.entries(tabConfig)) {
       try {
-        // Check if table exists
         const columnsData = await executeQuery(
           `SHOW COLUMNS FROM \`${table}\``
         );
         const columnNames = columnsData.map((col) => col.Field);
 
-        const baseColumns = [
-          "project_id",
-          "description",
-          "attachment_name",
-          "attachment_type",
-          "date",
-          "status",
-        ];
-
-        if (columnNames.includes("type")) {
-          baseColumns.push("type");
-        }
+        const baseColumns =
+          tabName === "pib"
+            ? [
+                "project_id",
+                "assigned_personnel AS uploader",
+                "description",
+                "attachment_name",
+                "attachment_type",
+                "date",
+                "status",
+                "type",
+              ]
+            : [
+                "project_id",
+                "uploader",
+                "description",
+                "attachment_name",
+                "attachment_type",
+                "date",
+                "status",
+                ...(columnNames.includes("type") ? ["type"] : []),
+              ];
 
         const conditions = [];
         const params = [];
@@ -88,6 +96,7 @@ export async function GET(req) {
           date: r.date,
           type: r.type || null,
           status: r.status,
+          uploader: r.uploader || null,
         }));
       } catch (err) {
         console.warn(

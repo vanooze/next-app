@@ -13,6 +13,7 @@ import {
   ModalHeader,
   useDisclosure,
 } from "@heroui/react";
+import { useUserContext } from "@/components/layout/UserContext";
 
 interface ChartProps {
   project: Projects | null;
@@ -47,6 +48,7 @@ export default function Chart({ project }: ChartProps) {
   const [projects, setProjects] = useState<GanttItem[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { user } = useUserContext();
 
   const openModal = () => {
     if (projects.length > 0) {
@@ -145,13 +147,17 @@ export default function Chart({ project }: ChartProps) {
     setProjects(data);
   };
 
+  const canModifyChart = user?.department.includes("PMO");
+
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">Project Gantt Chart (ACTUAL)</h1>
 
-      <Button onClick={openModal} className="mb-4">
-        Update Actual Dates
-      </Button>
+      {canModifyChart && (
+        <Button onClick={openModal} className="mb-4">
+          Update Actual Dates
+        </Button>
+      )}
 
       <Modal isOpen={isOpen} onClose={onClose} size="4xl">
         <ModalContent>

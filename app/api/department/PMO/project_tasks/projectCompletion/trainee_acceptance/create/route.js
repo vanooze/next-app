@@ -15,6 +15,7 @@ export async function POST(req) {
     const formData = await req.formData();
 
     const projectId = formData.get("projectId");
+    const uploader = formData.get("uploader");
     const description = formData.get("description");
     const status = formData.get("status");
     const type = formData.get("type");
@@ -40,12 +41,29 @@ export async function POST(req) {
       const buffer = Buffer.from(await file.arrayBuffer());
       fileType = file.type;
 
-      const dirPath = path.join(process.cwd(), "public", "uploads", projectId);
+      const dirPath = path.join(
+        process.cwd(),
+        "public",
+        "uploads",
+        projectId,
+        "completion"
+      );
       if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true });
       }
-      const originalName = path.basename(file.name);
-      filename = `${Date.now()}-${originalName}`;
+
+      const ext = path.extname(file.name);
+      const base = path.basename(file.name, ext);
+      const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+
+      filename = `${base}-${todayStr}${ext}`;
+
+      let version = 1;
+      while (fs.existsSync(path.join(dirPath, filename))) {
+        filename = `${base}-${todayStr}-v${version}${ext}`;
+        version++;
+      }
+
       const savePath = path.join(dirPath, filename);
       fs.writeFileSync(savePath, buffer);
     }
@@ -53,15 +71,17 @@ export async function POST(req) {
     await executeQuery(
       `INSERT INTO trainee_acceptance (
         project_id, 
+        uploader,
         description, 
         attachment_name, 
         attachment_type, 
         date, 
         type, 
         status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         projectId,
+        uploader,
         description || null,
         filename,
         fileType,

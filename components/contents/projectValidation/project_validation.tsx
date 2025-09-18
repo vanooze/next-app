@@ -22,7 +22,7 @@ function ProjectValidation({ project }: ProjectValidationProps) {
         <Tab key="equipment" title="Equipment">
           <Equipment project={project} />
         </Tab>
-        <Tab key="contractors" title="Contractors">
+        <Tab key="contractors (NOA/NTP)" title="Contractors (NOA/NTP)">
           <Contractors project={project} />
         </Tab>
         <Tab key="riskAssessment" title="Risk Assessment">

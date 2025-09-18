@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import {
+  Select,
+  SelectItem,
   Textarea,
   Button,
   Divider,
@@ -15,8 +17,9 @@ import useSWR from "swr";
 import { DropZone, DropItem, FileTrigger } from "react-aria-components";
 import { Projects } from "@/helpers/acumatica";
 import { useUserContext } from "@/components/layout/UserContext";
+import { selectPostReviewFileType } from "@/helpers/data";
 
-interface PIBProps {
+interface ValueEngProps {
   project: Projects | null;
 }
 
@@ -26,10 +29,12 @@ const fetcher = async (url: string) => {
   return Array.isArray(data) ? data : [data]; // Ensure array format
 };
 
-export default function PIB({ project }: PIBProps) {
+export default function NcCapa({ project }: ValueEngProps) {
   const { user } = useUserContext();
   const [projectId, setProjectId] = useState<string | null>(null);
+  const [uploader, setUploader] = useState(user?.name || "Unknown");
   const [Details, setDetails] = useState("");
+  const [type, setType] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -40,7 +45,7 @@ export default function PIB({ project }: PIBProps) {
   }, [project]);
 
   const key = projectId
-    ? `/api/department/PMO/project_tasks/projectCompletion/pib?id=${projectId}`
+    ? `/api/department/PMO/project_tasks/postProject/nccapa?id=${projectId}`
     : null;
 
   const {
@@ -68,12 +73,12 @@ export default function PIB({ project }: PIBProps) {
     setIsUploading(true);
     const attachDate = new Date().toISOString().slice(0, 19).replace("T", " ");
     const status = "1";
-    const type = "SUMMARY"; // Changed here
 
     try {
       for (const file of files) {
         const formData = new FormData();
         formData.append("projectId", projectId.toString());
+        formData.append("uploader", uploader);
         formData.append("description", Details || "null");
         formData.append("status", status);
         formData.append("attachDate", attachDate);
@@ -81,7 +86,7 @@ export default function PIB({ project }: PIBProps) {
         formData.append("file", file);
 
         const res = await fetch(
-          "/api/department/PMO/project_tasks/projectCompletion/pib/create",
+          "/api/department/PMO/project_tasks/postProject/nccapa/create",
           {
             method: "POST",
             body: formData,
@@ -104,87 +109,93 @@ export default function PIB({ project }: PIBProps) {
     }
   };
 
+  const canUpload = user?.department.includes("DESIGN");
+
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">
-      {/* PO Details */}
-      <h1 className="text-lg font-semibold">Summary PIB Details</h1>
-      <Textarea
-        className="max-w-lg"
-        label="Summary PIB Details"
-        placeholder="Enter the details here..."
-        value={Details}
-        onChange={(e) => setDetails(e.target.value)}
-      />
+      {!canUpload && (
+        <>
+          <h1 className="text-lg font-semibold">Select the type</h1>
+          <Select
+            className="max-w-xs"
+            label="Select a type of report"
+            variant="bordered"
+            items={selectPostReviewFileType}
+            scrollShadowProps={{ isEnabled: false }}
+            selectedKeys={[type]}
+            onSelectionChange={(keys) => setType(Array.from(keys)[0] as string)}
+          >
+            {(item) => <SelectItem key={item.key}>{item.label}</SelectItem>}
+          </Select>
+          <h1 className="text-lg font-semibold">NC / CAPA Details</h1>
+          <Textarea
+            className="max-w-lg"
+            label="Value Engineer Details"
+            placeholder="Enter the details here..."
+            value={Details}
+            onChange={(e) => setDetails(e.target.value)}
+          />
 
-      {/* PO Attachment */}
-      <h1 className="text-lg font-semibold">Summary PIB Attachment</h1>
-      <div className="border border-dashed rounded max-w-lg">
-        <DropZone
-          onDrop={handleDrop}
-          className="p-6 border border-gray-300 rounded text-center"
-        >
-          <p className="text-sm text-gray-600">Drag & drop files here</p>
-          <FileTrigger
-            allowsMultiple
-            acceptedFileTypes={[
-              "image/png",
-              "image/jpeg",
-              "application/pdf",
-              "text/csv",
-            ]}
-            onSelect={(files) => {
-              if (files) {
-                setFiles((prev) => [...prev, ...Array.from(files)]);
-              }
-            }}
-          ></FileTrigger>
-        </DropZone>
-
-        {files.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <p className="font-semibold text-sm">Files to Upload:</p>
-            {files.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
-              >
-                <span className="text-sm text-gray-700 truncate">
-                  {file.name}
-                </span>
-                <button
-                  onClick={() =>
-                    setFiles((prev) => prev.filter((_, i) => i !== index))
+          <h1 className="text-lg font-semibold">NC / CAPA Attachment</h1>
+          <div className="border border-dashed rounded max-w-lg">
+            <DropZone
+              onDrop={handleDrop}
+              className="p-6 border border-gray-300 rounded text-center"
+            >
+              <p className="text-sm text-gray-600">Drag & drop files here</p>
+              <FileTrigger
+                allowsMultiple
+                acceptedFileTypes={[
+                  "image/png",
+                  "image/jpeg",
+                  "application/pdf",
+                  "text/csv",
+                ]}
+                onSelect={(files) => {
+                  if (files) {
+                    setFiles((prev) => [...prev, ...Array.from(files)]);
                   }
-                  className="text-red-500 hover:text-red-700 text-sm ml-2"
-                >
-                  ✕
-                </button>
+                }}
+              ></FileTrigger>
+            </DropZone>
+
+            {files.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="font-semibold text-sm">Files to Upload:</p>
+                {files.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
+                  >
+                    <span className="text-sm text-gray-700 truncate">
+                      {file.name}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setFiles((prev) => prev.filter((_, i) => i !== index))
+                      }
+                      className="text-red-500 hover:text-red-700 text-sm ml-2"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Submit Button */}
-      <Button
-        color="primary"
-        className="max-w-lg"
-        isDisabled={isUploading}
-        onPress={submitForm}
-      >
-        {isUploading ? "Uploading..." : "Submit"}
-      </Button>
-
-      <a
-        href="/form/PIB.pdf"
-        download
-        className="text-blue-600 text-sm hover:underline mt-2 max-w-lg"
-      >
-        📄 Download PIB Format (PDF)
-      </a>
-
+          {/* Submit Button */}
+          <Button
+            color="primary"
+            className="max-w-lg"
+            isDisabled={isUploading}
+            onPress={submitForm}
+          >
+            {isUploading ? "Uploading..." : "Submit"}
+          </Button>
+        </>
+      )}
       <Divider />
-
       {/* Uploaded Files Preview */}
       {isLoading && (
         <Spinner
@@ -207,7 +218,7 @@ export default function PIB({ project }: PIBProps) {
             "image/webp",
             "image/gif",
           ].includes(file.attachmentType);
-          const previewUrl = `/uploads/${file.projectId}/${file.attachmentName}`;
+          const previewUrl = `/uploads/${file.projectId}/post_project/${file.attachmentName}`;
 
           return (
             <Card
@@ -226,14 +237,34 @@ export default function PIB({ project }: PIBProps) {
                 <h4 className="text-white font-semibold text-md break-words max-w-[90%]">
                   {file.attachmentName}
                 </h4>
+                <p className="text-gray-200 text-xs mt-1">
+                  {file.attachmentType}
+                </p>
               </CardHeader>
               <CardFooter className="absolute bg-white/30 backdrop-blur-sm bottom-0 border-t border-white/30 z-10 justify-between p-2">
                 <div>
                   <p className="text-black text-tiny">
-                    {file.description && file.description !== "null" ? (
-                      file.description
+                    {file.description &&
+                    file.description.toLowerCase() !== "null" ? (
+                      <>
+                        {file.description}
+                        {file.uploader &&
+                          file.uploader.toLowerCase() !== "null" && (
+                            <span className="ml-1 italic text-gray-500">
+                              — {file.uploader}
+                            </span>
+                          )}
+                      </>
                     ) : (
-                      <span className="italic">No description</span>
+                      <>
+                        <span className="italic">No description</span>
+                        {file.uploader &&
+                          file.uploader.toLowerCase() !== "null" && (
+                            <span className="ml-1 italic text-gray-500">
+                              — {file.uploader}
+                            </span>
+                          )}
+                      </>
                     )}
                   </p>
                 </div>

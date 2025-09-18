@@ -2,12 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import {
-  Select,
-  SelectItem,
   Textarea,
   Button,
   Divider,
-  SelectSection,
   Card,
   CardHeader,
   CardFooter,
@@ -16,7 +13,6 @@ import {
 } from "@heroui/react";
 import useSWR from "swr";
 import { DropZone, DropItem, FileTrigger } from "react-aria-components";
-import { selectSales, selectPmo } from "@/helpers/data";
 import { Projects } from "@/helpers/acumatica";
 import { useUserContext } from "@/components/layout/UserContext";
 
@@ -33,48 +29,18 @@ const fetcher = async (url: string) => {
 export default function BOQ({ project }: BOQProps) {
   const { user } = useUserContext();
   const [projectId, setProjectId] = useState<string | null>("");
-  const [assignedPersonnel, setassignedPersonnel] = useState("");
+  const [assignedPersonnel, setassignedPersonnel] = useState(user?.name);
   const [PODetails, setPODetails] = useState("");
   const [files, setFiles] = useState<File[]>([]);
-  const [isPOLoading, setIsPOLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  const headingClasses =
-    "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
   useEffect(() => {
     if (project) {
       setProjectId(project.projectId);
     }
   }, [project]);
 
-  useEffect(() => {
-    const fetchassignedPersonnel = async () => {
-      if (!projectId) return;
-      setIsPOLoading(true);
-      try {
-        const res = await fetch(
-          `/api/department/PMO/project_tasks/projectkickoff/boq/personnel/get?projectId=${projectId}`
-        );
-        const data = await res.json();
-        if (data.assignedPersonnel) {
-          setassignedPersonnel(data.assignedPersonnel);
-        }
-      } catch (err) {
-        console.error("Failed to fetch assigned TOR", err);
-      } finally {
-        setIsPOLoading(false);
-      }
-    };
-
-    fetchassignedPersonnel();
-  }, [projectId]);
-
   const canUpload =
-    user?.name === assignedPersonnel ||
-    user?.designation.includes("PMO TL") ||
-    user?.designation.includes("DOCUMENT CONTROLLER");
-
-  const canAssign =
-    user?.designation.includes("PMO TL") ||
+    user?.name === "Kaye Kimberly L. Manuel" ||
     user?.designation.includes("DOCUMENT CONTROLLER");
 
   const key = projectId
@@ -129,11 +95,30 @@ export default function BOQ({ project }: BOQProps) {
 
         const result = await res.json();
         if (!res.ok || !result?.file) throw new Error("Upload failed");
+
+        const webhookFormData = new FormData();
+        webhookFormData.append("projectId", projectId.toString());
+        webhookFormData.append(
+          "assignedPersonnel",
+          assignedPersonnel || "null"
+        );
+        webhookFormData.append("description", PODetails || "null");
+        webhookFormData.append("status", status);
+        webhookFormData.append("attachDate", attachDate);
+        webhookFormData.append("type", type);
+        webhookFormData.append("file", file);
+
+        await fetch(
+          "http://localhost:5678/webhook-test/75d91fd6-cbca-432e-b115-935e48ce8461",
+          {
+            method: "POST",
+            body: webhookFormData,
+          }
+        );
       }
 
       // Reset form
       setFiles([]);
-      setassignedPersonnel("");
       setPODetails("");
       alert("Submitted successfully!");
       mutate();
@@ -147,65 +132,8 @@ export default function BOQ({ project }: BOQProps) {
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">
-      <h1 className="text-lg font-semibold">Assign Signed BOQ to:</h1>
-
-      {isPOLoading ? (
-        <Spinner
-          classNames={{ label: "text-foreground mt-4" }}
-          label="loading..."
-          variant="wave"
-        />
-      ) : (
-        <Select
-          className="max-w-xs"
-          label="Designate Signed BOQ to:"
-          variant="bordered"
-          isDisabled={!canAssign}
-          items={selectSales}
-          scrollShadowProps={{ isEnabled: false }}
-          selectedKeys={new Set([assignedPersonnel])}
-          onSelectionChange={async (keys) => {
-            if (!canAssign) return;
-            const selected = Array.from(keys)[0];
-            if (typeof selected === "string") {
-              setassignedPersonnel(selected);
-
-              if (projectId) {
-                try {
-                  await fetch(
-                    "/api/department/PMO/project_tasks/projectkickoff/boq/personnel",
-                    {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        projectId,
-                        assignedPersonnel: selected,
-                      }),
-                    }
-                  );
-                } catch (err) {
-                  console.error("Failed to update assigned BOQ:", err);
-                }
-              }
-            }
-          }}
-        >
-          <SelectSection classNames={{ heading: headingClasses }} title="Sales">
-            {selectSales.map((item) => (
-              <SelectItem key={item.key}>{item.label}</SelectItem>
-            ))}
-          </SelectSection>
-          <SelectSection classNames={{ heading: headingClasses }} title="PMO">
-            {selectPmo.map((item) => (
-              <SelectItem key={item.key}>{item.label}</SelectItem>
-            ))}
-          </SelectSection>
-        </Select>
-      )}
-
-      {assignedPersonnel && canUpload && (
+      {canUpload && (
         <>
-          {/* PO Details */}
           <h1 className="text-lg font-semibold">Signed BOQ Details</h1>
           <Textarea
             className="max-w-lg"
@@ -215,7 +143,6 @@ export default function BOQ({ project }: BOQProps) {
             onChange={(e) => setPODetails(e.target.value)}
           />
 
-          {/* PO Attachment */}
           <h1 className="text-lg font-semibold">Signed BOQ Attachment</h1>
           <div className="border border-dashed rounded max-w-lg">
             <DropZone
@@ -299,7 +226,7 @@ export default function BOQ({ project }: BOQProps) {
             "image/webp",
             "image/gif",
           ].includes(file.attachmentType);
-          const previewUrl = `/uploads/${file.projectId}/${file.attachmentName}`;
+          const previewUrl = `/uploads/${file.projectId}/kickoff/${file.attachmentName}`;
 
           return (
             <Card
@@ -322,10 +249,27 @@ export default function BOQ({ project }: BOQProps) {
               <CardFooter className="absolute bg-white/30 backdrop-blur-sm bottom-0 border-t border-white/30 z-10 justify-between p-2">
                 <div>
                   <p className="text-black text-tiny">
-                    {file.description && file.description !== "null" ? (
-                      file.description
+                    {file.description &&
+                    file.description.toLowerCase() !== "null" ? (
+                      <>
+                        {file.description}
+                        {file.assignedPersonnel &&
+                          file.assignedPersonnel.toLowerCase() !== "null" && (
+                            <span className="ml-1 italic text-gray-500">
+                              — {file.assignedPersonnel}
+                            </span>
+                          )}
+                      </>
                     ) : (
-                      <span className="italic">No description</span>
+                      <>
+                        <span className="italic">No description</span>
+                        {file.assignedPersonnel &&
+                          file.assignedPersonnel.toLowerCase() !== "null" && (
+                            <span className="ml-1 italic text-gray-500">
+                              — {file.assignedPersonnel}
+                            </span>
+                          )}
+                      </>
                     )}
                   </p>
                 </div>

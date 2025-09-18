@@ -6,6 +6,7 @@ import { displayValue } from "@/helpers/displayValue";
 import { formatDateMMDDYYYY } from "@/helpers/formatDate";
 import { useRouter } from "next/navigation";
 import { useUserContext } from "@/components/layout/UserContext";
+import { DotsIcon } from "@/components/icons/accounts/dots-icon";
 
 interface Props {
   Tasks: Projects;
@@ -21,9 +22,16 @@ export const RenderCell = ({ Tasks, columnKey }: Props) => {
     if (!user) return false;
 
     const isManager =
-      user.designation.includes("PMO TL") ||
-      user.designation.includes("DOCUMENT CONTROLLER") ||
+      user.designation?.includes("PMO TL") ||
+      user.designation?.includes("DOCUMENT CONTROLLER") ||
+      user.designation?.includes("TECHNICAL ASSISTANT MANAGER") ||
+      user.designation?.includes("IT SUPERVISOR") ||
+      user.designation?.includes("TMIG SUPERVISOR") ||
+      user.designation?.includes("TECHNICAL SUPERVISOR") ||
+      user.designation?.includes("DESIGN SUPERVISOR") ||
+      user.designation?.includes("TECHNICAL ADMIN CONSULTANT") ||
       user.designation?.includes("TECHNICAL MANAGER") ||
+      user?.name === "Kaye Kimberly L. Manuel" ||
       user.restriction === "9";
 
     const accessList = Tasks.access
@@ -32,6 +40,10 @@ export const RenderCell = ({ Tasks, columnKey }: Props) => {
 
     return isManager || accessList.includes(user.name);
   })();
+
+  const userDocumentController = user?.designation?.includes(
+    "DOCUMENT CONTROLLER"
+  );
 
   switch (columnKey) {
     case "projectId":
@@ -72,6 +84,18 @@ export const RenderCell = ({ Tasks, columnKey }: Props) => {
           <Tooltip content="See Details" color="secondary">
             <button onClick={() => router.push(`/project/${Tasks.projectId}`)}>
               <EditIcon size={20} fill="#979797" />
+            </button>
+          </Tooltip>
+          <Tooltip
+            content={userDocumentController ? "Add Message" : "See Message"}
+            color="secondary"
+          >
+            <button
+              onClick={() =>
+                router.push(`/project/message_board/${Tasks.projectId}`)
+              }
+            >
+              <DotsIcon />
             </button>
           </Tooltip>
         </div>

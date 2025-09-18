@@ -37,14 +37,15 @@ const headingClasses =
   "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
 
 const allowedDesignations = new Set([
-  "PMO TL",
-  "DOCUMENT CONTROLLER",
-  "TECHNICAL ASSISTANT MANAGER",
-  "IT SUPERVISOR",
-  "TECHNICAL SUPERVISOR",
-  "TECHNICAL ADMIN CONSULTANT",
-  "DESIGN SUPERVISOR",
-  "TECHNICAL MANAGER",
+  "PMO TL", // sir noriel
+  "IT SUPERVISOR", //sir harold
+  "TMIG SUPERVISOR", //sir enchong
+  "DESIGN SUPERVISOR", //sir marvs
+  "TECHNICAL SUPERVISOR", //sir erwin
+  "DOCUMENT CONTROLLER", // sir jigss
+  "TECHNICAL ASSISTANT MANAGER", // sir john
+  "TECHNICAL ADMIN CONSULTANT", //mam eva
+  "TECHNICAL MANAGER", // sir marvin
 ]);
 
 export const ManageProject = ({ project }: ManageProjectProps) => {
@@ -63,7 +64,8 @@ export const ManageProject = ({ project }: ManageProjectProps) => {
 
   const canAssign =
     user?.name === "Kaye Kimberly L. Manuel" ||
-    allowedDesignations.has(user?.designation ?? "");
+    allowedDesignations.has(user?.designation ?? "") ||
+    user?.restriction === "9";
 
   useEffect(() => {
     if (!project) return;

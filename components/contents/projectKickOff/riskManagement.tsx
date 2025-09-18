@@ -6,17 +6,16 @@ import { useState, useMemo } from "react";
 import {
   RiskRow,
   Likelihood,
-  Severity,
   Status,
+  Severity,
   Owner,
   likelihoodOptions,
   severityOptions,
-  statusOptions,
   ownerOptions,
   riskLevelScores,
-  initialData, // import your template rows
+  initialData,
 } from "@/helpers/db";
-
+import { useUserContext } from "@/components/layout/UserContext";
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function RiskTable({
@@ -24,6 +23,12 @@ export default function RiskTable({
 }: {
   projectId: string | null | undefined;
 }) {
+  const { user } = useUserContext();
+  const canAssign =
+    user?.designation?.includes("PMO TL") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
+    user?.name === "Kaye Kimberly L. Manuel";
+
   const {
     data: dbRisks,
     isLoading,
@@ -43,7 +48,9 @@ export default function RiskTable({
     if (!dbRisks) return initialData;
     return initialData.map((templateRow) => {
       const match = dbRisks.find((r) => r.riskId === templateRow.riskId);
-      return match ? { ...templateRow, ...match } : templateRow;
+      return match
+        ? { ...templateRow, ...match, status: "Open" as Status }
+        : { ...templateRow, status: "Open" as Status };
     });
   }, [dbRisks]);
 
@@ -52,14 +59,17 @@ export default function RiskTable({
     field: K,
     value: RiskRow[K]
   ) => {
-    const updated = risks.map((row) =>
-      row.id === id ? { ...row, [field]: value } : row
+    if (!canAssign) return;
+
+    const updated: RiskRow[] = risks.map((row) =>
+      row.id === id ? { ...row, [field]: value, status: "Open" as Status } : row
     );
+
     mutateRisks(updated, false);
   };
 
   const handleSave = async () => {
-    if (!risks || !projectId) return;
+    if (!risks || !projectId || !canAssign) return;
     setSaving(true);
     try {
       const res = await fetch(
@@ -69,7 +79,7 @@ export default function RiskTable({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             projectId,
-            risks,
+            risks: risks.map((r) => ({ ...r, status: "Open" })), // always Open
           }),
         }
       );
@@ -128,6 +138,7 @@ export default function RiskTable({
               <td className="px-4 py-2">{row.description}</td>
               <td className="px-4 py-2">
                 <Input
+                  isDisabled={!canAssign}
                   className="w-full"
                   value={row.potentialImpact}
                   onChange={(e) =>
@@ -137,6 +148,7 @@ export default function RiskTable({
               </td>
               <td className="px-4 py-2">
                 <Select
+                  isDisabled={!canAssign}
                   className="w-full"
                   selectedKeys={new Set([row.likelihood])}
                   onSelectionChange={(val) => {
@@ -158,6 +170,7 @@ export default function RiskTable({
               </td>
               <td className="px-4 py-2">
                 <Select
+                  isDisabled={!canAssign}
                   className="w-full"
                   selectedKeys={new Set([row.severity])}
                   onSelectionChange={(val) => {
@@ -182,6 +195,7 @@ export default function RiskTable({
               <td className="px-4 py-2">{row.isoClause}</td>
               <td className="px-4 py-2">
                 <Input
+                  isDisabled={!canAssign}
                   className="w-full"
                   value={row.mitigation}
                   onChange={(e) =>
@@ -191,6 +205,7 @@ export default function RiskTable({
               </td>
               <td className="px-4 py-2">
                 <Select
+                  isDisabled={!canAssign}
                   className="w-full"
                   selectedKeys={new Set([row.owner])}
                   onSelectionChange={(keys) => {
@@ -205,33 +220,23 @@ export default function RiskTable({
                 </Select>
               </td>
               <td className="px-4 py-2">
-                <Select
-                  className="w-full"
-                  selectedKeys={new Set([row.status])}
-                  onSelectionChange={(keys) => {
-                    const key = Array.from(keys)[0];
-                    if (typeof key === "string")
-                      updateField(row.id, "status", key as Status);
-                  }}
-                >
-                  {statusOptions.map((option) => (
-                    <SelectItem key={option.value}>{option.label}</SelectItem>
-                  ))}
-                </Select>
+                <span>Open</span>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <Button
-        color="primary"
-        onPress={handleSave}
-        isLoading={saving}
-        className="mt-4"
-      >
-        Save Changes
-      </Button>
+      {canAssign && (
+        <Button
+          color="primary"
+          onPress={handleSave}
+          isLoading={saving}
+          className="mt-4"
+        >
+          Save Changes
+        </Button>
+      )}
     </div>
   );
 }

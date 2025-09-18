@@ -15,21 +15,11 @@ export async function POST(req) {
     const formData = await req.formData();
 
     const projectId = formData.get("projectId");
-    const assignedPo = formData.get("assignedPersonnel");
+    const uploader = formData.get("uploader");
     const description = formData.get("description");
     const status = formData.get("status");
     const attachDate = formData.get("attachDate");
     const file = formData.get("file");
-
-    if (!projectId) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    let filename = null;
-    let fileType = null;
 
     if (
       file &&
@@ -40,24 +30,41 @@ export async function POST(req) {
       const buffer = Buffer.from(await file.arrayBuffer());
       fileType = file.type;
 
-      const dirPath = path.join(process.cwd(), "public", "uploads", projectId);
+      const dirPath = path.join(
+        process.cwd(),
+        "public",
+        "uploads",
+        projectId,
+        "sales_order"
+      );
       if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true });
       }
-      const originalName = path.basename(file.name);
-      filename = `${Date.now()}-${originalName}`;
+
+      const ext = path.extname(file.name);
+      const base = path.basename(file.name, ext);
+      const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+
+      filename = `${base}-${todayStr}${ext}`;
+
+      let version = 1;
+      while (fs.existsSync(path.join(dirPath, filename))) {
+        filename = `${base}-${todayStr}-v${version}${ext}`;
+        version++;
+      }
+
       const savePath = path.join(dirPath, filename);
       fs.writeFileSync(savePath, buffer);
     }
 
     await executeQuery(
       `INSERT INTO project_turn_over (
-        project_id, assigned_personnel, description, 
+        project_id, uploader, description, 
         attachment_name, attachment_type, date, status
       ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         projectId,
-        assignedPo || null,
+        uploader || null,
         description || null,
         filename,
         fileType,

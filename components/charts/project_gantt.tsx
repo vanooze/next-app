@@ -48,7 +48,6 @@ export default function GanttChart({ project }: GanttChartProps) {
       fillColor: "#42a5f5", // blue
     };
   }
-
   function formatActual(task: Task, isSubtask = false) {
     const start = task.actual_start_date
       ? new Date(task.actual_start_date).getTime()
@@ -56,12 +55,20 @@ export default function GanttChart({ project }: GanttChartProps) {
     const end = task.actual_end_date
       ? new Date(task.actual_end_date).getTime()
       : null;
+
+    const plannedEnd = task.end_date ? new Date(task.end_date).getTime() : null;
+
     if (!start || !end || isNaN(start) || isNaN(end)) return null;
+
+    let fillColor = "#4caf50";
+    if (plannedEnd && end > plannedEnd) {
+      fillColor = "#ef5350";
+    }
 
     return {
       x: `${isSubtask ? "↳ " : ""}${task.title || "Untitled Task"} (Actual)`,
       y: [start, end],
-      fillColor: "#ef5350", // red
+      fillColor,
     };
   }
 

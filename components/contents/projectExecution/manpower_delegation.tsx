@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import useSWR from "swr";
 import { Projects } from "@/helpers/acumatica";
 import { Spinner, Checkbox, Button, Input, Divider } from "@heroui/react";
+import { useUserContext } from "@/components/layout/UserContext";
 
 interface ManPowerProps {
   project: Projects | null;
@@ -16,6 +17,7 @@ const fetcher = async (url: string) => {
 };
 
 export default function ManPower({ project }: ManPowerProps) {
+  const { user } = useUserContext();
   const [projectId, setProjectId] = useState<string | null>(null);
   const [checkedMap, setCheckedMap] = useState<Record<string, boolean>>({});
   const [dateAssigned, setDateAssigned] = useState<string>("");
@@ -27,7 +29,14 @@ export default function ManPower({ project }: ManPowerProps) {
     if (project) setProjectId(project.projectId);
   }, [project]);
 
-  // Fetch available manpower
+  const canAssign =
+    user?.designation?.includes("PMO TL") ||
+    user?.designation?.includes("TECHNICAL ASSISTANT MANAGER") ||
+    user?.designation?.includes("IT SUPERVISOR") ||
+    user?.designation?.includes("TMIG SUPERVISOR") ||
+    user?.designation?.includes("TECHNICAL SUPERVISOR") ||
+    user?.designation?.includes("DESIGN SUPERVISOR");
+
   const key =
     projectId && dateAssigned
       ? `/api/department/PMO/project_tasks/projectkickoff/manPower?id=${projectId}`
@@ -120,7 +129,6 @@ export default function ManPower({ project }: ManPowerProps) {
     }
   };
 
-  // Fetch already assigned lists
   const assignedKey = projectId
     ? `/api/department/PMO/project_tasks/projectValidation/manpower?id=${projectId}`
     : null;
@@ -140,26 +148,27 @@ export default function ManPower({ project }: ManPowerProps) {
 
   return (
     <div className="mt-6">
-      <h3 className="text-lg font-semibold mb-2">Allocated Man Power</h3>
-
-      {/* Date picker */}
-      <div className="mb-4 flex items-center gap-4">
-        <Input
-          className="max-w-sm"
-          type="date"
-          label="Assignment Date"
-          value={dateAssigned}
-          onChange={(e) => setDateAssigned(e.target.value)}
-        />
-        <Button
-          color="primary"
-          onClick={handleSubmit}
-          isDisabled={!dateAssigned}
-        >
-          Assign Selected
-        </Button>
-      </div>
-
+      {canAssign && (
+        <h3 className="text-lg font-semibold mb-2">Allocated Man Power</h3>
+      )}
+      {canAssign && (
+        <div className="mb-4 flex items-center gap-4">
+          <Input
+            className="max-w-sm"
+            type="date"
+            label="Assignment Date"
+            value={dateAssigned}
+            onChange={(e) => setDateAssigned(e.target.value)}
+          />
+          <Button
+            color="primary"
+            onClick={handleSubmit}
+            isDisabled={!dateAssigned}
+          >
+            Assign Selected
+          </Button>
+        </div>
+      )}
       {/* Show table only if date is selected */}
       {dateAssigned && (
         <>

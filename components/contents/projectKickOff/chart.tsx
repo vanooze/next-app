@@ -15,6 +15,7 @@ import {
 } from "@heroui/react";
 import { PlusIcon } from "@/components/icons/table/add-icon";
 import { DeleteIcon } from "@/components/icons/table/delete-icon";
+import { useUserContext } from "@/components/layout/UserContext";
 
 interface ChartProps {
   project: Projects | null;
@@ -47,6 +48,9 @@ export default function Chart({ project }: ChartProps) {
   const [projects, setProjects] = useState<GanttItem[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { user } = useUserContext();
+
+  const canModifyChart = user?.department.includes("PMO");
 
   const openModal = () => {
     if (projects.length > 0) {
@@ -232,9 +236,11 @@ export default function Chart({ project }: ChartProps) {
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">Project Gantt Chart</h1>
 
-      <Button onClick={openModal} className="mb-4">
-        {projects.length === 0 ? "Create Gantt Chart" : "Update Gantt Chart"}
-      </Button>
+      {canModifyChart && (
+        <Button onClick={openModal} className="mb-4">
+          {projects.length === 0 ? "Create Gantt Chart" : "Update Gantt Chart"}
+        </Button>
+      )}
 
       <Modal isOpen={isOpen} onClose={onClose} size="4xl">
         <ModalContent>

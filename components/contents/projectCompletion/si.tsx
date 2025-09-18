@@ -10,6 +10,7 @@ import {
   CardFooter,
   Image,
   Spinner,
+  form,
 } from "@heroui/react";
 import useSWR from "swr";
 import { DropZone, DropItem, FileTrigger } from "react-aria-components";
@@ -29,6 +30,7 @@ const fetcher = async (url: string) => {
 export default function SI({ project }: SIProps) {
   const { user } = useUserContext();
   const [projectId, setProjectId] = useState<string | null>(null);
+  const [uploader, setUploader] = useState(user?.name);
   const [Details, setDetails] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -73,6 +75,7 @@ export default function SI({ project }: SIProps) {
       for (const file of files) {
         const formData = new FormData();
         formData.append("projectId", projectId.toString());
+        formData.append("uploader", uploader || "Unknown");
         formData.append("description", Details || "null");
         formData.append("status", status);
         formData.append("attachDate", attachDate);
@@ -102,77 +105,81 @@ export default function SI({ project }: SIProps) {
     }
   };
 
+  const canUpload =
+    user?.department.includes("PMO") ||
+    user?.department.includes("SALES") ||
+    user?.department.includes("ACCOUNTING");
+
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">
-      {/* PO Details */}
-      <h1 className="text-lg font-semibold">Sales Invoice Details</h1>
-      <Textarea
-        className="max-w-lg"
-        label="Sales Invoice Details"
-        placeholder="Enter the details here..."
-        value={Details}
-        onChange={(e) => setDetails(e.target.value)}
-      />
+      <>
+        <h1 className="text-lg font-semibold">Sales Invoice Details</h1>
+        <Textarea
+          className="max-w-lg"
+          label="Sales Invoice Details"
+          placeholder="Enter the details here..."
+          value={Details}
+          onChange={(e) => setDetails(e.target.value)}
+        />
 
-      {/* PO Attachment */}
-      <h1 className="text-lg font-semibold">Sales Invoice Attachment</h1>
-      <div className="border border-dashed rounded max-w-lg">
-        <DropZone
-          onDrop={handleDrop}
-          className="p-6 border border-gray-300 rounded text-center"
-        >
-          <p className="text-sm text-gray-600">Drag & drop files here</p>
-          <FileTrigger
-            allowsMultiple
-            acceptedFileTypes={[
-              "image/png",
-              "image/jpeg",
-              "application/pdf",
-              "text/csv",
-            ]}
-            onSelect={(files) => {
-              if (files) {
-                setFiles((prev) => [...prev, ...Array.from(files)]);
-              }
-            }}
-          ></FileTrigger>
-        </DropZone>
+        <h1 className="text-lg font-semibold">Sales Invoice Attachment</h1>
+        <div className="border border-dashed rounded max-w-lg">
+          <DropZone
+            onDrop={handleDrop}
+            className="p-6 border border-gray-300 rounded text-center"
+          >
+            <p className="text-sm text-gray-600">Drag & drop files here</p>
+            <FileTrigger
+              allowsMultiple
+              acceptedFileTypes={[
+                "image/png",
+                "image/jpeg",
+                "application/pdf",
+                "text/csv",
+              ]}
+              onSelect={(files) => {
+                if (files) {
+                  setFiles((prev) => [...prev, ...Array.from(files)]);
+                }
+              }}
+            ></FileTrigger>
+          </DropZone>
 
-        {files.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <p className="font-semibold text-sm">Files to Upload:</p>
-            {files.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
-              >
-                <span className="text-sm text-gray-700 truncate">
-                  {file.name}
-                </span>
-                <button
-                  onClick={() =>
-                    setFiles((prev) => prev.filter((_, i) => i !== index))
-                  }
-                  className="text-red-500 hover:text-red-700 text-sm ml-2"
+          {files.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <p className="font-semibold text-sm">Files to Upload:</p>
+              {files.map((file, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
                 >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+                  <span className="text-sm text-gray-700 truncate">
+                    {file.name}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setFiles((prev) => prev.filter((_, i) => i !== index))
+                    }
+                    className="text-red-500 hover:text-red-700 text-sm ml-2"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-      {/* Submit Button */}
-      <Button
-        color="primary"
-        className="max-w-lg"
-        isDisabled={isUploading}
-        onPress={submitForm}
-      >
-        {isUploading ? "Uploading..." : "Submit"}
-      </Button>
-
+        {/* Submit Button */}
+        <Button
+          color="primary"
+          className="max-w-lg"
+          isDisabled={isUploading}
+          onPress={submitForm}
+        >
+          {isUploading ? "Uploading..." : "Submit"}
+        </Button>
+      </>
       <Divider />
 
       {/* Uploaded Files Preview */}
