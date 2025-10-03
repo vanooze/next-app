@@ -106,7 +106,6 @@ export default function ContractorEvaluation({
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">
-      {/* PO Details */}
       <h1 className="text-lg font-semibold">Contractor Evaluation Details</h1>
       <Textarea
         className="max-w-lg"
@@ -116,7 +115,6 @@ export default function ContractorEvaluation({
         onChange={(e) => setDetails(e.target.value)}
       />
 
-      {/* PO Attachment */}
       <h1 className="text-lg font-semibold">
         Contractor Evaluation Attachment
       </h1>
@@ -187,7 +185,6 @@ export default function ContractorEvaluation({
 
       <Divider />
 
-      {/* Uploaded Files Preview */}
       {isLoading && (
         <Spinner
           classNames={{ label: "text-foreground mt-4" }}
@@ -209,7 +206,7 @@ export default function ContractorEvaluation({
             "image/webp",
             "image/gif",
           ].includes(file.attachmentType);
-          const previewUrl = `/uploads/${file.projectId}/${file.attachmentName}`;
+          const previewUrl = `/uploads/${file.projectId}/post_project/${file.attachmentName}`;
 
           return (
             <Card
@@ -232,10 +229,27 @@ export default function ContractorEvaluation({
               <CardFooter className="absolute bg-white/30 backdrop-blur-sm bottom-0 border-t border-white/30 z-10 justify-between p-2">
                 <div>
                   <p className="text-black text-tiny">
-                    {file.description && file.description !== "null" ? (
-                      file.description
+                    {file.description &&
+                    file.description.toLowerCase() !== "null" ? (
+                      <>
+                        {file.description}
+                        {file.uploader &&
+                          file.uploader.toLowerCase() !== "null" && (
+                            <span className="ml-1 italic text-gray-500">
+                              — {file.uploader}
+                            </span>
+                          )}
+                      </>
                     ) : (
-                      <span className="italic">No description</span>
+                      <>
+                        <span className="italic">No description</span>
+                        {file.uploader &&
+                          file.uploader.toLowerCase() !== "null" && (
+                            <span className="ml-1 italic text-gray-500">
+                              — {file.uploader}
+                            </span>
+                          )}
+                      </>
                     )}
                   </p>
                 </div>

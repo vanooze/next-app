@@ -61,14 +61,14 @@ export const NotesPage = ({ project }: MessageProps) => {
     }
   };
 
-  const userDocumentController = user?.designation?.includes(
-    "DOCUMENT CONTROLLER"
-  );
+  const userHasAccess =
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
+    user?.department?.includes("PMO") ||
+    user?.name === "Kaye Kimberly L. Manuel";
 
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-black">
-      {/* Header / Input */}
-      {userDocumentController && (
+      {userHasAccess && (
         <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-black sticky top-0 z-10">
           <div className="max-w-2xl mx-auto flex items-center gap-2 p-4">
             <Input
@@ -94,7 +94,6 @@ export const NotesPage = ({ project }: MessageProps) => {
         </div>
       )}
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6">
         <div className="max-w-2xl mx-auto space-y-4">
           {loading ? (

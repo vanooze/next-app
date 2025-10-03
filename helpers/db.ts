@@ -29,6 +29,18 @@ export const dtColumns = [
   { name: "ACTIONS", uid: "actions" },
 ];
 
+export interface BoqItem {
+  id: number;
+  project_id: string;
+  category: string;
+  subcategory: string | null;
+  brand: string | null;
+  description: string | null;
+  unit: string | null;
+  qty: number | null;
+  remarks: string | null;
+}
+
 // ------------------------- PROJECT MONITORING -------------------------
 
 export interface ProjectMonitoring {
@@ -63,6 +75,7 @@ export interface SalesManagement {
   salesPersonnel: string;
   notes: string | null;
   status: string;
+  dateAwarded: string | null;
 }
 
 export const SalesManagementColumns = [
@@ -73,6 +86,7 @@ export const SalesManagementColumns = [
   { name: "Sir MJ/Harold", uid: "sirMJH" },
   { name: "Sales Personnel", uid: "salesPersonnel" },
   { name: "Notes", uid: "notes" },
+  { name: "Date Awarded", uid: "dateAwarded" },
   { name: "Actions", uid: "actions" },
 ];
 
@@ -206,6 +220,32 @@ export interface NotificationItem {
   link: string;
   delete: number;
 }
+
+// ------------------------- AWARDED MANAGEMENT -------------------------
+
+export interface AwardedManagement {
+  id: number;
+  clientName: string;
+  projectDesc: string;
+  dateReceived: string | null;
+  sirMJH: string | null;
+  salesPersonnel: string;
+  dateAwarded: string | null;
+  notes: string | null;
+  status: string;
+}
+
+export const AwardedManagementColumns = [
+  { name: "Status", uid: "status" },
+  { name: "Client Name", uid: "clientName" },
+  { name: "Project Description", uid: "projectDesc" },
+  { name: "Date Received", uid: "dateReceived" },
+  { name: "Sir MJ/Harold", uid: "sirMJH" },
+  { name: "Sales Personnel", uid: "salesPersonnel" },
+  { name: "Date Awarded", uid: "dateAwarded" },
+  { name: "Notes", uid: "notes" },
+  { name: "Actions", uid: "actions" },
+];
 
 // ------------------------- RISK TABLE -------------------------
 

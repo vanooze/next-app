@@ -38,6 +38,7 @@ export interface Projects {
   template: string | null;
   customerId: string | null;
   startDate: string | null;
+  endDate: string | null;
   description: string | null;
   createdOn: string | null;
   currency: string | null;
@@ -51,6 +52,7 @@ export const projectColumns = [
   { name: "Template", uid: "template" },
   { name: "Customer ID", uid: "customerId" },
   { name: "Start Date", uid: "startDate" },
+  { name: "End Date", uid: "endDate" },
   { name: "Description", uid: "description" },
   { name: "Created On", uid: "createdOn" },
   { name: "Currency", uid: "currency" },

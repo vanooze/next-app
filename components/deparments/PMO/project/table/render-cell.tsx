@@ -7,13 +7,15 @@ import { formatDateMMDDYYYY } from "@/helpers/formatDate";
 import { useRouter } from "next/navigation";
 import { useUserContext } from "@/components/layout/UserContext";
 import { DotsIcon } from "@/components/icons/accounts/dots-icon";
+import { PlusIcon } from "@/components/icons/table/add-icon";
 
 interface Props {
   Tasks: Projects;
   columnKey: keyof Projects | "actions";
+  handleEditProject: (project: Projects) => void;
 }
 
-export const RenderCell = ({ Tasks, columnKey }: Props) => {
+export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
   const cellValue = Tasks[columnKey as keyof Projects];
   const { user } = useUserContext();
   const router = useRouter();
@@ -54,9 +56,11 @@ export const RenderCell = ({ Tasks, columnKey }: Props) => {
           size="sm"
           variant="flat"
           color={
-            cellValue === "Completed"
+            cellValue === "Finished"
               ? "success"
-              : cellValue === "Active"
+              : cellValue === "Pending"
+              ? "warning"
+              : cellValue === "OnGoing"
               ? "warning"
               : "danger"
           }
@@ -70,6 +74,8 @@ export const RenderCell = ({ Tasks, columnKey }: Props) => {
       return <span>{displayValue(cellValue)}</span>;
     case "startDate":
       return <span>{formatDateMMDDYYYY(cellValue)}</span>;
+    case "endDate":
+      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
     case "description":
       return <span>{displayValue(cellValue)}</span>;
     case "createdOn":
@@ -81,8 +87,8 @@ export const RenderCell = ({ Tasks, columnKey }: Props) => {
     case "actions":
       return userHasAccess ? (
         <div className="flex items-center gap-4">
-          <Tooltip content="See Details" color="secondary">
-            <button onClick={() => router.push(`/project/${Tasks.projectId}`)}>
+          <Tooltip content="Edit Project" color="secondary">
+            <button onClick={() => handleEditProject(Tasks)}>
               <EditIcon size={20} fill="#979797" />
             </button>
           </Tooltip>
@@ -95,6 +101,11 @@ export const RenderCell = ({ Tasks, columnKey }: Props) => {
                 router.push(`/project/message_board/${Tasks.projectId}`)
               }
             >
+              <PlusIcon size={20} fill="#979797" />
+            </button>
+          </Tooltip>
+          <Tooltip content="See Details" color="secondary">
+            <button onClick={() => router.push(`/project/${Tasks.projectId}`)}>
               <DotsIcon />
             </button>
           </Tooltip>

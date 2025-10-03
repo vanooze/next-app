@@ -22,6 +22,7 @@ export async function POST(req) {
       sirMJH,
       status,
       notes,
+      dateAwarded,
     } = body;
 
     if (!id) {
@@ -39,8 +40,9 @@ export async function POST(req) {
         sales_personnel = ?,
         sir_mjh = ?,
         status = ?,
-        notes =? 
-      WHERE id = ?
+        notes =?, 
+        date_awarded = ?
+      WHERE id = ? AND deleted = 0
     `;
 
     const result = await executeQuery(query, [
@@ -51,6 +53,7 @@ export async function POST(req) {
       sirMJH,
       status,
       notes,
+      dateAwarded,
       id,
     ]);
 

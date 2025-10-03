@@ -1,5 +1,5 @@
 "use client";
-
+import ReactMarkdown from "react-markdown";
 import { useState, useEffect, useRef } from "react";
 import { useUserContext } from "@/components/layout/UserContext";
 
@@ -76,7 +76,7 @@ export default function ChatPage() {
                     : "bg-gray-100 text-gray-900 dark:bg-[#2A2B2C] dark:text-gray-100"
                 }`}
               >
-                {msg.content}
+                <ReactMarkdown>{msg.content}</ReactMarkdown>
               </div>
             </div>
           ))}

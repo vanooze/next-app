@@ -12,6 +12,7 @@ import { useSidebarContext } from "../layout/layout-context";
 import { usePathname } from "next/navigation";
 import { useUserContext } from "../layout/UserContext";
 import { BalanceIcon } from "../icons/sidebar/balance-icon";
+import { ChatIcon } from "../icons/sidebar/chat-icon";
 
 export const SidebarWrapper = () => {
   const { user, loading } = useUserContext();
@@ -30,10 +31,14 @@ export const SidebarWrapper = () => {
     user?.designation_status.includes("TECHNICAL ASSISTANT MANAGER") ||
     SUPERADMIN;
 
+  const MeHarold =
+    user?.name === "HAROLD DAVID" || user?.name === "MARVIN JIMENEZ";
+
   const accessForTask =
     user?.department?.includes("PMO") ||
     user?.department?.includes("DT") ||
     SUPERADMIN;
+
   const accessForSales = user?.position?.includes("SALES") || SUPERADMIN;
 
   const accessForInventory =
@@ -58,8 +63,23 @@ export const SidebarWrapper = () => {
               isActive={pathname === "/"}
               href="/"
             />
+            <SidebarItem
+              title="Chat Assisstant"
+              icon={<ChatIcon />}
+              isActive={pathname === "/chat"}
+              href="/chat"
+            />
             <SidebarMenu title="Main Menu">
-              {accessForTask ? (
+              {MeHarold ? (
+                <CollapseItems
+                  icon={<AccountsIcon />}
+                  items={[
+                    { label: "Task Designation", href: "/tasks" },
+                    { label: "Awarded Projects", href: "/tasks/awarded" },
+                  ]}
+                  title="Task Designation"
+                />
+              ) : accessForTask ? (
                 <SidebarItem
                   isActive={pathname === "/tasks"}
                   title="Task Designation"
@@ -67,12 +87,16 @@ export const SidebarWrapper = () => {
                   href="/tasks"
                 />
               ) : null}
+
               {accessForProject ? (
-                <SidebarItem
-                  isActive={pathname === "/project"}
-                  title="Project Monitoring"
+                <CollapseItems
                   icon={<ReportsIcon />}
-                  href="/project"
+                  items={[
+                    { label: "Project Monitoring", href: "/project" },
+                    { label: "Message Board", href: "/project/message_board" },
+                    // { label: "Project Mapping", href: "/project/mapping" },
+                  ]}
+                  title="Project Management"
                 />
               ) : null}
               {accessForSales ? (

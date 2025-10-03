@@ -21,6 +21,7 @@ import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useEffect, useState } from "react";
 import { selectSalesStatus } from "@/helpers/data";
 import { SalesManagement } from "@/helpers/db";
+import { date } from "yup";
 
 interface EditTaskProps {
   isOpen: boolean;
@@ -50,6 +51,7 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
   const [sirmjh, setSirmjh] = useState<CalendarDate | null>(null);
   const [status, setStatus] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
+  const [dateAwarded, setDateAwarded] = useState<CalendarDate | null>(null);
 
   useEffect(() => {
     if (task) {
@@ -69,12 +71,18 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
       );
       setStatus(task.status ?? "");
       setNotes(task.notes ?? "");
+      setDateAwarded(
+        typeof task.dateAwarded === "string"
+          ? safeParseDate(task.dateAwarded)
+          : task.dateAwarded ?? null
+      );
     }
   }, [task]);
 
   const handleUpdateTask = async (onClose: () => void) => {
     const dateReceivedStr = formatDatetoStr(dateReceived);
     const sirmjhDateStr = formatDatetoStr(sirmjh);
+    const dateAwardedStr = formatDatetoStr(dateAwarded);
 
     const payload = {
       id,
@@ -85,6 +93,7 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
       sirMJH: sirmjhDateStr,
       status,
       notes,
+      dateAwarded: dateAwardedStr,
     };
 
     try {
@@ -164,35 +173,48 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
                     onChange={setSirmjh}
                     isDisabled
                   />
-                  <Select
-                    isRequired
-                    selectedKeys={new Set([status])}
-                    onSelectionChange={(keys) => {
-                      const selected = Array.from(keys)[0];
-                      if (typeof selected === "string") setStatus(selected);
-                    }}
-                    label="Status"
-                    placeholder="Select a status"
-                    variant="bordered"
-                    items={selectSalesStatus.filter((item) =>
-                      [
-                        "On Going",
-                        "On Hold",
-                        "Lost Account",
-                        "Finished",
-                      ].includes(item.key)
-                    )}
-                  >
-                    {(item) => (
-                      <SelectItem key={item.key}>{item.label}</SelectItem>
-                    )}
-                  </Select>
                   <Input
                     label="Notes"
                     variant="bordered"
                     value={notes}
                     onValueChange={setNotes}
                   />
+                  <DatePicker
+                    label="Date Awarded"
+                    variant="bordered"
+                    value={dateAwarded}
+                    onChange={setDateAwarded}
+                  />
+                  <Select
+                    isRequired
+                    selectedKeys={
+                      dateAwarded ? new Set(["Awarded"]) : new Set([status])
+                    }
+                    onSelectionChange={(keys) => {
+                      if (dateAwarded) return;
+                      const selected = Array.from(keys)[0];
+                      if (typeof selected === "string") setStatus(selected);
+                    }}
+                    label="Status"
+                    placeholder="Select a status"
+                    variant="bordered"
+                    isDisabled={!!dateAwarded}
+                    items={
+                      dateAwarded
+                        ? selectSalesStatus.filter(
+                            (item) => item.key === "Awarded"
+                          )
+                        : selectSalesStatus.filter((item) =>
+                            ["On Going", "On Hold", "Lost Account"].includes(
+                              item.key
+                            )
+                          )
+                    }
+                  >
+                    {(item) => (
+                      <SelectItem key={item.key}>{item.label}</SelectItem>
+                    )}
+                  </Select>
                 </ModalBody>
                 <ModalFooter>
                   <Button color="danger" variant="flat" onClick={onClose}>

@@ -23,6 +23,7 @@ export async function GET(req) {
       salesPersonnel: r.sales_personnel,
       notes: r.notes,
       status: r.status,
+      dateAwarded: r.date_awarded,
     }));
     return Response.json(tasks);
   } catch (error) {

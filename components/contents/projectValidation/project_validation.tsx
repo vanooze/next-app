@@ -7,6 +7,7 @@ import Plans from "./plans";
 import Equipment from "./equipment";
 import Contractors from "./contractors";
 import RiskAssessmentTable from "./risk_assessment";
+import BoqTable from "./equipment";
 
 interface ProjectValidationProps {
   project: Projects | null;
@@ -20,7 +21,7 @@ function ProjectValidation({ project }: ProjectValidationProps) {
           <Plans project={project} />
         </Tab>
         <Tab key="equipment" title="Equipment">
-          <Equipment project={project} />
+          <BoqTable project={project} />
         </Tab>
         <Tab key="contractors (NOA/NTP)" title="Contractors (NOA/NTP)">
           <Contractors project={project} />

@@ -33,6 +33,7 @@ export const AddProject = () => {
   const [projectManager, setProjectManager] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [startDate, setStartDate] = useState<CalendarDate | null>(null);
+  const [endDate, setEndDate] = useState<CalendarDate | null>(null);
 
   const handleAddProject = async (onClose: () => void) => {
     const payload = {
@@ -40,6 +41,7 @@ export const AddProject = () => {
       projectManager,
       description,
       startDate: formatDatetoStr(startDate),
+      endDate: formatDatetoStr(endDate),
     };
 
     try {
@@ -105,6 +107,14 @@ export const AddProject = () => {
                   variant="bordered"
                   value={startDate}
                   onChange={setStartDate}
+                  isRequired
+                />
+                <DatePicker
+                  label="End Date"
+                  variant="bordered"
+                  value={endDate}
+                  onChange={setEndDate}
+                  isRequired
                 />
                 <Select
                   isRequired
@@ -116,9 +126,11 @@ export const AddProject = () => {
                     setStatus(Array.from(keys)[0] as string)
                   }
                 >
-                  {["OnHold", "Overdue", "Pending", "Finished"].map((s) => (
-                    <SelectItem key={s}>{s}</SelectItem>
-                  ))}
+                  {["OnHold", "Overdue", "OnGoing", "Pending", "Finished"].map(
+                    (s) => (
+                      <SelectItem key={s}>{s}</SelectItem>
+                    )
+                  )}
                 </Select>
               </ModalBody>
 

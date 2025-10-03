@@ -23,13 +23,14 @@ export async function GET(req) {
         status,
         customer_id,
         start_date,
+        end_date,
         description,
         created_on,
         currency,
         project_manager,
         access
         FROM projects_manual
-      ${id ? "WHERE project_id = ?" : ""}
+      ${id ? "WHERE project_id = ?" : ""} 
     `,
       id ? [id] : []
     );
@@ -40,6 +41,7 @@ export async function GET(req) {
       status: r.status,
       customerId: r.customer_id,
       startDate: r.start_date,
+      endDate: r.end_date,
       description: r.description,
       createdOn: r.created_on,
       currency: r.currency,

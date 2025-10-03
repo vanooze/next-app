@@ -15,6 +15,7 @@ import { projectColumns } from "@/helpers/acumatica";
 import { RenderCell } from "./render-cell";
 import { useUserContext } from "@/components/layout/UserContext";
 import { Projects } from "@/helpers/acumatica";
+import { EditProject } from "../action/editProject";
 
 interface TableWrapperProps {
   tasks: Projects[];
@@ -29,11 +30,13 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 }) => {
   const [page, setPage] = useState(1);
   const { user } = useUserContext();
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isUserSorted, setIsUserSorted] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Projects | null>(null);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "date", // default sort column
     direction: "descending",
   });
-  const [isUserSorted, setIsUserSorted] = useState(false);
 
   const handleSortChange = (descriptor: SortDescriptor) => {
     setSortDescriptor(descriptor);
@@ -123,6 +126,16 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   console.log("User Context:", user);
   console.log("Filtered tasks:", filteredTasks);
 
+  const handleEditProject = (project: Projects) => {
+    setSelectedProject(project);
+    setIsEditOpen(true);
+  };
+
+  const handleCloseEdit = () => {
+    setIsEditOpen(false);
+    setSelectedProject(null);
+  };
+
   return (
     <div
       className={`w-full ${
@@ -182,6 +195,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
                     <RenderCell
                       Tasks={item}
                       columnKey={col.uid as keyof Projects | "actions"}
+                      handleEditProject={handleEditProject}
                     />
                   </TableCell>
                 ))}
@@ -190,6 +204,11 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           </TableBody>
         </Table>
       )}
+      <EditProject
+        isOpen={isEditOpen}
+        onClose={handleCloseEdit}
+        project={selectedProject}
+      />
     </div>
   );
 };

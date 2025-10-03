@@ -28,12 +28,12 @@ export const RenderCell = ({
           variant="flat"
           color={
             typeof cellValue === "string" &&
-            ["Finished", "Overdue", "Priority", "OnHold"].includes(cellValue)
+            ["Awarded", "Overdue", "Priority", "On Hold"].includes(cellValue)
               ? "default"
               : "warning"
           }
           className={
-            cellValue === "Finished"
+            cellValue === "Awarded"
               ? "bg-success-100 text-success-700"
               : cellValue === "Lost Account"
               ? "bg-danger-100 text-danger-700"
@@ -56,6 +56,8 @@ export const RenderCell = ({
       return <span>{displayValue(cellValue)}</span>;
     case "notes":
       return <span>{displayValue(cellValue)}</span>;
+    case "dateAwarded":
+      return <span>{normalizeToYYYYMMDD(cellValue)}</span>;
     case "actions":
       return (
         <>

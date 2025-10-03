@@ -40,12 +40,7 @@ export const UserDropdown = () => {
     <Dropdown>
       <NavbarItem>
         <DropdownTrigger>
-          <Avatar
-            as="button"
-            color="secondary"
-            size="md"
-            src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
-          />
+          <Avatar as="button" size="md" src="/logo/logo.png" />
         </DropdownTrigger>
       </NavbarItem>
       <DropdownMenu
@@ -59,8 +54,8 @@ export const UserDropdown = () => {
           <p>Signed in as</p>
           <p>{user?.username}</p>
         </DropdownItem>
-        <DropdownItem key="profile">Profile</DropdownItem>
-        <DropdownItem key="analytics">Analytics</DropdownItem>
+        {/* <DropdownItem key="profile">Profile</DropdownItem>
+        <DropdownItem key="analytics">Analytics</DropdownItem> */}
         <DropdownItem
           key="logout"
           color="danger"

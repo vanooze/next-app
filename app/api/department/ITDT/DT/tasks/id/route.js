@@ -1,27 +1,37 @@
 import { executeQuery } from "@/app/lib/db";
 import { NextResponse } from "next/server";
+import { getUserFromToken } from "@/app/lib/auth";
 
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
-    const ids = searchParams.getAll("id");
-    const user = await getUserFromToken(req);
-    // if (!user || !user.department) {
-    //   return NextResponse.json(
-    //     { error: "Unauthorized access" },
-    //     { status: 403 }
-    //   );
-    // }
 
-    if (!ids || ids.length === 0) {
-      return NextResponse.json({ error: "No id(s) provided" }, { status: 400 });
+    const idParam = searchParams.get("id");
+    if (!idParam) {
+      return NextResponse.json(
+        { error: "At least one id is required" },
+        { status: 400 }
+      );
     }
 
-    const placeholders = ids.map(() => "?").join(",");
-    const rows = await executeQuery(
-      `SELECT * FROM design_activity WHERE deleted = 0 AND id IN (${placeholders})`,
-      ids
-    );
+    const validIds = idParam
+      .split(",")
+      .map((id) => id.trim())
+      .filter((id) => /^\d+$/.test(id));
+
+    if (validIds.length === 0) {
+      return NextResponse.json({ error: "Invalid id format" }, { status: 400 });
+    }
+    const placeholders = validIds.map(() => "?").join(",");
+
+    const query = `
+      SELECT id, client_name, proj_desc, date_received, sales_personnel,
+             eboq, eboq_date, sboq, sboq_date, sir_me, sir_mjh, status
+      FROM design_activity
+      WHERE deleted = 0 AND id IN (${placeholders})
+    `;
+
+    const rows = await executeQuery(query, validIds);
 
     const tasks = rows.map((r) => ({
       id: r.id,
@@ -38,11 +48,11 @@ export async function GET(req) {
       status: r.status,
     }));
 
-    return NextResponse.json(tasks);
+    return NextResponse.json(tasks, { status: 200 });
   } catch (error) {
-    console.error("API Error: ", error);
+    console.error("API Error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch tasks" },
+      { error: "Failed to fetch tasks", details: error.message },
       { status: 500 }
     );
   }

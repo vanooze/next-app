@@ -52,11 +52,11 @@ export const ManageProject = ({ project }: ManageProjectProps) => {
   const { user } = useUserContext();
   const router = useRouter();
   // const { logActivity } = useActivityLog();
-
   const [projectDescription, setProjectDescription] = useState<string | null>(
     ""
   );
-  const [projectDate, setProjectDate] = useState<CalendarDate | null>(null);
+  const [startDate, setStartDate] = useState<CalendarDate | null>(null);
+  const [endDate, setEndDate] = useState<CalendarDate | null>(null);
   const [accessUsers, setAccessUsers] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
 
@@ -71,9 +71,14 @@ export const ManageProject = ({ project }: ManageProjectProps) => {
     if (!project) return;
     setProjectDescription(project.description);
 
-    if (typeof project.startDate === "string") {
-      const isoDate = normalizeToISO(project.startDate);
-      setProjectDate(parseDate(isoDate));
+    if (
+      typeof project.startDate === "string" &&
+      typeof project.endDate === "string"
+    ) {
+      const startDate = normalizeToISO(project.startDate);
+      const endDate = normalizeToISO(project.endDate);
+      setStartDate(parseDate(startDate));
+      setEndDate(parseDate(endDate));
     }
 
     if (project.access) {
@@ -240,7 +245,8 @@ export const ManageProject = ({ project }: ManageProjectProps) => {
 
       <h3 className="text-2xl font-semibold">{projectDescription}</h3>
       <h1 className="text-lg font-semibold">
-        {projectDate ? formatDatetoStr(projectDate) : ""}
+        {startDate ? formatDatetoStr(startDate) : ""} -{" "}
+        {endDate ? formatDatetoStr(endDate) : ""}
       </h1>
 
       {canAssign && renderAccessSection()}

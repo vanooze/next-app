@@ -10,7 +10,7 @@ import {
   Pagination,
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { SalesManagementColumns } from "@/helpers/db";
 import { RenderCell } from "./render-cell";
 import { EditTask } from "../operation/update";
@@ -37,7 +37,7 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
   );
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "status", // default sort column
-    direction: "ascending",
+    direction: "descending",
   });
   const [isUserSorted, setIsUserSorted] = useState(false);
 
@@ -74,39 +74,29 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
     setSelectedTask(null);
   };
 
-  const statusPriority = {
-    Priority: 0,
-    OnHold: 1,
-    Overdue: 2,
-    Pending: 3,
-    Finished: 4,
+  const statusPriority: Record<string, number> = {
+    Awarded: 0,
+    "Lost Account": 1,
+    "On Going": 2,
+    "On Hold": 3,
   };
 
   const sortedTasks = useMemo(() => {
     if (!Array.isArray(tasks)) return [];
 
-    const statusSorted = [...tasks].sort((a, b) => {
-      const aPriority =
-        statusPriority[a.status as keyof typeof statusPriority] ?? 99;
-      const bPriority =
-        statusPriority[b.status as keyof typeof statusPriority] ?? 99;
-      return aPriority - bPriority;
+    return [...tasks].sort((a, b) => {
+      const aPriority = statusPriority[a.status] ?? -1;
+      const bPriority = statusPriority[b.status] ?? -1;
+
+      if (aPriority !== bPriority) {
+        return bPriority - aPriority;
+      }
+
+      const aDate = a.sirMJH ? new Date(a.sirMJH).getTime() : 0;
+      const bDate = b.sirMJH ? new Date(b.sirMJH).getTime() : 0;
+
+      return bDate - aDate;
     });
-
-    const finishedSorted = statusSorted
-      .filter((task) => task.status === "Finished")
-      .sort((a, b) => {
-        const aDate = a.sirMJH ? new Date(a.sirMJH).getTime() : 0;
-        const bDate = b.sirMJH ? new Date(b.sirMJH).getTime() : 0;
-        return bDate - aDate;
-      });
-
-    const result = [
-      ...statusSorted.filter((task) => task.status !== "Finished"),
-      ...finishedSorted,
-    ];
-
-    return result;
   }, [tasks]);
 
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
@@ -114,7 +104,6 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
   const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
-
     return sortedTasks.slice(start, end);
   }, [page, sortedTasks]);
 
@@ -136,7 +125,7 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
       ) : (
         <Table
           isStriped
-          aria-label="task table with custom cells"
+          aria-label="sales task table"
           sortDescriptor={sortDescriptor}
           onSortChange={handleSortChange}
           classNames={{

@@ -175,21 +175,21 @@ export const Content = () => {
     );
   };
 
-  if (restriction === "9") {
-    return (
-      <Tabs aria-label="Departments" variant="underlined">
-        <Tab key="PMO" title="PMO">
-          {renderDepartment("PMO", pmoTasks, pmoLoading)}
-        </Tab>
-        <Tab key="SALES" title="Sales">
-          {renderDepartment("SALES", salesTasks, salesLoading)}
-        </Tab>
-        <Tab key="DESIGN" title="Design">
-          {renderDepartment("DESIGN", designTasks, designLoading)}
-        </Tab>
-      </Tabs>
-    );
-  }
+  // if (restriction === "9") {
+  //   return (
+  //     <Tabs aria-label="Departments" variant="underlined">
+  //       <Tab key="PMO" title="PMO">
+  //         {renderDepartment("PMO", pmoTasks, pmoLoading)}
+  //       </Tab>
+  //       <Tab key="SALES" title="Sales">
+  //         {renderDepartment("SALES", salesTasks, salesLoading)}
+  //       </Tab>
+  //       <Tab key="DESIGN" title="Design">
+  //         {renderDepartment("DESIGN", designTasks, designLoading)}
+  //       </Tab>
+  //     </Tabs>
+  //   );
+  // }
 
   // 🔹 Else → Just show based on user's department
   if (department === "PMO")

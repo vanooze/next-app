@@ -6,6 +6,8 @@ import ManPowerCount from "./manpower_count";
 import ValueEng from "./value_eng";
 import PostProjectReview from "./post_project_review";
 import NcCapa from "./nccapa";
+import AwardingDocuments from "./awarding_docu";
+import OverallReport from "./overall_report";
 
 interface PostProjectProprs {
   project: Projects | null;
@@ -21,6 +23,12 @@ function PostProject({ project }: PostProjectProprs) {
         </Tab>
         <Tab key="Contractor Evaluation" title="Contractor Evaluation">
           <ContractorEvaluation project={project} />
+        </Tab>
+        <Tab key="Overall Report" title="Overall Report">
+          <OverallReport project={project} />
+        </Tab>
+        <Tab key="Awarding Documents" title="Awarding Documents">
+          <AwardingDocuments project={project} />
         </Tab>
         <Tab key="Final Manpower Count" title="Final Manpower Count">
           <ManPowerCount project={project} />
