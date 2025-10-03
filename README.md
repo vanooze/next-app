@@ -1,14 +1,13 @@
 # AVOLUTION NEW CRS 
 
-[NextJS](https://nextjs.org/)
-[NextUI](https://nextui.org/)
-
 - Dark Mode Support
-- Full Responsive
 - Assigned Per Department
 - Home Page with Charts
-- Task Designation Page
+- Task Designation 
 - Project Monitoring
+- Sales Management
+- Inventory 
+- Design Activities
 - More pages coming soon...
 
 ```
