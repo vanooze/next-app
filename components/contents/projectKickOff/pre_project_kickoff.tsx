@@ -37,7 +37,7 @@ function PreProjectKickOff({ project }: PreProjectKickOffProps) {
           <Conceptual project={project} />
         </Tab>
         <Tab key="Procurement" title="Procurement">
-          <Procurement />
+          <Procurement project={project} />
         </Tab>
         <Tab key="Contractors (Bidding)" title="Contractors (Bidding)">
           <Contractors project={project} />

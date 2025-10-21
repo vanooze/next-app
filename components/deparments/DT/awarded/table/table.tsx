@@ -13,7 +13,7 @@ import type { SortDescriptor } from "@react-types/shared";
 import React, { useState, useMemo } from "react";
 import { AwardedManagementColumns } from "@/helpers/db";
 import { RenderCell } from "./render-cell";
-import { EditTask } from "../operation/update";
+import { UploadBOQ } from "../operation/upload";
 import { useUserContext } from "@/components/layout/UserContext";
 import { AwardedManagement } from "@/helpers/db";
 
@@ -61,16 +61,6 @@ export const AwardedTableWrapper: React.FC<TableWrapperProps> = ({
 
   const handleCloseEdit = () => {
     setIsEditOpen(false);
-    setSelectedTask(null);
-  };
-
-  const handleOpenDelete = (task: AwardedManagement) => {
-    setSelectedTask(task);
-    setIsDeleteOpen(true);
-  };
-
-  const handleCloseDelete = () => {
-    setIsDeleteOpen(false);
     setSelectedTask(null);
   };
 
@@ -167,7 +157,6 @@ export const AwardedTableWrapper: React.FC<TableWrapperProps> = ({
                       AwardedProj={item}
                       columnKey={col.uid as keyof AwardedManagement | "actions"}
                       handleEditTask={handleOpenEdit}
-                      handleDeleteTask={handleOpenDelete}
                     />
                   </TableCell>
                 ))}
@@ -176,7 +165,7 @@ export const AwardedTableWrapper: React.FC<TableWrapperProps> = ({
           </TableBody>
         </Table>
       )}
-      <EditTask
+      <UploadBOQ
         isOpen={isEditOpen}
         onClose={handleCloseEdit}
         task={selectedTask}

@@ -104,7 +104,7 @@ export default function ValueEng({ project }: ValueEngProps) {
     }
   };
 
-  const canUpload = user?.department.includes("DESIGN");
+  const canUpload = user?.designation.includes("TECHNICAL ASSISTANT MANAGER");
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">

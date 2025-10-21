@@ -126,11 +126,9 @@ export const AddProject = () => {
                     setStatus(Array.from(keys)[0] as string)
                   }
                 >
-                  {["OnHold", "Overdue", "OnGoing", "Pending", "Finished"].map(
-                    (s) => (
-                      <SelectItem key={s}>{s}</SelectItem>
-                    )
-                  )}
+                  {["OnHold", "Overdue", "OnGoing", "Finished"].map((s) => (
+                    <SelectItem key={s}>{s}</SelectItem>
+                  ))}
                 </Select>
               </ModalBody>
 

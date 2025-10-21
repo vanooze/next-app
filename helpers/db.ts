@@ -68,6 +68,7 @@ export const ProjectMonitoringColumns = [
 // ------------------------- SALES MANAGEMENT -------------------------
 export interface SalesManagement {
   id: number;
+  clientId: string;
   clientName: string;
   projectDesc: string;
   dateReceived: string | null;

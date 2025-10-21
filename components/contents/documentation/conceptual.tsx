@@ -46,7 +46,9 @@ export default function Conceptual({ project }: ConceptualProps) {
     }
   }, [project]);
 
-  const canUpload = user?.designation.includes("DESIGN SUPERVISOR");
+  const canUpload =
+    user?.designation.includes("DESIGN") ||
+    user?.designation.includes("PMO TL");
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/documentation/conceptual?id=${projectId}`

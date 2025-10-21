@@ -62,7 +62,9 @@ export default function Contractors({ project }: ContractorsProp) {
     fetchassignedPersonnel();
   }, [projectId]);
 
-  const canUpload = user?.designation.includes("DOCUMENT CONTROLLER");
+  const canUpload =
+    user?.designation.includes("DOCUMENT CONTROLLER") ||
+    user?.designation.includes("PMO TL");
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/projectValidation/contractors?id=${projectId}`

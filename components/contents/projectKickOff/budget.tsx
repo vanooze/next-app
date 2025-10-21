@@ -43,11 +43,7 @@ export default function Budget({ project }: BudgetProps) {
     }
   }, [project]);
 
-  const canAddBudget =
-    user?.name === "HAROLD DAVID" ||
-    user?.name === "MARVIN JIMENEZ" ||
-    user?.name === "JOHN MAGNO";
-
+  const canAddBudget = user?.designation?.includes("PMO");
   useEffect(() => {
     if (!project?.projectId) return;
 

@@ -105,13 +105,9 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
   };
 
   const canUpload =
-    user?.designation.includes("IT SUPERVISOR") ||
-    user?.designation.includes("DESIGN SUPERVISOR") ||
-    user?.designation.includes("TECHNICAL MANAGER") ||
-    user?.designation.includes("TECHNICAL ADMIN CONSULTANT") ||
-    user?.designation.includes("TMG SUPERVISOR") ||
-    user?.name === "KENNETH BAUTISTA" ||
-    user?.name === "BILLY JOEL TOPACIO";
+    user?.designation.includes("SALES") ||
+    user?.designation.includes("PMO TL") ||
+    user?.designation.includes("DESIGN") ;
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">

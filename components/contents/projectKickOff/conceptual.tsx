@@ -69,9 +69,7 @@ export default function Conceptual({ project }: ConceptualProps) {
   }, [projectId]);
 
   const canUpload =
-    user?.name === assignedPersonnel || user?.designation.includes("PMO TL");
-
-  const canAssign = user?.designation.includes("PMO TL");
+    user?.designation.includes("DESIGN") || user?.designation.includes("PMO");
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/projectkickoff/conceptual?id=${projectId}`
@@ -143,142 +141,77 @@ export default function Conceptual({ project }: ConceptualProps) {
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">
-      <h1 className="text-lg font-semibold">Assign Signed Conceptual to:</h1>
-
-      {isPOLoading ? (
-        <Spinner
-          classNames={{ label: "text-foreground mt-4" }}
-          label="loading..."
-          variant="wave"
-        />
-      ) : (
-        <Select
-          className="max-w-xs"
-          label="Designate Signed Conceptual to:"
-          variant="bordered"
-          isDisabled={!canAssign}
-          items={selectSales}
-          scrollShadowProps={{ isEnabled: false }}
-          selectedKeys={new Set([assignedPersonnel])}
-          onSelectionChange={async (keys) => {
-            if (!canAssign) return;
-            const selected = Array.from(keys)[0];
-            if (typeof selected === "string") {
-              setassignedPersonnel(selected);
-
-              if (projectId) {
-                try {
-                  await fetch(
-                    "/api/department/PMO/project_tasks/projectkickoff/conceptual/personnel",
-                    {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        projectId,
-                        assignedPersonnel: selected,
-                      }),
-                    }
-                  );
-                } catch (err) {
-                  console.error("Failed to update assigned Conceptual:", err);
-                }
-              }
-            }
-          }}
-        >
-          <SelectSection classNames={{ heading: headingClasses }} title="Sales">
-            {selectSales.map((item) => (
-              <SelectItem key={item.key}>{item.label}</SelectItem>
-            ))}
-          </SelectSection>
-          <SelectSection classNames={{ heading: headingClasses }} title="PMO">
-            {selectPmo.map((item) => (
-              <SelectItem key={item.key}>{item.label}</SelectItem>
-            ))}
-          </SelectSection>
-          <SelectSection
-            classNames={{ heading: headingClasses }}
-            title="Design"
-          >
-            {selectDesign.map((item) => (
-              <SelectItem key={item.key}>{item.label}</SelectItem>
-            ))}
-          </SelectSection>
-        </Select>
-      )}
-
-      {assignedPersonnel ||
-        (canUpload && (
-          <>
-            <h1 className="text-lg font-semibold">Signed Conceptual Details</h1>
-            <Textarea
-              className="max-w-lg"
-              label="Signed Conceptual Details"
-              placeholder="Enter the details here..."
-              value={PODetails}
-              onChange={(e) => setPODetails(e.target.value)}
-            />
-            <h1 className="text-lg font-semibold">
-              Signed Conceptual Attachment
-            </h1>
-            <div className="border border-dashed rounded max-w-lg">
-              <DropZone
-                onDrop={handleDrop}
-                className="p-6 border border-gray-300 rounded text-center"
-              >
-                <p className="text-sm text-gray-600">Drag & drop files here</p>
-                <FileTrigger
-                  allowsMultiple
-                  acceptedFileTypes={[
-                    "image/png",
-                    "image/jpeg",
-                    "application/pdf",
-                    "text/csv",
-                  ]}
-                  onSelect={(files) => {
-                    if (files) {
-                      setFiles((prev) => [...prev, ...Array.from(files)]);
-                    }
-                  }}
-                ></FileTrigger>
-              </DropZone>
-
-              {files.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  <p className="font-semibold text-sm">Files to Upload:</p>
-                  {files.map((file, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
-                    >
-                      <span className="text-sm text-gray-700 truncate">
-                        {file.name}
-                      </span>
-                      <button
-                        onClick={() =>
-                          setFiles((prev) => prev.filter((_, i) => i !== index))
-                        }
-                        className="text-red-500 hover:text-red-700 text-sm ml-2"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <Button
-              color="primary"
-              className="max-w-lg"
-              isDisabled={isUploading}
-              onPress={submitForm}
+      {canUpload && (
+        <>
+          <h1 className="text-lg font-semibold">Signed Conceptual Details</h1>
+          <Textarea
+            className="max-w-lg"
+            label="Signed Conceptual Details"
+            placeholder="Enter the details here..."
+            value={PODetails}
+            onChange={(e) => setPODetails(e.target.value)}
+          />
+          <h1 className="text-lg font-semibold">
+            Signed Conceptual Attachment
+          </h1>
+          <div className="border border-dashed rounded max-w-lg">
+            <DropZone
+              onDrop={handleDrop}
+              className="p-6 border border-gray-300 rounded text-center"
             >
-              {isUploading ? "Uploading..." : "Submit"}
-            </Button>
-          </>
-        ))}
+              <p className="text-sm text-gray-600">Drag & drop files here</p>
+              <FileTrigger
+                allowsMultiple
+                acceptedFileTypes={[
+                  "image/png",
+                  "image/jpeg",
+                  "application/pdf",
+                  "text/csv",
+                ]}
+                onSelect={(files) => {
+                  if (files) {
+                    setFiles((prev) => [...prev, ...Array.from(files)]);
+                  }
+                }}
+              ></FileTrigger>
+            </DropZone>
+
+            {files.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="font-semibold text-sm">Files to Upload:</p>
+                {files.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
+                  >
+                    <span className="text-sm text-gray-700 truncate">
+                      {file.name}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setFiles((prev) => prev.filter((_, i) => i !== index))
+                      }
+                      className="text-red-500 hover:text-red-700 text-sm ml-2"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <Button
+            color="primary"
+            className="max-w-lg"
+            isDisabled={isUploading}
+            onPress={submitForm}
+          >
+            {isUploading ? "Uploading..." : "Submit"}
+          </Button>
+        </>
+      )}
       <Divider />
 
       {isLoading && (
@@ -304,6 +237,12 @@ export default function Conceptual({ project }: ConceptualProps) {
             "image/gif",
           ].includes(file.attachmentType);
           const previewUrl = `/uploads/${file.projectId}/kickoff/${file.attachmentName}`;
+
+          const isExcel =
+            file.attachmentName?.toLowerCase().endsWith(".xlsx") ||
+            file.attachmentName?.toLowerCase().endsWith(".xls");
+
+          if (isExcel) return null;
 
           return (
             <Card

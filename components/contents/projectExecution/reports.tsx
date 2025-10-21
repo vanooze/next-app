@@ -1,287 +1,294 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
+  Button,
+  Input,
   Select,
   SelectItem,
   Textarea,
-  Button,
-  Divider,
-  Card,
-  CardHeader,
-  CardFooter,
-  Image,
-  Spinner,
+  TimeInput,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
 } from "@heroui/react";
-import useSWR from "swr";
-import { DropZone, DropItem, FileTrigger } from "react-aria-components";
-import { selectReport } from "@/helpers/data";
+import { Time } from "@internationalized/date";
+import { ReportCategories } from "@/helpers/data";
 import { Projects } from "@/helpers/acumatica";
-import { useUserContext } from "@/components/layout/UserContext";
 
-interface ReportsProp {
+interface ReportingProps {
   project: Projects | null;
 }
 
-const fetcher = async (url: string) => {
-  const res = await fetch(url);
-  const data = await res.json();
-  return Array.isArray(data) ? data : [data];
-};
+export default function ReportPage({ project }: ReportingProps) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [reports, setReports] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-export default function Reports({ project }: ReportsProp) {
-  const { user } = useUserContext();
-  const [projectId, setProjectId] = useState<string | null>("");
-  const [assignedPersonnel, setassignedPersonnel] = useState(user?.name);
-  const [PODetails, setPODetails] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
-  const [type, setType] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
+  const [formData, setFormData] = useState({
+    date: "",
+    timeIn: null as Time | null,
+    timeOut: null as Time | null,
+    category: "",
+    activity: "",
+    concern: "",
+    actionTaken: "",
+    remarks: "",
+    attachment: null as File | null,
+  });
+
+  const handleChange = (key: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    handleChange("attachment", file);
+  };
+
   useEffect(() => {
     if (project) {
       setProjectId(project.projectId);
     }
   }, [project]);
 
-  const canUpload = user?.designation.includes("PMO TL");
-
-  const key = projectId
-    ? `/api/department/PMO/project_tasks/projectexecution/reports?id=${projectId}`
-    : null;
-
-  const {
-    data: uploadedFiles = [],
-    error,
-    isLoading,
-    mutate,
-  } = useSWR(key, fetcher);
-
-  const handleDrop = async (e: { items: DropItem[] }) => {
-    const newFiles: File[] = [];
-    for (const item of e.items) {
-      if (item.kind === "file") {
-        const file = await item.getFile();
-        newFiles.push(file);
-      }
+  const fetchReports = async () => {
+    if (!project?.projectId) return;
+    try {
+      const res = await fetch(
+        `/api/department/PMO/project_tasks/projectexecution/reports?project_id=${project.projectId}`
+      );
+      const data = await res.json();
+      if (res.ok) setReports(data);
+    } catch (err) {
+      console.error("Failed to fetch reports:", err);
     }
-    setFiles((prev) => [...prev, ...newFiles]);
   };
 
-  const submitForm = async () => {
-    if (!projectId) return alert("No project selected");
-    if (files.length === 0) return alert("Please upload at least one file.");
+  useEffect(() => {
+    fetchReports();
+  }, [project]);
 
-    setIsUploading(true);
-    const attachDate = new Date().toISOString().slice(0, 19).replace("T", " ");
-    const status = "1";
-
-    try {
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append("projectId", projectId.toString());
-        formData.append("assignedPersonnel", assignedPersonnel || "null");
-        formData.append("description", PODetails || "null");
-        formData.append("status", status);
-        formData.append("attachDate", attachDate);
-        formData.append("type", type);
-        formData.append("file", file);
-
-        const res = await fetch(
-          "/api/department/PMO/project_tasks/projectexecution/reports/create",
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-
-        const result = await res.json();
-        if (!res.ok || !result?.file) throw new Error("Upload failed");
-      }
-
-      setFiles([]);
-      setPODetails("");
-      setType("");
-      alert("Submitted successfully!");
-      mutate();
-    } catch (err) {
-      console.error("Submit error:", err);
-      alert("Submit failed. Try again.");
+  const handleSubmit = async () => {
+    if (!project?.projectId) {
+      alert("Missing project ID");
+      return;
     }
 
-    setIsUploading(false);
+    if (!formData.date || !formData.category) {
+      alert("Please complete required fields.");
+      return;
+    }
+
+    const data = new FormData();
+    data.append("project_id", project.projectId);
+    data.append("date", formData.date);
+    if (formData.timeIn) data.append("time_in", formData.timeIn.toString());
+    if (formData.timeOut) data.append("time_out", formData.timeOut.toString());
+    data.append("category", formData.category);
+    data.append("activity", formData.activity);
+    data.append("concern", formData.concern);
+    data.append("action_taken", formData.actionTaken);
+    data.append("remarks", formData.remarks);
+    if (formData.attachment) {
+      data.append("file", formData.attachment);
+      data.append("attachment_name", formData.attachment.name);
+      data.append("attachment_type", formData.attachment.type);
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(
+        "/api/department/PMO/project_tasks/projectexecution/reports/create",
+        {
+          method: "POST",
+          body: data,
+        }
+      );
+
+      if (res.ok) {
+        alert("Report saved successfully!");
+        onClose();
+        setFormData({
+          date: "",
+          timeIn: null,
+          timeOut: null,
+          category: "",
+          activity: "",
+          concern: "",
+          actionTaken: "",
+          remarks: "",
+          attachment: null,
+        });
+        fetchReports();
+      } else {
+        alert("Failed to save report.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="flex w-full flex-col md:flex-nowrap gap-4">
-      {canUpload && (
-        <>
-          <h1 className="text-lg font-semibold">Select the type of Report</h1>
-          <Select
-            className="max-w-xs"
-            label="Select a type of report"
-            variant="bordered"
-            items={selectReport}
-            scrollShadowProps={{ isEnabled: false }}
-            selectedKeys={[type]}
-            onSelectionChange={(keys) => setType(Array.from(keys)[0] as string)}
-          >
-            {(item) => <SelectItem key={item.key}>{item.label}</SelectItem>}
-          </Select>
-
-          <h1 className="text-lg font-semibold">Reports Details</h1>
-          <Textarea
-            className="max-w-lg"
-            label="Reports Details"
-            placeholder="Enter the details here..."
-            value={PODetails}
-            onChange={(e) => setPODetails(e.target.value)}
-          />
-
-          <h1 className="text-lg font-semibold">Reports Attachment</h1>
-          <div className="border border-dashed rounded max-w-lg">
-            <DropZone
-              onDrop={handleDrop}
-              className="p-6 border border-gray-300 rounded text-center"
-            >
-              <p className="text-sm text-gray-600">Drag & drop files here</p>
-              <FileTrigger
-                allowsMultiple
-                acceptedFileTypes={[
-                  "image/png",
-                  "image/jpeg",
-                  "application/pdf",
-                  "text/csv",
-                ]}
-                onSelect={(files) => {
-                  if (files) {
-                    setFiles((prev) => [...prev, ...Array.from(files)]);
-                  }
-                }}
-              ></FileTrigger>
-            </DropZone>
-
-            {files.length > 0 && (
-              <div className="mt-4 space-y-2">
-                <p className="font-semibold text-sm">Files to Upload:</p>
-                {files.map((file, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
-                  >
-                    <span className="text-sm text-gray-700 truncate">
-                      {file.name}
-                    </span>
-                    <button
-                      onClick={() =>
-                        setFiles((prev) => prev.filter((_, i) => i !== index))
-                      }
-                      className="text-red-500 hover:text-red-700 text-sm ml-2"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Submit Button */}
-          <Button
-            color="primary"
-            className="max-w-lg"
-            isDisabled={isUploading}
-            onPress={submitForm}
-          >
-            {isUploading ? "Uploading..." : "Submit"}
-          </Button>
-        </>
-      )}
-      <Divider />
-
-      {isLoading && (
-        <Spinner
-          classNames={{ label: "text-foreground mt-4" }}
-          label="loading files..."
-          variant="dots"
-        />
-      )}
-      {error && (
-        <p className="text-sm text-red-500">Failed to load uploaded files.</p>
-      )}
-
-      {/* Uploaded Files Preview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-        {uploadedFiles.map((file: any, idx: number) => {
-          if (!file.attachmentName) return null;
-          const isImage = [
-            "image/png",
-            "image/jpeg",
-            "image/jpg",
-            "image/webp",
-            "image/gif",
-          ].includes(file.attachmentType);
-          const previewUrl = `/uploads/${file.projectId}/reports/${file.attachmentName}`;
-
-          return (
-            <Card
-              key={idx}
-              isFooterBlurred
-              className="relative h-[300px] w-full overflow-hidden"
-            >
-              <Image
-                removeWrapper
-                alt="File preview"
-                className="absolute inset-0 z-0 w-full h-full object-cover"
-                src={isImage ? previewUrl : ""}
-              />
-              <div className="absolute inset-0 bg-black/5 z-0" />
-              <CardHeader className="absolute z-10 flex-col items-start bg-black/40">
-                <h4 className="text-white font-semibold text-md break-words max-w-[90%]">
-                  {file.attachmentName}
-                </h4>
-              </CardHeader>
-              <CardFooter className="absolute bg-white/30 backdrop-blur-sm bottom-0 border-t border-white/30 z-10 justify-between p-2">
-                <div>
-                  <p className="text-black text-tiny">
-                    {file.description &&
-                    file.description.toLowerCase() !== "null" ? (
-                      <>
-                        {file.description}
-                        {file.assignedPersonnel &&
-                          file.assignedPersonnel.toLowerCase() !== "null" && (
-                            <span className="ml-1 italic text-gray-500">
-                              — {file.assignedPersonnel}
-                            </span>
-                          )}
-                      </>
-                    ) : (
-                      <>
-                        <span className="italic">No description</span>
-                        {file.assignedPersonnel &&
-                          file.assignedPersonnel.toLowerCase() !== "null" && (
-                            <span className="ml-1 italic text-gray-500">
-                              — {file.assignedPersonnel}
-                            </span>
-                          )}
-                      </>
-                    )}
-                  </p>
-                </div>
-                <a href={previewUrl} target="_blank" rel="noopener noreferrer">
-                  <Button
-                    className="text-tiny"
-                    color="primary"
-                    radius="full"
-                    size="sm"
-                  >
-                    View File
-                  </Button>
-                </a>
-              </CardFooter>
-            </Card>
-          );
-        })}
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">Daily Activity Reports</h2>
+        <Button color="primary" onPress={onOpen}>
+          Create Report
+        </Button>
       </div>
+
+      {reports.length === 0 ? (
+        <div className="text-center py-10 text-default-500">
+          No reports found. Click <b>Create Report</b> to add one.
+        </div>
+      ) : (
+        <Table aria-label="Reports Table" className="mt-4">
+          <TableHeader>
+            <TableColumn>Date</TableColumn>
+            <TableColumn>Category</TableColumn>
+            <TableColumn>Activity</TableColumn>
+            <TableColumn>Remarks</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {reports.map((r) => (
+              <TableRow key={r.id}>
+                <TableCell>{r.report_date}</TableCell>
+                <TableCell>{r.category}</TableCell>
+                <TableCell>{r.activity}</TableCell>
+                <TableCell>{r.remarks}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+
+      {/* 🧾 Modal Form */}
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        size="5xl"
+        backdrop="blur"
+        scrollBehavior="inside"
+        classNames={{
+          base: "mx-2 sm:mx-4",
+          body: "px-2 sm:px-6",
+          header: "px-2 sm:px-6",
+          footer: "px-2 sm:px-6"
+        }}
+      >
+        <ModalContent>
+          <ModalHeader className="text-lg font-semibold">
+            Create Daily Activity Report
+          </ModalHeader>
+          <ModalBody>
+            <div className="space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <Input
+                  label="Date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => handleChange("date", e.target.value)}
+                  isRequired
+                  size="sm"
+                />
+
+                <Select
+                  label="Category"
+                  placeholder="Select category"
+                  selectedKeys={formData.category ? [formData.category] : []}
+                  onChange={(e) => handleChange("category", e.target.value)}
+                  size="sm"
+                >
+                  {ReportCategories.map((cat) => (
+                    <SelectItem key={cat.key}>{cat.value}</SelectItem>
+                  ))}
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <TimeInput
+                  label="Time In"
+                  value={formData.timeIn}
+                  onChange={(value) => handleChange("timeIn", value)}
+                  size="sm"
+                />
+                <TimeInput
+                  label="Time Out"
+                  value={formData.timeOut}
+                  onChange={(value) => handleChange("timeOut", value)}
+                  size="sm"
+                />
+              </div>
+
+              <Textarea
+                label="Activity"
+                value={formData.activity}
+                onChange={(e) => handleChange("activity", e.target.value)}
+                size="sm"
+                minRows={2}
+              />
+
+              <Textarea
+                label="Concerns"
+                value={formData.concern}
+                onChange={(e) => handleChange("concern", e.target.value)}
+                size="sm"
+                minRows={2}
+              />
+
+              <Textarea
+                label="Action Taken"
+                value={formData.actionTaken}
+                onChange={(e) => handleChange("actionTaken", e.target.value)}
+                size="sm"
+                minRows={2}
+              />
+
+              <Textarea
+                label="Remarks / Status"
+                value={formData.remarks}
+                onChange={(e) => handleChange("remarks", e.target.value)}
+                size="sm"
+                minRows={2}
+              />
+
+              <div>
+                <Input
+                  type="file"
+                  label="Attachment"
+                  onChange={handleFileChange}
+                  accept="image/*,.pdf,.doc,.docx"
+                  size="sm"
+                />
+                {formData.attachment && (
+                  <p className="text-xs sm:text-sm text-default-500 mt-1 break-words">
+                    Selected: {formData.attachment.name}
+                  </p>
+                )}
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="light" onPress={onClose} className="w-full sm:w-auto" size="sm">
+              Cancel
+            </Button>
+            <Button color="primary" onPress={handleSubmit} isLoading={loading} className="w-full sm:w-auto" size="sm">
+              {loading ? "Saving..." : "Save Report"}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

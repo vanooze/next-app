@@ -39,7 +39,12 @@ export default function BOQ({ project }: BOQProps) {
     }
   }, [project]);
 
-  const canUpload = user?.designation.includes("DESIGN SUPERVISOR");
+  const canUpload =
+    user?.designation.includes("DESIGN SUPERVISOR") ||
+    user?.designation.includes("PMO TL") ||
+    user?.designation.includes("TMIG SUPERVISOR") ||
+    user?.designation.includes("TECHNICAL ADMIN CONSULTANT") ||
+    user?.designation.includes("TECHNICAL ASSISTANT MANAGER");
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/documentation/boq?id=${projectId}`

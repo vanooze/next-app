@@ -13,17 +13,7 @@ export async function POST(req) {
     }
     const body = await req.json();
 
-    const {
-      id,
-      clientName,
-      projectDesc,
-      dateReceived,
-      salesPersonnel,
-      sirMJH,
-      status,
-      notes,
-      dateAwarded,
-    } = body;
+    const { id, status } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -34,28 +24,11 @@ export async function POST(req) {
 
     const query = `
       UPDATE awarded_management SET
-        client_name = ?,
-        proj_desc = ?,
-        date_received = ?,
-        sales_personnel = ?,
-        sir_mjh = ?,
-        status = ?,
-        notes =?, 
-        date_awarded = ?
+        status = ?
       WHERE id = ? AND deleted = 0
     `;
 
-    const result = await executeQuery(query, [
-      clientName,
-      projectDesc,
-      dateReceived,
-      salesPersonnel,
-      sirMJH,
-      status,
-      notes,
-      dateAwarded,
-      id,
-    ]);
+    const result = await executeQuery(query, [status, id]);
 
     return NextResponse.json({
       success: true,

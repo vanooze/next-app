@@ -41,13 +41,9 @@ export default function ProjectTurnOver({ project }: ProjectTurnOverProps) {
   }, [project]);
 
   const canUpload =
-    user?.designation.includes("IT SUPERVISOR") ||
-    user?.designation.includes("DESIGN SUPERVISOR") ||
-    user?.designation.includes("TECHNICAL MANAGER") ||
-    user?.designation.includes("TECHNICAL ADMIN CONSULTANT") ||
-    user?.designation.includes("TMG SUPERVISOR") ||
-    user?.name === "KENNETH BAUTISTA" ||
-    user?.name === "BILLY JOEL TOPACIO";
+    user?.designation.includes("SALES") ||
+    user?.designation.includes("PMO TL") ||
+    user?.designation.includes("DESIGN");
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/so/project_turn_over?id=${projectId}`

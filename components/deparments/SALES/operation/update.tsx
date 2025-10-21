@@ -21,7 +21,7 @@ import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useEffect, useState } from "react";
 import { selectSalesStatus } from "@/helpers/data";
 import { SalesManagement } from "@/helpers/db";
-import { date } from "yup";
+import { useUserContext } from "@/components/layout/UserContext";
 
 interface EditTaskProps {
   isOpen: boolean;
@@ -43,7 +43,9 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
     return parseDate(datePart);
   };
 
+  const { user } = useUserContext();
   const [id, setId] = useState<number>();
+  const [clientId, setClientId] = useState<string>("");
   const [clientName, setClientName] = useState<string>("");
   const [projectDesc, setProjectDesc] = useState<string>("");
   const [salesPersonnel, setSalesPersonnel] = useState<string>("");
@@ -52,10 +54,12 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
   const [status, setStatus] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [dateAwarded, setDateAwarded] = useState<CalendarDate | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (task) {
       setId(task.id);
+      setClientId(task.clientId ?? "");
       setClientName(task.clientName ?? "");
       setProjectDesc(task.projectDesc ?? "");
       setSalesPersonnel(task.salesPersonnel ?? "");
@@ -86,6 +90,7 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
 
     const payload = {
       id,
+      clientId,
       clientName,
       projectDesc,
       salesPersonnel,
@@ -103,11 +108,15 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to update task");
-      }
+      if (!res.ok) throw new Error("Failed to update task");
+
       const data = await res.json();
       console.log("Task updated:", data);
+
+      if (status === "Awarded") {
+        await sendToAcumatica(clientId, projectDesc, dateReceivedStr);
+      }
+
       await mutate("/api/department/SALES/sales_management");
       onClose();
       return data;
@@ -116,6 +125,58 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
       throw err;
     }
   };
+
+  const sendToAcumatica = async (
+    clientId: string,
+    projectDesc: string,
+    dateReceived: string | null
+  ) => {
+    const username = user?.email;
+    const password = user?.acu_password;
+    try {
+      const payload = {
+        username,
+        password,
+        clientId,
+        projectDesc,
+        dateReceived,
+      };
+
+      console.log("Sending to Acumatica:", payload);
+
+      const res = await fetch("/api/department/SALES/acumatica", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        console.log("Project created in Acumatica:", result.data);
+      } else {
+        console.error("Failed to create project in Acumatica:", result.error);
+      }
+    } catch (error) {
+      console.error("Error sending to Acumatica:", error);
+    }
+  };
+
+  const handleUpdateTaskWithLoading = async (onClose: () => void) => {
+    setLoading(true);
+    try {
+      await handleUpdateTask(onClose);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (dateAwarded) {
+      setStatus("Awarded");
+    } else if (!dateAwarded && status === "Awarded") {
+      setStatus("");
+    }
+  }, [dateAwarded]);
 
   return (
     <div>
@@ -217,14 +278,21 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
                   </Select>
                 </ModalBody>
                 <ModalFooter>
-                  <Button color="danger" variant="flat" onClick={onClose}>
+                  <Button
+                    color="danger"
+                    variant="flat"
+                    onClick={onClose}
+                    isDisabled={loading}
+                  >
                     Close
                   </Button>
                   <Button
                     color="primary"
-                    onPress={() => handleUpdateTask(onClose)}
+                    onPress={() => handleUpdateTaskWithLoading(onClose)}
+                    isLoading={loading}
+                    isDisabled={loading}
                   >
-                    Update Task
+                    {loading ? "Updating..." : "Update Task"}
                   </Button>
                 </ModalFooter>
               </>

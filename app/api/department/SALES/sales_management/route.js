@@ -16,6 +16,7 @@ export async function GET(req) {
     );
     const tasks = rows.map((r) => ({
       id: r.id,
+      clientId: r.client_id,
       clientName: r.client_name,
       projectDesc: r.proj_desc,
       dateReceived: r.date_received,

@@ -69,12 +69,7 @@ export default function Plans({ project }: PlansProp) {
   }, [projectId]);
 
   const canUpload =
-    user?.name === assignedPersonnel ||
-    user?.designation.includes("PMO TL") ||
-    user?.designation.includes("DOCUMENT CONTROLLER");
-
-  const canAssign =
-    user?.designation.includes("PMO TL") ||
+    user?.designation.includes("PMO") ||
     user?.designation.includes("DOCUMENT CONTROLLER");
 
   const key = projectId
@@ -145,66 +140,7 @@ export default function Plans({ project }: PlansProp) {
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">
-      <h1 className="text-lg font-semibold">Assign Plans to:</h1>
-
-      {isPOLoading ? (
-        <Spinner
-          classNames={{ label: "text-foreground mt-4" }}
-          label="loading..."
-          variant="wave"
-        />
-      ) : (
-        <Select
-          className="max-w-xs"
-          label="Designate Plans to:"
-          variant="bordered"
-          isDisabled={!canAssign}
-          items={selectSales}
-          scrollShadowProps={{ isEnabled: false }}
-          selectedKeys={new Set([assignedPersonnel])}
-          onSelectionChange={async (keys) => {
-            if (!canAssign) return;
-            const selected = Array.from(keys)[0];
-            if (typeof selected === "string") {
-              setassignedPersonnel(selected);
-
-              if (projectId) {
-                try {
-                  await fetch(
-                    "/api/department/PMO/project_tasks/projectValidation/plans/personnel",
-                    {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        projectId,
-                        assignedPersonnel: selected,
-                      }),
-                    }
-                  );
-                } catch (err) {
-                  console.error(
-                    "Failed to update assigned Pre Project Agreement:",
-                    err
-                  );
-                }
-              }
-            }
-          }}
-        >
-          <SelectSection classNames={{ heading: headingClasses }} title="Sales">
-            {selectSales.map((item) => (
-              <SelectItem key={item.key}>{item.label}</SelectItem>
-            ))}
-          </SelectSection>
-          <SelectSection classNames={{ heading: headingClasses }} title="PMO">
-            {selectPmo.map((item) => (
-              <SelectItem key={item.key}>{item.label}</SelectItem>
-            ))}
-          </SelectSection>
-        </Select>
-      )}
-
-      {assignedPersonnel && canUpload && (
+      {canUpload && (
         <>
           {/* PO Details */}
           <h1 className="text-lg font-semibold">Plans Details</h1>
@@ -300,7 +236,7 @@ export default function Plans({ project }: PlansProp) {
             "image/webp",
             "image/gif",
           ].includes(file.attachmentType);
-          const previewUrl = `/uploads/${file.projectId}/${file.attachmentName}`;
+          const previewUrl = `/uploads/${file.projectId}/validation/${file.attachmentName}`;
 
           return (
             <Card
@@ -323,10 +259,27 @@ export default function Plans({ project }: PlansProp) {
               <CardFooter className="absolute bg-white/30 backdrop-blur-sm bottom-0 border-t border-white/30 z-10 justify-between p-2">
                 <div>
                   <p className="text-black text-tiny">
-                    {file.description && file.description !== "null" ? (
-                      file.description
+                    {file.description &&
+                    file.description.toLowerCase() !== "null" ? (
+                      <>
+                        {file.description}
+                        {file.assignedPersonnel &&
+                          file.assignedPersonnel.toLowerCase() !== "null" && (
+                            <span className="ml-1 italic text-gray-500">
+                              — {file.assignedPersonnel}
+                            </span>
+                          )}
+                      </>
                     ) : (
-                      <span className="italic">No description</span>
+                      <>
+                        <span className="italic">No description</span>
+                        {file.assignedPersonnel &&
+                          file.assignedPersonnel.toLowerCase() !== "null" && (
+                            <span className="ml-1 italic text-gray-500">
+                              — {file.assignedPersonnel}
+                            </span>
+                          )}
+                      </>
                     )}
                   </p>
                 </div>

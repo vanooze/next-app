@@ -3,6 +3,7 @@ export interface User {
   name: string;
   username: string;
   email: string;
+  acu_password: string;
   designation: string;
   designation_status: string;
   department: string;

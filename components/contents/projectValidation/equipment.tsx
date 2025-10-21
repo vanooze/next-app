@@ -31,7 +31,6 @@ export default function BoqTable({ project }: ContractorsProp) {
     user?.designation.includes("TMIG SUPERVISOR") ||
     user?.designation.includes("DOCUMENT CONTROLLER");
 
-  // Fetch data
   useEffect(() => {
     const fetchItems = async () => {
       setFetching(true);
@@ -105,30 +104,46 @@ export default function BoqTable({ project }: ContractorsProp) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 text-gray-900 dark:text-gray-100">
       {Object.entries(grouped).map(([category, subgroups]) => (
-        <div key={category} className="border rounded shadow-sm p-4">
+        <div
+          key={category}
+          className="border border-gray-300 dark:border-gray-700 rounded shadow-sm p-4 bg-white dark:bg-gray-900"
+        >
           <h3 className="font-bold text-lg mb-2">{category}</h3>
           {Object.entries(subgroups).map(([subcategory, items]) => (
             <div key={subcategory} className="mb-6">
               <h4 className="font-semibold text-md mb-1">{subcategory}</h4>
               <div className="overflow-x-auto">
-                <table className="min-w-full border border-gray-300">
-                  <thead className="bg-gray-100">
+                <table className="min-w-full border border-gray-300 dark:border-gray-700">
+                  <thead className="bg-gray-100 dark:bg-gray-800">
                     <tr>
-                      <th className="border px-2 py-1">Brand/Material</th>
-                      <th className="border px-2 py-1">Description</th>
-                      <th className="border px-2 py-1">Unit</th>
-                      <th className="border px-2 py-1">Qty</th>
-                      <th className="border px-2 py-1">Remarks</th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">
+                        Brand/Material
+                      </th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">
+                        Description
+                      </th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">
+                        Unit
+                      </th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">
+                        Qty
+                      </th>
+                      <th className="border border-gray-300 dark:border-gray-700 px-2 py-1">
+                        Remarks
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {items.map((item) => (
-                      <tr key={item.id}>
-                        <td className="border px-2 py-1">
+                      <tr
+                        key={item.id}
+                        className="odd:bg-gray-50 even:bg-white dark:odd:bg-gray-800 dark:even:bg-gray-900"
+                      >
+                        <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">
                           <input
-                            className="w-full border rounded px-1 py-0.5"
+                            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
                             value={item.brand || ""}
                             onChange={(e) =>
                               handleChange(item.id, "brand", e.target.value)
@@ -136,9 +151,9 @@ export default function BoqTable({ project }: ContractorsProp) {
                             disabled={!canAccess}
                           />
                         </td>
-                        <td className="border px-2 py-1">
+                        <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">
                           <input
-                            className="w-full border rounded px-1 py-0.5"
+                            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
                             value={item.description || ""}
                             onChange={(e) =>
                               handleChange(
@@ -150,9 +165,9 @@ export default function BoqTable({ project }: ContractorsProp) {
                             disabled={!canAccess}
                           />
                         </td>
-                        <td className="border px-2 py-1">
+                        <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">
                           <input
-                            className="w-full border rounded px-1 py-0.5"
+                            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
                             value={item.unit || ""}
                             onChange={(e) =>
                               handleChange(item.id, "unit", e.target.value)
@@ -160,10 +175,10 @@ export default function BoqTable({ project }: ContractorsProp) {
                             disabled={!canAccess}
                           />
                         </td>
-                        <td className="border px-2 py-1">
+                        <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">
                           <input
                             type="number"
-                            className="w-full border rounded px-1 py-0.5"
+                            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
                             value={item.qty ?? ""}
                             onChange={(e) =>
                               handleChange(
@@ -175,9 +190,9 @@ export default function BoqTable({ project }: ContractorsProp) {
                             disabled={!canAccess}
                           />
                         </td>
-                        <td className="border px-2 py-1">
+                        <td className="border border-gray-300 dark:border-gray-700 px-2 py-1">
                           <input
-                            className="w-full border rounded px-1 py-0.5"
+                            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
                             value={item.remarks || ""}
                             onChange={(e) =>
                               handleChange(item.id, "remarks", e.target.value)
@@ -200,7 +215,7 @@ export default function BoqTable({ project }: ContractorsProp) {
           href="https://avolutioninc.net/eformrnf/drf_form.php"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 text-sm hover:underline mt-2 max-w-lg"
+          className="text-blue-600 dark:text-blue-400 text-sm hover:underline mt-2 max-w-lg"
         >
           DRIF Filing
         </a>

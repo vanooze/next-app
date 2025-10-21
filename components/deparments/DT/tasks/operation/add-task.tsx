@@ -17,10 +17,10 @@ import { mutate } from "swr";
 import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useState, useEffect } from "react";
 import { PlusIcon } from "@/components/icons/table/add-icon";
-import { selectEboq, selectStatus, selectSboq } from "@/helpers/data";
+import { selectStatus } from "@/helpers/data";
+import { useUserContext } from "@/components/layout/UserContext";
 
 export const AddTask = () => {
-  let defaultDate = today(getLocalTimeZone());
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const targetRef = React.useRef(null);
   const { moveProps } = useDraggable({
@@ -28,43 +28,29 @@ export const AddTask = () => {
     canOverflow: true,
     isDisabled: !isOpen,
   });
-
+  const { user } = useUserContext();
   const [clientName, setClientName] = useState<string>("");
   const [projectDesc, setProjectDesc] = useState<string>("");
   const [salesPersonnel, setSalesPersonnel] = useState<string>("");
   const [dateReceived, setDateReceived] = useState<CalendarDate | null>(null);
-  const [eboq, setEboq] = useState(new Set<string>());
-  const [eboqDate, setEboqDate] = useState<CalendarDate | null>(null);
-  const [sboq, setSboq] = useState(new Set<string>());
-  const [sboqDate, setSboqDate] = useState<CalendarDate | null>(null);
-  const [sirme, setSirme] = useState<CalendarDate | null>(null);
-  const [sirmjh, setSirmjh] = useState<CalendarDate | null>(null);
   const [status, setStatus] = useState<string>("");
   const [filteredStatus, setFilteredStatus] = useState(selectStatus);
+  const username = user?.email;
+  const password = user?.acu_password;
 
   const handleAddTask = async (onClose: () => void) => {
     const dateReceivedStr = formatDatetoStr(dateReceived);
-    const eboqDateStr = formatDatetoStr(eboqDate);
-    const sboqDateStr = formatDatetoStr(sboqDate);
-    const sirmeDateStr = formatDatetoStr(sirme);
-    const sirmjhDateStr = formatDatetoStr(sirmjh);
-    const eboqArray = Array.from(eboq);
-    const sboqArray = Array.from(sboq);
 
     const payload = {
       clientName,
       projectDesc,
       salesPersonnel,
       dateReceived: dateReceivedStr,
-      eboq: eboqArray.length > 0 ? eboqArray.join(",") : null,
-      eboqdate: eboqDateStr,
-      sboq: sboqArray.length > 0 ? sboqArray.join(",") : null,
-      sboqdate: sboqDateStr,
-      sirME: sirmeDateStr,
-      sirMJH: sirmjhDateStr,
       status,
+      username,
+      password,
     };
-
+    console.log("User credentials:", { username, password });
     try {
       const res = await fetch("/api/department/ITDT/DT/tasks/create", {
         method: "POST",
@@ -87,15 +73,33 @@ export const AddTask = () => {
     }
   };
 
-  useEffect(() => {
-    if (sirmjh) {
-      setStatus("Finished");
-      setFilteredStatus(
-        selectStatus.filter((item) => item.label === "Finished")
-      );
-      return;
-    }
+  const sendToAcumatica = async (clientName: string) => {
+    try {
+      const username = user?.email;
+      const password = user?.acu_password;
 
+      const res = await fetch("/api/department/ITDT/DT/acumatica", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          password,
+          clientName,
+        }),
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        console.log("Customer Created in Acumatica:", result.data);
+      } else {
+        console.error("Failed to create customer in Acumatica:", result.error);
+      }
+    } catch (error) {
+      console.error("Error sending to Acumatica:", error);
+    }
+  };
+
+  useEffect(() => {
     if (!dateReceived) {
       setFilteredStatus(
         selectStatus.filter(
@@ -136,13 +140,13 @@ export const AddTask = () => {
         )
       );
     }
-  }, [dateReceived, sirmjh]);
+  }, [dateReceived]);
 
   return (
     <div>
       <>
         <Button onPress={onOpen} color="primary" endContent={<PlusIcon />}>
-          Add Task
+          Add Project
         </Button>
         <Modal
           ref={targetRef}
@@ -190,68 +194,6 @@ export const AddTask = () => {
                     onChange={setDateReceived}
                   />
                   <Select
-                    selectionMode="multiple"
-                    items={selectEboq}
-                    label="System Diagram"
-                    placeholder="System Diagram"
-                    variant="bordered"
-                    selectedKeys={eboq}
-                    onSelectionChange={(keys) => {
-                      if (keys !== "all") {
-                        setEboq(keys as Set<string>);
-                      } else {
-                        setEboq(new Set(selectEboq.map((item) => item.key)));
-                      }
-                    }}
-                  >
-                    {(item) => (
-                      <SelectItem key={item.key}>{item.label}</SelectItem>
-                    )}
-                  </Select>
-                  <DatePicker
-                    label="Endorsed Date"
-                    variant="bordered"
-                    value={eboqDate}
-                    onChange={setEboqDate}
-                  />
-                  <Select
-                    selectionMode="multiple"
-                    items={selectSboq}
-                    label="Structural"
-                    placeholder="Structural"
-                    variant="bordered"
-                    selectedKeys={sboq}
-                    onSelectionChange={(keys) => {
-                      if (keys !== "all") {
-                        setSboq(keys as Set<string>);
-                      } else {
-                        setSboq(new Set(selectSboq.map((item) => item.key)));
-                      }
-                    }}
-                  >
-                    {(item) => (
-                      <SelectItem key={item.key}>{item.label}</SelectItem>
-                    )}
-                  </Select>
-                  <DatePicker
-                    label="Endorsed Date"
-                    variant="bordered"
-                    value={sboqDate}
-                    onChange={setSboqDate}
-                  />
-                  <DatePicker
-                    label="Sir M.E."
-                    variant="bordered"
-                    value={sirme}
-                    onChange={setSirme}
-                  />
-                  <DatePicker
-                    label="Sir MJ/Harold"
-                    variant="bordered"
-                    value={sirmjh}
-                    onChange={setSirmjh}
-                  />
-                  <Select
                     isRequired
                     items={filteredStatus}
                     label="Status"
@@ -275,7 +217,7 @@ export const AddTask = () => {
                     color="primary"
                     onClick={() => handleAddTask(onClose)}
                   >
-                    Add Task
+                    Add Project
                   </Button>
                 </ModalFooter>
               </>

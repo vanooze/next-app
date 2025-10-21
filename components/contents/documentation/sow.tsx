@@ -40,8 +40,9 @@ export default function PrePorjectAgreement({ project }: SOWProps) {
   }, [project]);
 
   const canUpload =
-    user?.designation.includes("DESIGN SUPERVISOR") ||
-    user?.department.includes("SALES");
+    user?.designation.includes("DESIGN") ||
+    user?.department.includes("SALES") ||
+    user?.designation.includes("PMO TL");
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/documentation/sow?id=${projectId}`

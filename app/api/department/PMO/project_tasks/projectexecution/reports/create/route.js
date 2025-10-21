@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { getUserFromToken } from "@/app/lib/auth";
-import { executeQuery } from "@/app/lib/db";
 import fs from "fs";
 import path from "path";
+import { executeQuery } from "@/app/lib/db";
+import { getUserFromToken } from "@/app/lib/auth";
 
 export const config = {
   api: {
@@ -14,15 +14,19 @@ export async function POST(req) {
   try {
     const formData = await req.formData();
 
-    const projectId = formData.get("projectId");
-    const assignedPo = formData.get("assignedPersonnel");
-    const description = formData.get("description");
-    const status = formData.get("status");
-    const type = formData.get("type");
-    const attachDate = formData.get("attachDate");
+    const projectId = formData.get("project_id");
+    const date = formData.get("date");
+    const timeIn = formData.get("time_in");
+    const timeOut = formData.get("time_out");
+    const category = formData.get("category");
+    const activity = formData.get("activity");
+    const concern = formData.get("concern");
+    const actionTaken = formData.get("action_taken");
+    const remarks = formData.get("remarks");
+    const personnel = formData.get("personnel");
     const file = formData.get("file");
 
-    if (!projectId) {
+    if (!projectId || !date || !category) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -45,8 +49,8 @@ export async function POST(req) {
         process.cwd(),
         "public",
         "uploads",
-        projectId,
-        "reports"
+        "reports",
+        projectId
       );
       if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true });
@@ -55,7 +59,6 @@ export async function POST(req) {
       const ext = path.extname(file.name);
       const base = path.basename(file.name, ext);
       const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-
       filename = `${base}-${todayStr}${ext}`;
 
       let version = 1;
@@ -67,29 +70,40 @@ export async function POST(req) {
       const savePath = path.join(dirPath, filename);
       fs.writeFileSync(savePath, buffer);
     }
+
+    let user = null;
+    try {
+      user = await getUserFromToken(req);
+    } catch {}
+
     await executeQuery(
-      `INSERT INTO reports (
-        project_id, assigned_personnel, description, 
-        attachment_name, attachment_type, date, type , status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO reporting (
+        project_id, date, time_in, time_out,
+        category, activity, concern, action_taken, remarks, personnel,
+        attachment_name, attachment_type
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         projectId,
-        assignedPo || null,
-        description || null,
+        date,
+        timeIn || null,
+        timeOut || null,
+        category,
+        activity || null,
+        concern || null,
+        actionTaken || null,
+        remarks || null,
+        personnel || null,
         filename,
         fileType,
-        attachDate || null,
-        type,
-        status || null,
       ]
     );
 
-    return NextResponse.json({
-      success: true,
-      file,
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Upload Error:", error);
-    return NextResponse.json({ error: "Failed to upload" }, { status: 500 });
+    console.error("Report creation error:", error);
+    return NextResponse.json(
+      { error: "Failed to create report" },
+      { status: 500 }
+    );
   }
 }

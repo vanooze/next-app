@@ -1,4 +1,8 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import useSWR from "swr";
+import { fetcher } from "@/app/lib/fetcher";
 import { Sidebar } from "./sidebar.styles";
 import { Company } from "./company";
 import { HomeIcon } from "../icons/sidebar/home-icon";
@@ -12,14 +16,15 @@ import { useSidebarContext } from "../layout/layout-context";
 import { usePathname } from "next/navigation";
 import { useUserContext } from "../layout/UserContext";
 import { BalanceIcon } from "../icons/sidebar/balance-icon";
-import { ChatIcon } from "../icons/sidebar/chat-icon";
 
 export const SidebarWrapper = () => {
-  const { user, loading } = useUserContext();
+  const { user } = useUserContext();
   const pathname = usePathname();
   const { collapsed, setCollapsed } = useSidebarContext();
 
   const SUPERADMIN = user?.restriction === "9";
+  const ME = user?.name === "MARVINNE ESTACIO";
+
   const accessForProject =
     user?.department.includes("SALES") ||
     user?.department.includes("Design") ||
@@ -31,8 +36,19 @@ export const SidebarWrapper = () => {
     user?.designation_status.includes("TECHNICAL ASSISTANT MANAGER") ||
     SUPERADMIN;
 
-  const MeHarold =
-    user?.name === "HAROLD DAVID" || user?.name === "MARVIN JIMENEZ";
+  const {
+    data: ongoingProjects = [],
+    error: projectsError,
+    isLoading: loadingProjects,
+  } = useSWR<any[]>(
+    accessForProject ? "/api/department/PMO/project?status=Ongoing" : null,
+    fetcher,
+    {
+      refreshInterval: 120000,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+    }
+  );
 
   const accessForTask =
     user?.department?.includes("PMO") ||
@@ -46,11 +62,76 @@ export const SidebarWrapper = () => {
     user?.department.includes("PURCHASING") ||
     SUPERADMIN;
 
+  useEffect(() => {
+    if (projectsError) {
+      console.error("❌ Error loading ongoing projects:", projectsError);
+    }
+  }, [projectsError]);
+
+  const ongoingItems = React.useMemo(() => {
+    if (loadingProjects) {
+      return [{ label: "Loading...", href: "#" }];
+    }
+
+    if (projectsError) {
+      return [{ label: "Error loading projects", href: "#" }];
+    }
+
+    return ongoingProjects.length > 0
+      ? ongoingProjects.map((proj) => ({
+          label:
+            proj.description?.length > 25
+              ? proj.description.slice(0, 25) + "..."
+              : proj.description || proj.projectId,
+          nestedItems: [
+            {
+              label: "Sales Order",
+              href: `/project/${proj.projectId}/sales-order`,
+            },
+            {
+              label: "Documentation",
+              href: `/project/${proj.projectId}/documentation`,
+            },
+            {
+              label: "Project Kick Off",
+              href: `/project/${proj.projectId}/project-kick-off`,
+            },
+            {
+              label: "Project Validation",
+              href: `/project/${proj.projectId}/project-validation`,
+            },
+            {
+              label: "Project Execution",
+              href: `/project/${proj.projectId}/project-execution`,
+            },
+            {
+              label: "Project Completion",
+              href: `/project/${proj.projectId}/project-completion`,
+            },
+            {
+              label: "Post Project",
+              href: `/project/${proj.projectId}/post-project`,
+            },
+          ],
+        }))
+      : [{ label: "No Ongoing Projects", href: "#" }];
+  }, [ongoingProjects, loadingProjects, projectsError]);
+
+  const projectManagementItems = [
+    { label: "Project Monitoring", href: "/project" },
+    { label: "Message Board", href: "/project/message_board" },
+    {
+      label: "Ongoing Projects",
+      nestedItems: ongoingItems,
+    },
+  ];
+
   return (
     <aside className="h-screen z-[20] sticky top-0">
       {collapsed ? (
         <div className={Sidebar.Overlay()} onClick={setCollapsed} />
       ) : null}
+
       <div className={`${Sidebar({ collapsed })} overflow-x-hidden`}>
         <div className={Sidebar.Header()}>
           <Company />
@@ -63,21 +144,15 @@ export const SidebarWrapper = () => {
               isActive={pathname === "/"}
               href="/"
             />
-            <SidebarItem
-              title="Chat Assisstant"
-              icon={<ChatIcon />}
-              isActive={pathname === "/chat"}
-              href="/chat"
-            />
             <SidebarMenu title="Main Menu">
-              {MeHarold ? (
+              {ME ? (
                 <CollapseItems
                   icon={<AccountsIcon />}
+                  title="Task Designation"
                   items={[
                     { label: "Task Designation", href: "/tasks" },
                     { label: "Awarded Projects", href: "/tasks/awarded" },
                   ]}
-                  title="Task Designation"
                 />
               ) : accessForTask ? (
                 <SidebarItem
@@ -87,18 +162,13 @@ export const SidebarWrapper = () => {
                   href="/tasks"
                 />
               ) : null}
-
-              {accessForProject ? (
+              {accessForProject && (
                 <CollapseItems
                   icon={<ReportsIcon />}
-                  items={[
-                    { label: "Project Monitoring", href: "/project" },
-                    { label: "Message Board", href: "/project/message_board" },
-                    // { label: "Project Mapping", href: "/project/mapping" },
-                  ]}
                   title="Project Management"
+                  items={projectManagementItems}
                 />
-              ) : null}
+              )}
               {accessForSales ? (
                 <SidebarItem
                   isActive={pathname === "/sales"}
@@ -110,11 +180,11 @@ export const SidebarWrapper = () => {
               {accessForInventory ? (
                 <CollapseItems
                   icon={<ProductsIcon />}
+                  title="Inventory"
                   items={[
                     { label: "PO Monitoring", href: "/inventory/purchasing" },
                     { label: "Stock Items", href: "/inventory/stockItems" },
                   ]}
-                  title="Inventory"
                 />
               ) : null}
             </SidebarMenu>

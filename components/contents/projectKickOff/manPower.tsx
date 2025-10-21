@@ -44,11 +44,7 @@ export default function ManPower({ project }: ManPowerProps) {
 
   const canAssign =
     user?.designation?.includes("PMO TL") ||
-    user?.designation?.includes("TECHNICAL ASSISTANT MANAGER") ||
-    user?.designation?.includes("IT SUPERVISOR") ||
-    user?.designation?.includes("TMIG SUPERVISOR") ||
-    user?.designation?.includes("TECHNICAL SUPERVISOR") ||
-    user?.designation?.includes("DESIGN SUPERVISOR");
+    user?.designation?.includes("TMIG SUPERVISOR");
 
   const headingClasses =
     "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";

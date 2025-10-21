@@ -13,42 +13,57 @@ export async function GET(req) {
     }
 
     const { searchParams } = new URL(req.url);
-    const id = searchParams.get("id");
+    const projectId = searchParams.get("project_id");
+
+    if (!projectId) {
+      return NextResponse.json(
+        { error: "Missing project_id" },
+        { status: 400 }
+      );
+    }
 
     const rows = await executeQuery(
       `
-      SELECT
+      SELECT 
+        id,
         project_id,
-        assigned_personnel,
-        description,      
-        attachment_name,
-        attachment_type,
+        category,
         date,
-        type,
-        status
-      FROM reports
-      WHERE status = "1"
-      ${id ? "AND project_Id = ?" : ""}
-    `,
-      id ? [id] : []
+        time_in,
+        time_out,
+        activity,
+        concern,
+        action_taken,
+        remarks,
+        attachment_name,
+        attachment_type
+      FROM reporting
+      WHERE project_id = ?
+      ORDER BY date DESC
+      `,
+      [projectId]
     );
 
-    const tasks = rows.map((r) => ({
+    const reports = rows.map((r) => ({
+      id: r.id,
       projectId: r.project_id,
-      assignedPersonnel: r.assigned_personnel,
-      description: r.description,
+      category: r.category,
+      date: r.date,
+      timeIn: r.time_in,
+      timeOut: r.time_out,
+      activity: r.activity,
+      concern: r.concern,
+      actionTaken: r.action_taken,
+      remarks: r.remarks,
       attachmentName: r.attachment_name,
       attachmentType: r.attachment_type,
-      date: r.date,
-      type: r.type,
-      status: r.status,
     }));
 
-    return NextResponse.json(tasks);
+    return NextResponse.json(reports);
   } catch (error) {
-    console.error("API Error: ", error);
+    console.error("Fetch reports error:", error);
     return NextResponse.json(
-      { error: "Failed to create task" },
+      { error: "Failed to fetch reports" },
       { status: 500 }
     );
   }

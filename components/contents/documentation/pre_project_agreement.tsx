@@ -39,7 +39,8 @@ export default function PrePorjectAgreement({ project }: PreProjectProps) {
     }
   }, [project]);
 
-  const canUpload = user?.designation.includes("DESIGN SUPERVISOR");
+  const canUpload =
+    user?.designation.includes("SALES") || user?.designation.includes("PMO");
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/documentation/pre_project_agreement?id=${projectId}`

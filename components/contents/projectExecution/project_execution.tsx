@@ -23,7 +23,7 @@ function ProjectExecution({ project }: ProjectExecutionProps) {
         <Tab key="Gannt Chart" title="Gannt Chart">
           <Chart project={project} />
         </Tab>
-        <Tab key="Accounting" title="Accounting">
+        <Tab key="Contractors Billing" title="Contractors Billing">
           <Accounting project={project} />
         </Tab>
       </Tabs>

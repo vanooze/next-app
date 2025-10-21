@@ -116,16 +116,16 @@ export const selectSales = [
     label: `Genevel Garcia`,
   },
   {
+    key: `Jhoannah Rose-Mil L. Sicat`,
+    label: `Jhoannah Rose-Mil L. Sicat`,
+  },
+  {
     key: `Alliah Pearl Robles`,
     label: `Alliah Pearl Robles`,
   },
   {
     key: `Ida Ma. Catherine C. Madamba`,
     label: `Ida Ma. Catherine C. Madamba`,
-  },
-  {
-    key: `Quennie V. Porciuncula`,
-    label: `Quennie V. Porciuncula`,
   },
 ];
 
@@ -206,10 +206,6 @@ export const selectPmo = [
     label: `Joshua A. Calimutan`,
   },
   {
-    key: `Ryan Joseph DL. Raymundo`,
-    label: `Ryan Joseph DL. Raymundo`,
-  },
-  {
     key: `NORIEL VILLAR`,
     label: `NORIEL VILLAR`,
   },
@@ -221,8 +217,8 @@ export const selectFiltiredPmo = [
     label: `Joshua A. Calimutan`,
   },
   {
-    key: `Ryan Joseph DL. Raymundo`,
-    label: `Ryan Joseph DL. Raymundo`,
+    key: `Kaye Kimberly L. Manuel`,
+    label: `Kaye Kimberly L. Manuel`,
   },
 ];
 
@@ -239,4 +235,16 @@ export const selectPurchasing = [
     key: `Angel May E. Granada`,
     label: `Angel May E. Granada`,
   },
+];
+
+export const ReportCategories = [
+  { key: `Civil Works`, value: `Civil Works` },
+  { key: `Structural Works`, value: `Structural Works` },
+  { key: `Electrical Works`, value: `Electrical Works` },
+  { key: `Signal Works`, value: `Signal Works` },
+  { key: `Cladding Works`, value: `Cladding Works` },
+  { key: `LED Works`, value: `LED Works` },
+  { key: `Restoration Works`, value: `Restoration Works` },
+  { key: `Safety`, value: `Safety` },
+  { key: `Others`, value: `Others` },
 ];

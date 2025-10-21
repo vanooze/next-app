@@ -23,7 +23,7 @@ interface BOQProps {
 const fetcher = async (url: string) => {
   const res = await fetch(url);
   const data = await res.json();
-  return Array.isArray(data) ? data : [data]; // Ensure array format
+  return Array.isArray(data) ? data : [data];
 };
 
 export default function BOQ({ project }: BOQProps) {
@@ -40,7 +40,8 @@ export default function BOQ({ project }: BOQProps) {
   }, [project]);
 
   const canUpload =
-    user?.name === "Kaye Kimberly L. Manuel" ||
+    user?.designation.includes("PMO") ||
+    user?.designation.includes("TECHNICAL ADMIN CONSULTANT") ||
     user?.designation.includes("DOCUMENT CONTROLLER");
 
   const key = projectId
@@ -109,13 +110,13 @@ export default function BOQ({ project }: BOQProps) {
         webhookFormData.append("type", type);
         webhookFormData.append("file", file);
 
-        await fetch(
-          "http://localhost:5678/webhook-test/75d91fd6-cbca-432e-b115-935e48ce8461",
-          {
-            method: "POST",
-            body: webhookFormData,
-          }
-        );
+        // await fetch(
+        //   "http://localhost:5678/webhook-test/75d91fd6-cbca-432e-b115-935e48ce8461",
+        //   {
+        //     method: "POST",
+        //     body: webhookFormData,
+        //   }
+        // );
       }
 
       // Reset form
