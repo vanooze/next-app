@@ -107,7 +107,7 @@ export const Project = () => {
           </div>
         </div>
         <div className="flex flex-row gap-3.5 flex-wrap">
-          {isManager ? <AddProject /> : null}
+          {/* {isManager ? <AddProject /> : null} */}
         </div>
       </div>
       <div

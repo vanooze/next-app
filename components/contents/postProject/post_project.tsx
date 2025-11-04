@@ -23,6 +23,7 @@ function PostProject({ project }: PostProjectProprs) {
     user?.designation.includes("IT SUPERVISOR") ||
     user?.designation.includes("VICE PRESIDENT") ||
     user?.designation.includes("PRESIDENT") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
     user?.designation.includes("TECHNICAL ASSISTANT MANAGER");
 
   return (
@@ -40,12 +41,12 @@ function PostProject({ project }: PostProjectProprs) {
         <Tab key="Overall Report" title="Overall Report">
           <OverallReport project={project} />
         </Tab>
-        <Tab key="Awarding Documents" title="Awarding Documents">
+        {/* <Tab key="Awarding Documents" title="Awarding Documents">
           <AwardingDocuments project={project} />
         </Tab>
         <Tab key="Final Manpower Count" title="Final Manpower Count">
           <ManPowerCount project={project} />
-        </Tab>
+        </Tab> */}
         <Tab key="Post Project Review" title="Post Project Review">
           <PostProjectReview project={project} />
         </Tab>

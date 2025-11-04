@@ -127,10 +127,10 @@ export default function ProjectLayout({
     typeof project.startDate === "string"
       ? parseDate(normalizeToISO(project.startDate))
       : null;
-  const endDate =
-    typeof project.endDate === "string"
-      ? parseDate(normalizeToISO(project.endDate))
-      : null;
+  // const endDate =
+  //   typeof project.endDate === "string"
+  //     ? parseDate(normalizeToISO(project.endDate))
+  //     : null;
 
   const tabs = [
     { key: "sales-order", title: "Sales Order" },
@@ -155,8 +155,8 @@ export default function ProjectLayout({
 
       <h3 className="text-2xl font-semibold">{project.description}</h3>
       <h1 className="text-lg font-semibold">
-        {startDate ? formatDatetoStr(startDate) : ""} -{" "}
-        {endDate ? formatDatetoStr(endDate) : ""}
+        {startDate ? formatDatetoStr(startDate) : ""}
+        {/* {endDate ? formatDatetoStr(endDate) : ""} */}
       </h1>
 
       {canAssign && (

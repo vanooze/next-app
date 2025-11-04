@@ -1,50 +1,22 @@
-import { NextResponse } from "next/server";
-
-let acumaticaSession = null;
+import fs from "fs";
+import path from "path";
 
 export async function GET() {
-  const baseUrl = "https://gakkenphil.acumatica.com/entity/auth/login";
-  const credentials = {
-    name: "ivan.balo@avolutioninc.net",
-    password: "Avolution@01",
-    company: "AVOLUTION",
-  };
-
   try {
-    // If already logged in, skip re-login
-    if (acumaticaSession) {
-      console.log("✅ Reusing existing Acumatica session");
-      return NextResponse.json({ success: true, session: acumaticaSession });
+    const testPath = "D:/ProjectUploads/test.txt";
+
+    // Try to create directory if it doesn't exist
+    const dir = path.dirname(testPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
     }
 
-    // Otherwise login
-    const res = await fetch(baseUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(credentials),
-    });
+    // Try to write a small test file
+    fs.writeFileSync(testPath, "write test successful");
 
-    const cookies = res.headers.get("set-cookie");
-    const rawResponse = await res.text();
-
-    if (!res.ok) {
-      return NextResponse.json({
-        success: false,
-        status: res.status,
-        cookies,
-        rawResponse,
-      });
-    }
-
-    // Save session for reuse
-    acumaticaSession = cookies;
-
-    return NextResponse.json({
-      success: true,
-      cookies,
-      rawResponse,
-    });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: error.message });
+    return Response.json({ success: true, message: "✅ D: is writable" });
+  } catch (err) {
+    console.error("D: access test failed:", err);
+    return Response.json({ success: false, error: err.message });
   }
 }

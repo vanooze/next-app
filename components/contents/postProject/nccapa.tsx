@@ -109,7 +109,9 @@ export default function NcCapa({ project }: ValueEngProps) {
     }
   };
 
-  const canUpload = user?.department.includes("DESIGN");
+  const canUpload =
+    user?.department.includes("DESIGN") ||
+    user?.designation.includes("DOCUMENT CONTROLLER");
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">

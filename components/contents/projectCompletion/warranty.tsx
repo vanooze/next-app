@@ -107,6 +107,7 @@ export default function Warranty({ project }: WarrantyProps) {
   const canUpload =
     user?.department.includes("PMO") ||
     user?.department.includes("TMIG") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
     user?.name === "Evelyn Pequiras";
 
   return (

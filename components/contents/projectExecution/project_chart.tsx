@@ -147,7 +147,9 @@ export default function Chart({ project }: ChartProps) {
     setProjects(data);
   };
 
-  const canModifyChart = user?.department.includes("PMO");
+  const canModifyChart =
+    user?.department.includes("PMO") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER");
 
   return (
     <div className="p-4">

@@ -30,7 +30,8 @@ export default function Budget({ project }: BudgetProps) {
 
   const canAddBudget =
     user?.name.includes("HAROLD DAVID") ||
-    user?.name.includes("MARVIN JIMENEZ");
+    user?.name.includes("MARVIN JIMENEZ") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER");
 
   useEffect(() => {
     if (project) {

@@ -42,6 +42,7 @@ export default function PrePorjectAgreement({ project }: SOWProps) {
   const canUpload =
     user?.designation.includes("DESIGN") ||
     user?.department.includes("SALES") ||
+    user?.designation.includes("DOCUMENT CONTROLLER") ||
     user?.designation.includes("PMO TL");
 
   const key = projectId

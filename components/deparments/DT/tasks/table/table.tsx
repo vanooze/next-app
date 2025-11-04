@@ -1,22 +1,23 @@
+"use client";
 import {
-  Link,
+  CheckboxGroup,
+  Checkbox,
+  Spinner,
+  Pagination,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
-  Spinner,
-  Pagination,
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
-import React, { useEffect, useState, useMemo } from "react";
-import { dtColumns } from "../../../../../helpers/db";
+import React, { useState, useMemo } from "react";
+import { dtColumns, dtTask } from "../../../../../helpers/db";
 import { RenderCell } from "./render-cell";
 import { EditTask } from "../operation/edit-task";
-import { useUserContext } from "@/components/layout/UserContext";
-import { dtTask } from "../../../../../helpers/db";
 import { DeleteTask } from "../operation/delete-task";
+import { useUserContext } from "@/components/layout/UserContext";
 
 interface TableWrapperProps {
   tasks: dtTask[];
@@ -35,15 +36,10 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<dtTask | null>(null);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "status", // default sort column
+    column: "status",
     direction: "ascending",
   });
-  const [isUserSorted, setIsUserSorted] = useState(false);
-
-  const handleSortChange = (descriptor: SortDescriptor) => {
-    setSortDescriptor(descriptor);
-    setIsUserSorted(true);
-  };
+  const [filterStatuses, setFilterStatuses] = useState<string[]>([]);
 
   const rowsPerPage = 15;
 
@@ -52,6 +48,10 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       ? dtColumns.filter((col) => col.uid !== "actions")
       : dtColumns;
   }, [fullScreen]);
+
+  const handleSortChange = (descriptor: SortDescriptor) => {
+    setSortDescriptor(descriptor);
+  };
 
   const handleOpenEdit = (task: dtTask) => {
     setSelectedTask(task);
@@ -73,7 +73,8 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     setSelectedTask(null);
   };
 
-  const statusPriority = {
+  // ✅ Status priority for sorting
+  const statusPriority: Record<string, number> = {
     Priority: 0,
     OnHold: 1,
     Overdue: 2,
@@ -81,39 +82,75 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     Finished: 4,
   };
 
-  const sortedTasks = useMemo(() => {
-    if (!Array.isArray(tasks)) return [];
+  // ✅ Filter tasks by user and status
+  const filteredTasks = useMemo(() => {
+    if (!user?.name) return [];
 
-    const statusSorted = [...tasks].sort((a, b) => {
-      const aPriority =
-        statusPriority[a.status as keyof typeof statusPriority] ?? 99;
-      const bPriority =
-        statusPriority[b.status as keyof typeof statusPriority] ?? 99;
-      return aPriority - bPriority;
-    });
-
-    const finishedSorted = statusSorted
-      .filter((task) => task.status === "Finished")
-      .sort((a, b) => {
-        const aDate = a.sirMJH ? new Date(a.sirMJH).getTime() : 0;
-        const bDate = b.sirMJH ? new Date(b.sirMJH).getTime() : 0;
-        return bDate - aDate;
-      });
-
-    const result = [
-      ...statusSorted.filter((task) => task.status !== "Finished"),
-      ...finishedSorted,
+    const seeAllUsers = [
+      "HAROLD DAVID",
+      "LANI KIMBER CAMPOS",
+      "MARIA LEA BERMUDEZ",
+      "MARVIN JIMENEZ",
+      "DESIREE SALIVIO",
+      "Jan Ronnell V. Camero",
+      "Marcial A. Gigante III",
+      "Jilian Mark H. Ardinel",
+      "John Eden Ross V. Cola",
+      "BILLY JOEL TOPACIO",
+      "MARVINNE ESTACIO",
     ];
 
-    return result;
-  }, [tasks]);
+    const nameMappings: Record<string, string> = {
+      "Jhoannah Rose-Mil L. Sicat ": "JHOAN",
+      "Genevel Garcia": "GEN",
+      "KENNETH BAUTISTA": "KENNETH",
+      "Ida Ma. Catherine C. Madamba": "IDA",
+    };
+
+    const userName = user.name.toLowerCase().trim();
+    const mappedName = nameMappings[user.name] || user.name;
+
+    // ✅ If user can see all, skip filtering by personnel
+    const userFiltered = seeAllUsers.some((u) => u.toLowerCase() === userName)
+      ? tasks
+      : tasks.filter((task) => {
+          const personnel = task.salesPersonnel?.toLowerCase().trim() || "";
+          return (
+            personnel.includes(mappedName.toLowerCase()) ||
+            mappedName.toLowerCase().includes(personnel)
+          );
+        });
+
+    // ✅ Apply status filters if any selected
+    if (filterStatuses.length > 0) {
+      return userFiltered.filter((t) => filterStatuses.includes(t.status));
+    }
+
+    return userFiltered;
+  }, [tasks, user, filterStatuses]);
+
+  // ✅ Sort tasks by status priority and recent date (latest to oldest)
+  const sortedTasks = useMemo(() => {
+    if (!filteredTasks.length) return [];
+
+    const sorted = [...filteredTasks].sort((a, b) => {
+      const aPriority = statusPriority[a.status] ?? 999;
+      const bPriority = statusPriority[b.status] ?? 999;
+      if (aPriority !== bPriority) return aPriority - bPriority;
+
+      const aDate = a.sirMJH ? new Date(a.sirMJH).getTime() : 0;
+      const bDate = b.sirMJH ? new Date(b.sirMJH).getTime() : 0;
+      return bDate - aDate;
+    });
+
+    return sorted;
+  }, [filteredTasks]);
 
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
 
   const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
-
     return sortedTasks.slice(start, end);
   }, [page, sortedTasks]);
 
@@ -123,6 +160,26 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         fullScreen ? "overflow-auto h-full" : "w-full flex flex-col gap-4"
       }`}
     >
+      {/* ✅ Filter Section */}
+      <div className="flex flex-wrap gap-3 items-center">
+        <span className="text-sm font-medium text-foreground-500">
+          Filter by Status:
+        </span>
+        <CheckboxGroup
+          orientation="horizontal"
+          color="secondary"
+          value={filterStatuses}
+          onChange={(value) => setFilterStatuses(value as string[])}
+        >
+          <Checkbox value="Priority">Priority</Checkbox>
+          <Checkbox value="OnHold">On Hold</Checkbox>
+          <Checkbox value="Overdue">Overdue</Checkbox>
+          <Checkbox value="Pending">Pending</Checkbox>
+          <Checkbox value="Finished">Finished</Checkbox>
+        </CheckboxGroup>
+      </div>
+
+      {/* ✅ Table Section */}
       {loading ? (
         <div className="w-full flex justify-center items-center min-h-[200px]">
           <Spinner
@@ -135,7 +192,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       ) : (
         <Table
           isStriped
-          aria-label="task table with custom cells"
+          aria-label="task table with user/status filters"
           sortDescriptor={sortDescriptor}
           onSortChange={handleSortChange}
           classNames={{
@@ -186,6 +243,8 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           </TableBody>
         </Table>
       )}
+
+      {/* ✅ Edit & Delete Modals */}
       <EditTask
         isOpen={isEditOpen}
         onClose={handleCloseEdit}

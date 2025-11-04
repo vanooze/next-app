@@ -58,9 +58,9 @@ export const EditProject = ({ isOpen, onClose, project }: EditProjectProps) => {
       setStartDate(
         project.startDate ? safeParseDate(project.startDate as string) : null
       );
-      setEndDate(
-        project.endDate ? safeParseDate(project.endDate as string) : null
-      );
+      // setEndDate(
+      //   project.endDate ? safeParseDate(project.endDate as string) : null
+      // );
       setDescription(project.description ?? "");
       setProjectManager(project.projectManager ?? "");
     }

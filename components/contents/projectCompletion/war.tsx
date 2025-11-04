@@ -107,6 +107,7 @@ export default function WAR({ project }: WARProps) {
   };
   const canUpload =
     user?.department.includes("PMO") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
     user?.name === "KayeKaye Kimberly L. Manuel";
 
   return (

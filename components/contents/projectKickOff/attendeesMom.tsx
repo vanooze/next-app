@@ -68,7 +68,9 @@ export default function AttendeesMom({ project }: AttendeesMOMProps) {
     fetchassignedPersonnel();
   }, [projectId]);
 
-  const canUpload = user?.designation.includes("PMO");
+  const canUpload =
+    user?.designation.includes("PMO") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER");
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/projectkickoff/attendees_mom?id=${projectId}`

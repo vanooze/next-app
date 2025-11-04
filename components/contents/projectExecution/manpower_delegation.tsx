@@ -35,6 +35,7 @@ export default function ManPower({ project }: ManPowerProps) {
     user?.designation?.includes("IT SUPERVISOR") ||
     user?.designation?.includes("TMIG SUPERVISOR") ||
     user?.designation?.includes("TECHNICAL SUPERVISOR") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
     user?.designation?.includes("DESIGN SUPERVISOR");
 
   const key =

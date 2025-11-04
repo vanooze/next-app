@@ -6,7 +6,7 @@ import { Card0 } from "./card";
 import { Card1 } from "./card1";
 import { Card2 } from "./card2";
 import { Card3 } from "./card3";
-import { Link, Tabs, Tab } from "@heroui/react";
+import { Link, Card, CardBody } from "@heroui/react";
 import NextLink from "next/link";
 import { useUserContext } from "../layout/UserContext";
 import { usePMOTasks } from "@/components/hooks/usePmoTasks";
@@ -34,7 +34,7 @@ const SalesColumnChart = dynamic(
 
 export const Content = () => {
   const { user } = useUserContext();
-  const department = user?.department;
+  const department = user?.designation;
   const restriction = user?.restriction;
 
   const { tasks: designTasks, loading: designLoading } = useDesignTasks();
@@ -45,6 +45,19 @@ export const Content = () => {
   const [chartHeight, setChartHeight] = useState<number>(0);
 
   const now = new Date();
+
+  useEffect(() => {
+    if (chartRef.current) setChartHeight(chartRef.current.offsetHeight);
+
+    const handleResize = () => {
+      if (chartRef.current) {
+        setChartHeight(chartRef.current.offsetHeight);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // 🔹 Helper to calculate task stats
   const getStats = (tasks: any[], type: "PMO" | "SALES" | "DESIGN") => {
@@ -120,21 +133,6 @@ export const Content = () => {
       return null;
     };
 
-    useEffect(() => {
-      if (chartRef.current) {
-        setChartHeight(chartRef.current.offsetHeight);
-      }
-
-      const handleResize = () => {
-        if (chartRef.current) {
-          setChartHeight(chartRef.current.offsetHeight);
-        }
-      };
-
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }, []);
-
     return (
       <div className="h-full lg:px-6">
         <div className="grid grid-cols-1 2xl:grid-cols-5 gap-6 pt-3 px-4 lg:px-0 sm:pt-10 max-w-[90rem] mx-auto w-full">
@@ -157,8 +155,8 @@ export const Content = () => {
 
           {/* Message Board */}
           <div className="col-span-1 h-full flex flex-col gap-2">
-            <h3 className="text-xl font-semibold">Message Board</h3>
-            <AllMessages maxHeight={425 + 48} />
+            {/* <h3 className="text-xl font-semibold">Message Board</h3>
+            <AllMessages maxHeight={425 + 48} /> */}
           </div>
         </div>
 
@@ -192,9 +190,27 @@ export const Content = () => {
   // }
 
   // 🔹 Else → Just show based on user's department
-  if (department === "PMO")
+
+  if (
+    department?.includes("PMO") ||
+    department?.includes("DOCUMENT CONTROLLER")
+  )
     return renderDepartment("PMO", pmoTasks, pmoLoading);
-  if (department === "SALES")
+
+  if (department?.includes("SALES"))
     return renderDepartment("SALES", salesTasks, salesLoading);
-  return renderDepartment("DESIGN", designTasks, designLoading);
+
+  if (department?.includes("DESIGN"))
+    return renderDepartment("DESIGN", designTasks, designLoading);
+
+  // ✅ Fallback if department doesn’t match any of the above
+  return (
+    <div className="flex flex-col items-center justify-center h-full text-center p-6">
+      <h2 className="text-2xl font-semibold mb-2">🚧 Dashboard in Progress</h2>
+      <p className="text-gray-500">
+        The dashboard for your department is still being set up. Please check
+        back later.
+      </p>
+    </div>
+  );
 };

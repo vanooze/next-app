@@ -17,7 +17,7 @@ export interface dtTask {
 export const dtColumns = [
   { name: "Status", uid: "status" },
   { name: "Client Name", uid: "clientName" },
-  { name: "Project Descriptions", uid: "projectDesc" },
+  { name: "Project Descriptions / Brand", uid: "projectDesc" },
   { name: "Date Received", uid: "dateReceived" },
   { name: "Sales Personnel", uid: "salesPersonnel" },
   { name: "System Diagram", uid: "systemDiagram" },

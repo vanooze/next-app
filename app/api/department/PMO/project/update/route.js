@@ -30,10 +30,9 @@ export async function POST(req) {
     }
 
     const query = `
-      UPDATE projects_manual SET
+      UPDATE projects SET
         status = ?,
         start_date = ?,
-        end_date = ?,
         description = ?,
         project_manager = ?
       WHERE id = ?

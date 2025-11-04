@@ -108,7 +108,9 @@ export default function COP({ project }: COPProps) {
   };
 
   const canUpload =
-    user?.department.includes("PMO") || user?.department.includes("TMIG");
+    user?.department.includes("PMO") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
+    user?.department.includes("TMIG");
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">

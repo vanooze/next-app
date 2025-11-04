@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Input, Button, Listbox, ListboxItem } from "@heroui/react";
 import { Projects } from "@/helpers/acumatica";
+import { useUserContext } from "@/components/layout/UserContext";
 
 interface PostProjectProps {
   project: Projects | null;
@@ -12,12 +13,15 @@ export default function PostProjectReview({ project }: PostProjectProps) {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [projectId, setProjectId] = useState<string | null>(null);
+  const { user } = useUserContext();
 
   useEffect(() => {
     if (project) {
       setProjectId(project.projectId);
     }
   }, [project]);
+
+  const canEdit = user?.designation.includes("DOCUMENT CONTROLLER");
 
   const fetchReviews = async () => {
     if (!projectId) return;
@@ -56,16 +60,18 @@ export default function PostProjectReview({ project }: PostProjectProps) {
 
   return (
     <div className="p-4 border rounded-md space-y-4">
-      <div className="flex gap-2">
-        <Input
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Enter a new review note..."
-        />
-        <Button onPress={handleSubmit} color="primary">
-          Add
-        </Button>
-      </div>
+      {canEdit && (
+        <div className="flex gap-2">
+          <Input
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Enter a new review note..."
+          />
+          <Button onPress={handleSubmit} color="primary">
+            Add
+          </Button>
+        </div>
+      )}
 
       {loading ? (
         <p>Loading...</p>

@@ -10,7 +10,14 @@ const TaskPage = () => {
 
   if (!user) return <Spinner />;
 
-  if (user.department?.includes("DT")) {
+  if (
+    user.department?.includes("DT") ||
+    user.designation_status?.includes("TECHNICAL MANAGER") ||
+    user.designation_status?.includes("PRESIDENT") ||
+    user.designation_status?.includes("VICE PRESIDENT") ||
+    user?.position?.includes("SALES") ||
+    user?.name === "DESIREE SALIVIO"
+  ) {
     return <DTTasks />;
   }
 

@@ -104,11 +104,15 @@ export default function ValueEng({ project }: ValueEngProps) {
     }
   };
 
-  const canUpload = user?.designation.includes("TECHNICAL ASSISTANT MANAGER");
+  const canUpload =
+    user?.designation.includes("TECHNICAL ASSISTANT MANAGER") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER");
+
+  const canSeeFile = user?.restriction === "9";
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">
-      {!canUpload && (
+      {canUpload && (
         <>
           <h1 className="text-lg font-semibold">Value Engineering Details</h1>
           <Textarea
@@ -182,7 +186,7 @@ export default function ValueEng({ project }: ValueEngProps) {
       )}
       <Divider />
       {/* Uploaded Files Preview */}
-      {isLoading && (
+      {isLoading && canSeeFile && (
         <Spinner
           classNames={{ label: "text-foreground mt-4" }}
           label="loading files..."

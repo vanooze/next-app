@@ -50,7 +50,9 @@ export default function Chart({ project }: ChartProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useUserContext();
 
-  const canModifyChart = user?.department.includes("PMO");
+  const canModifyChart =
+    user?.department.includes("PMO") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER");
 
   const openModal = () => {
     if (projects.length > 0) {

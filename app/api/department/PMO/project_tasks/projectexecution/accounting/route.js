@@ -106,16 +106,19 @@ export async function POST(req) {
         return NextResponse.json({ error: "Invalid section" }, { status: 400 });
     }
 
+    const safeNote = note && note.trim() !== "" ? note.trim() : null;
+    const safeChecked = checked ? 1 : 0;
+
     if (rows && rows.length > 0) {
       await executeQuery(
         `UPDATE accounting SET ${fieldNote} = ?, ${fieldChecked} = ? WHERE project_id = ?`,
-        [note ?? null, checked ?? 0, projectId]
+        [safeNote, safeChecked, projectId]
       );
     } else {
       await executeQuery(
         `INSERT INTO accounting (project_id, ${fieldNote}, ${fieldChecked})
-         VALUES (?, ?, ?)`,
-        [projectId, note ?? null, checked ?? 0]
+     VALUES (?, ?, ?)`,
+        [projectId, safeNote, safeChecked]
       );
     }
 

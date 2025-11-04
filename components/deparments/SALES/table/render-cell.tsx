@@ -5,6 +5,7 @@ import { EditIcon } from "@/components/icons/table/edit-icon";
 import { SalesManagement } from "@/helpers/db";
 import { displayValue } from "@/helpers/displayValue";
 import { normalizeToYYYYMMDD } from "@/helpers/formatDate";
+import { useUserContext } from "@/components/layout/UserContext";
 
 interface Props {
   dtTasks: SalesManagement;
@@ -19,7 +20,10 @@ export const RenderCell = ({
   handleEditTask,
   handleDeleteTask,
 }: Props) => {
+  const { user } = useUserContext();
   const cellValue = dtTasks[columnKey as keyof SalesManagement];
+
+  const canDelete = user?.department === "SALES";
   switch (columnKey) {
     case "status":
       return (
@@ -62,13 +66,18 @@ export const RenderCell = ({
       return (
         <>
           <div className="flex items-center gap-4 ">
-            <div>
-              <Tooltip content="Edit table" color="secondary">
-                <button onClick={() => handleEditTask(dtTasks)}>
-                  <EditIcon size={20} fill="#979797" />
+            <Tooltip content="Edit table" color="secondary">
+              <button onClick={() => handleEditTask(dtTasks)}>
+                <EditIcon size={20} fill="#979797" />
+              </button>
+            </Tooltip>
+            {canDelete && (
+              <Tooltip content="Delete" color="danger">
+                <button onClick={() => handleDeleteTask(dtTasks)}>
+                  <DeleteIcon size={20} fill="#FF0080" />
                 </button>
               </Tooltip>
-            </div>
+            )}
           </div>
         </>
       );

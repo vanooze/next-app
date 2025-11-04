@@ -104,84 +104,94 @@ export default function ContractorEvaluation({
     }
   };
 
+  const canUpload =
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
+    user?.designation.includes("PMO");
+
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">
-      <h1 className="text-lg font-semibold">Contractor Evaluation Details</h1>
-      <Textarea
-        className="max-w-lg"
-        label="Contractor Evaluation Details"
-        placeholder="Enter the details here..."
-        value={Details}
-        onChange={(e) => setDetails(e.target.value)}
-      />
+      {canUpload && (
+        <>
+          <h1 className="text-lg font-semibold">
+            Contractor Evaluation Details
+          </h1>
+          <Textarea
+            className="max-w-lg"
+            label="Contractor Evaluation Details"
+            placeholder="Enter the details here..."
+            value={Details}
+            onChange={(e) => setDetails(e.target.value)}
+          />
 
-      <h1 className="text-lg font-semibold">
-        Contractor Evaluation Attachment
-      </h1>
-      <div className="border border-dashed rounded max-w-lg">
-        <DropZone
-          onDrop={handleDrop}
-          className="p-6 border border-gray-300 rounded text-center"
-        >
-          <p className="text-sm text-gray-600">Drag & drop files here</p>
-          <FileTrigger
-            allowsMultiple
-            acceptedFileTypes={[
-              "image/png",
-              "image/jpeg",
-              "application/pdf",
-              "text/csv",
-            ]}
-            onSelect={(files) => {
-              if (files) {
-                setFiles((prev) => [...prev, ...Array.from(files)]);
-              }
-            }}
-          ></FileTrigger>
-        </DropZone>
-
-        {files.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <p className="font-semibold text-sm">Files to Upload:</p>
-            {files.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
-              >
-                <span className="text-sm text-gray-700 truncate">
-                  {file.name}
-                </span>
-                <button
-                  onClick={() =>
-                    setFiles((prev) => prev.filter((_, i) => i !== index))
+          <h1 className="text-lg font-semibold">
+            Contractor Evaluation Attachment
+          </h1>
+          <div className="border border-dashed rounded max-w-lg">
+            <DropZone
+              onDrop={handleDrop}
+              className="p-6 border border-gray-300 rounded text-center"
+            >
+              <p className="text-sm text-gray-600">Drag & drop files here</p>
+              <FileTrigger
+                allowsMultiple
+                acceptedFileTypes={[
+                  "image/png",
+                  "image/jpeg",
+                  "application/pdf",
+                  "text/csv",
+                ]}
+                onSelect={(files) => {
+                  if (files) {
+                    setFiles((prev) => [...prev, ...Array.from(files)]);
                   }
-                  className="text-red-500 hover:text-red-700 text-sm ml-2"
-                >
-                  ✕
-                </button>
+                }}
+              ></FileTrigger>
+            </DropZone>
+
+            {files.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="font-semibold text-sm">Files to Upload:</p>
+                {files.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-gray-100 px-3 py-1 rounded"
+                  >
+                    <span className="text-sm text-gray-700 truncate">
+                      {file.name}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setFiles((prev) => prev.filter((_, i) => i !== index))
+                      }
+                      className="text-red-500 hover:text-red-700 text-sm ml-2"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Submit Button */}
-      <Button
-        color="primary"
-        className="max-w-lg"
-        isDisabled={isUploading}
-        onPress={submitForm}
-      >
-        {isUploading ? "Uploading..." : "Submit"}
-      </Button>
+          {/* Submit Button */}
+          <Button
+            color="primary"
+            className="max-w-lg"
+            isDisabled={isUploading}
+            onPress={submitForm}
+          >
+            {isUploading ? "Uploading..." : "Submit"}
+          </Button>
 
-      <a
-        href="/form/Contractors_Evaluation.docx"
-        download
-        className="text-blue-600 text-sm hover:underline mt-2 max-w-lg"
-      >
-        📄 Download Contractors Evaluation Format (DOCX)
-      </a>
+          <a
+            href="/form/Contractors_Evaluation.docx"
+            download
+            className="text-blue-600 text-sm hover:underline mt-2 max-w-lg"
+          >
+            📄 Download Contractors Evaluation Format (DOCX)
+          </a>
+        </>
+      )}
 
       <Divider />
 

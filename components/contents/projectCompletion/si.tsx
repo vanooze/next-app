@@ -108,6 +108,7 @@ export default function SI({ project }: SIProps) {
   const canUpload =
     user?.department.includes("PMO") ||
     user?.department.includes("SALES") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
     user?.department.includes("ACCOUNTING");
 
   return (

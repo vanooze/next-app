@@ -105,7 +105,9 @@ export default function OverallReport({ project }: OverallReportProps) {
     }
   };
 
-  const canUpload = user?.designation.includes("PMO TL");
+  const canUpload =
+    user?.designation.includes("PMO TL") ||
+    user?.designation.includes("DOCUMENT CONTROLLER");
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">

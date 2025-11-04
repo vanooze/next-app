@@ -34,6 +34,7 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
       user.designation?.includes("TECHNICAL ADMIN CONSULTANT") ||
       user.designation?.includes("TECHNICAL MANAGER") ||
       user?.name === "Kaye Kimberly L. Manuel" ||
+      user?.name === "DESIREE SALIVIO" ||
       user.restriction === "9";
 
     const accessList = Tasks.access
@@ -47,51 +48,65 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
     "DOCUMENT CONTROLLER"
   );
 
+  // ✅ Centralized color map for statuses
+  const statusColorMap: Record<
+    string,
+    "success" | "danger" | "warning" | "secondary" | "default" | "primary"
+  > = {
+    Completed: "success",
+    Active: "secondary",
+    "In Planning": "warning",
+    "On Hold": "default",
+    Cancelled: "danger",
+    Pending: "primary",
+  };
+
   switch (columnKey) {
     case "projectId":
       return <span>{displayValue(cellValue)}</span>;
+
     case "status":
       return (
         <Chip
           size="sm"
           variant="flat"
-          color={
-            cellValue === "Finished"
-              ? "success"
-              : cellValue === "Pending"
-              ? "warning"
-              : cellValue === "OnGoing"
-              ? "warning"
-              : "danger"
-          }
+          color={statusColorMap[cellValue as string] || "default"}
+          className="capitalize text-xs font-medium"
         >
-          <span className="capitalize text-xs">{cellValue}</span>
+          {cellValue || "Unknown"}
         </Chip>
       );
+
     case "template":
       return <span>{displayValue(cellValue)}</span>;
+
     case "customerId":
       return <span>{displayValue(cellValue)}</span>;
+
     case "startDate":
       return <span>{formatDateMMDDYYYY(cellValue)}</span>;
-    case "endDate":
-      return <span>{formatDateMMDDYYYY(cellValue)}</span>;
+
     case "description":
       return <span>{displayValue(cellValue)}</span>;
+
     case "createdOn":
       return <span>{formatDateMMDDYYYY(cellValue)}</span>;
+
     case "currency":
       return <span>{displayValue(cellValue)}</span>;
+
     case "projectManager":
       return <span>{displayValue(cellValue)}</span>;
+
     case "actions":
       return userHasAccess ? (
         <div className="flex items-center gap-4">
-          <Tooltip content="Edit Project" color="secondary">
+          {/* <Tooltip content="Edit Project" color="secondary">
             <button onClick={() => handleEditProject(Tasks)}>
               <EditIcon size={20} fill="#979797" />
             </button>
-          </Tooltip>
+          </Tooltip> */}
+
           <Tooltip
             content={userDocumentController ? "Add Message" : "See Message"}
             color="secondary"
@@ -104,13 +119,16 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
               <PlusIcon size={20} fill="#979797" />
             </button>
           </Tooltip>
+
           <Tooltip content="See Details" color="secondary">
             <button onClick={() => router.push(`/project/${Tasks.projectId}`)}>
-              <DotsIcon />
+              {/* <DotsIcon /> */}
+              <EditIcon size={20} fill="#979797" />
             </button>
           </Tooltip>
         </div>
       ) : null;
+
     default:
       return <span>{cellValue}</span>;
   }

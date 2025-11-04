@@ -14,26 +14,34 @@ export async function GET(req) {
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
+    const status = searchParams.get("status");
 
-    const rows = await executeQuery(
-      `
+    let query = `
       SELECT
         id,
         project_id,
         status,
         customer_id,
         start_date,
-        end_date,
         description,
         created_on,
         currency,
         project_manager,
         access
-        FROM projects_manual
-      ${id ? "WHERE project_id = ?" : ""} 
-    `,
-      id ? [id] : []
-    );
+      FROM projects
+    `;
+
+    const params = [];
+
+    if (id) {
+      query += " WHERE project_id = ?";
+      params.push(id);
+    } else if (status) {
+      query += " WHERE status = ?";
+      params.push(status);
+    }
+
+    const rows = await executeQuery(query, params);
 
     const tasks = rows.map((r) => ({
       id: r.id,
@@ -41,7 +49,6 @@ export async function GET(req) {
       status: r.status,
       customerId: r.customer_id,
       startDate: r.start_date,
-      endDate: r.end_date,
       description: r.description,
       createdOn: r.created_on,
       currency: r.currency,

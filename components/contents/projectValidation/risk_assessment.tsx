@@ -8,7 +8,7 @@ import {
   Status,
   statusOptions,
   riskLevelScores,
-  initialData, // import your template rows
+  initialData,
 } from "@/helpers/db";
 import { useUserContext } from "@/components/layout/UserContext";
 

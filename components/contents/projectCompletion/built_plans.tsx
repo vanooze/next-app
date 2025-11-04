@@ -104,7 +104,9 @@ export default function BuiltPlans({ project }: BuiltPlansProps) {
     }
   };
 
-  const canUpload = user?.department.includes("PMO");
+  const canUpload =
+    user?.department.includes("PMO") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER");
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">

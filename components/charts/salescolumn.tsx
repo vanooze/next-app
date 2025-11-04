@@ -5,7 +5,6 @@ import { SalesManagement } from "@/helpers/db";
 const salesMap: Record<string, string> = {
   KENNETH: "Kenneth",
   JHOAN: "Jhoan",
-  QUENNIE: "Queenie",
   IDA: "Ida",
   MJ: "MJ",
 };

@@ -14,21 +14,22 @@ export const pool = mysql.createPool({
 export async function testConnection() {
   try {
     const connection = await pool.getConnection();
-    console.log("Database connected successfully");
+    console.log("✅ Database connected successfully");
     connection.release();
     return true;
   } catch (error) {
-    console.error("Database connection failed:", error);
+    console.error("❌ Database connection failed:", error);
     return false;
   }
 }
 
+// ✅ Get a connection for transactions
+export async function getConnection() {
+  return await pool.getConnection();
+}
+
+// ✅ Run a simple query
 export async function executeQuery(query, params = []) {
-  try {
-    const [results] = await pool.execute(query, params);
-    return results;
-  } catch (error) {
-    console.error("Database query error:", error);
-    throw error;
-  }
+  const [rows] = await pool.query(query, params);
+  return rows;
 }

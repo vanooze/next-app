@@ -10,7 +10,7 @@ import {
   Pagination,
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { projectColumns } from "@/helpers/acumatica";
 import { RenderCell } from "./render-cell";
 import { useUserContext } from "@/components/layout/UserContext";
@@ -31,23 +31,21 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   const [page, setPage] = useState(1);
   const { user } = useUserContext();
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isUserSorted, setIsUserSorted] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Projects | null>(null);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "date", // default sort column
+    column: "startDate",
     direction: "descending",
   });
 
   const handleSortChange = (descriptor: SortDescriptor) => {
     setSortDescriptor(descriptor);
-    setIsUserSorted(true);
   };
 
   const rowsPerPage = 15;
 
+  // ✅ Filter tasks by access (same as your original)
   const filteredTasks = useMemo(() => {
     if (!user?.name) return [];
-
     return tasks.filter((task) => {
       const accessList =
         task.access?.split(",").map((name) => name.trim()) || [];
@@ -67,6 +65,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         user.department?.includes("DESIGN") ||
         user.department?.includes("PMO") ||
         user?.name === "Kaye Kimberly L. Manuel" ||
+        user?.name === "DESIREE SALIVIO" ||
         user.restriction === "9";
 
       return hasAccessByName || hasAccessByRole;
@@ -79,52 +78,48 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       : projectColumns;
   }, [fullScreen]);
 
+  // ✅ Custom Sorting Logic
+  const statusPriority = {
+    "In Planning": 0,
+    Active: 1,
+    "On Hold": 2,
+    "Pending Approval": 3,
+    "Pending Upgrade": 4,
+    "Is Empty": 5,
+    Canceled: 6,
+    Suspended: 7,
+    Completed: 8,
+  };
+
   const sortedTasks = useMemo(() => {
     if (!Array.isArray(filteredTasks)) return [];
 
-    const { column, direction } = sortDescriptor;
-    if (!column) return filteredTasks;
-
-    return [...filteredTasks].sort((a, b) => {
-      const aValue = a[column as keyof Projects];
-      const bValue = b[column as keyof Projects];
-
-      if (column === "date") {
-        const aDate = aValue ? new Date(aValue as string).getTime() : null;
-        const bDate = bValue ? new Date(bValue as string).getTime() : null;
-
-        if (aDate === null && bDate === null) return 0;
-        if (aDate === null) return direction === "ascending" ? -1 : 1;
-        if (bDate === null) return direction === "ascending" ? 1 : -1;
-
-        return direction === "ascending" ? aDate - bDate : bDate - aDate;
-      }
-
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return direction === "ascending"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
-
-      if (typeof aValue === "number" && typeof bValue === "number") {
-        return direction === "ascending" ? aValue - bValue : bValue - aValue;
-      }
-
-      return 0;
+    // Step 1: Sort by startDate (primary)
+    const dateSorted = [...filteredTasks].sort((a, b) => {
+      const aDate = a.startDate ? new Date(a.startDate).getTime() : 0;
+      const bDate = b.startDate ? new Date(b.startDate).getTime() : 0;
+      return bDate - aDate; // descending
     });
-  }, [filteredTasks, sortDescriptor]);
+
+    // Step 2: Sort by custom status order within same date group
+    const fullySorted = dateSorted.sort((a, b) => {
+      const aPriority =
+        statusPriority[a.status as keyof typeof statusPriority] ?? 99;
+      const bPriority =
+        statusPriority[b.status as keyof typeof statusPriority] ?? 99;
+      return aPriority - bPriority;
+    });
+
+    return fullySorted;
+  }, [filteredTasks]);
 
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
 
   const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
-
     return sortedTasks.slice(start, end);
   }, [page, sortedTasks]);
-
-  console.log("User Context:", user);
-  console.log("Filtered tasks:", filteredTasks);
 
   const handleEditProject = (project: Projects) => {
     setSelectedProject(project);
@@ -154,7 +149,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       ) : (
         <Table
           isStriped
-          aria-label="task table with custom cells"
+          aria-label="project table"
           sortDescriptor={sortDescriptor}
           onSortChange={handleSortChange}
           classNames={{
@@ -187,7 +182,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody emptyContent={"No rows to display."} items={items}>
+          <TableBody emptyContent="No rows to display." items={items}>
             {(item) => (
               <TableRow key={item.id}>
                 {visibleColumns.map((col) => (
@@ -204,6 +199,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           </TableBody>
         </Table>
       )}
+
       <EditProject
         isOpen={isEditOpen}
         onClose={handleCloseEdit}

@@ -43,7 +43,10 @@ export default function Budget({ project }: BudgetProps) {
     }
   }, [project]);
 
-  const canAddBudget = user?.designation?.includes("PMO");
+  const canAddBudget =
+    user?.designation?.includes("PMO") ||
+    user?.restriction === "9" ||
+    user?.designation?.includes("DOCUMENT CONTROLLER");
   useEffect(() => {
     if (!project?.projectId) return;
 

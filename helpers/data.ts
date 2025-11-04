@@ -202,8 +202,8 @@ export const selectFiliteredDesign = [
 
 export const selectPmo = [
   {
-    key: `Joshua A. Calimutan`,
-    label: `Joshua A. Calimutan`,
+    key: `Ryan Joseph DL. Raymundo`,
+    label: `Ryan Joseph DL. Raymundo`,
   },
   {
     key: `NORIEL VILLAR`,
@@ -213,8 +213,8 @@ export const selectPmo = [
 
 export const selectFiltiredPmo = [
   {
-    key: `Joshua A. Calimutan`,
-    label: `Joshua A. Calimutan`,
+    key: `Ryan Joseph DL. Raymundo`,
+    label: `Ryan Joseph DL. Raymundo`,
   },
   {
     key: `Kaye Kimberly L. Manuel`,

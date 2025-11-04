@@ -41,6 +41,7 @@ export const AddTask = () => {
 
   const handleAddTask = async (onClose: () => void) => {
     const dateReceivedStr = formatDatetoStr(dateReceived);
+    const name = user?.name || "Unknown User";
 
     const payload = {
       clientName,
@@ -50,6 +51,7 @@ export const AddTask = () => {
       status,
       username,
       password,
+      name,
     };
     console.log("User credentials:", { username, password });
     try {

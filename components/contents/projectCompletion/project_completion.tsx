@@ -15,23 +15,23 @@ import BuiltPlans from "./built_plans";
 import { Projects } from "@/helpers/acumatica";
 
 const summaryConfig = [
-  { label: "W.A.R.", key: "war" },
-  { label: "P.I.B. Summary", key: "pib" },
+  { label: "WAR", key: "war" },
+  { label: "PIB SUMMARY", key: "pib" },
   { label: "COC", key: "coc" },
   { label: "COA", key: "coa" },
   {
     label: "Training Acceptance",
     children: [
-      { label: "Acceptance", key: "trainingAcceptance" },
-      { label: "Attendance", key: "trainingAttendance" },
+      { label: "TRAINING ACCEPTANCE", key: "trainingAcceptance" },
+      { label: "TRAINING ATTENDANCE", key: "trainingAttendance" },
     ],
   },
   { label: "DR", key: "dr" },
   { label: "SI", key: "is" },
-  { label: "Warranty Certificate", key: "Warranty" },
+  { label: "WARRANTY CERTIFICATE", key: "Warranty" },
   { label: "CSAT", key: "csat" },
   { label: "COP", key: "cop" },
-  { label: "As Built Plans", key: "builtPlans" },
+  { label: "AS BUILT PLANS", key: "builtPlans" },
 ];
 
 // Custom hook for fetching files
@@ -178,10 +178,10 @@ export default function ProjectCompletion({ project }: ProjectCompletionProps) {
     <div>
       <Divider className="mb-4" />
       <Tabs placement="top" variant="solid" size="md">
-        <Tab key="Summary" title="Summary">
+        <Tab key="Summary" title="SUMARRY">
           <SummaryTab projectId={projectId} files={files} loading={loading} />
         </Tab>
-        <Tab key="W.A.R." title="W.A.R.">
+        <Tab key="W.A.R." title="WAR">
           <WAR project={project} />
         </Tab>
         <Tab key="COC" title="COC">

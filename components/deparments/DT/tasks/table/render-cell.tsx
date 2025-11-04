@@ -5,6 +5,7 @@ import { EditIcon } from "../../../../icons/table/edit-icon";
 import { dtTask } from "../../../../../helpers/db";
 import { displayValue } from "@/helpers/displayValue";
 import { normalizeToYYYYMMDD } from "@/helpers/formatDate";
+import { useUserContext } from "@/components/layout/UserContext";
 
 interface Props {
   dtTasks: dtTask;
@@ -19,7 +20,15 @@ export const RenderCell = ({
   handleEditTask,
   handleDeleteTask,
 }: Props) => {
+  const { user } = useUserContext();
   const cellValue = dtTasks[columnKey as keyof dtTask];
+
+  const canEdit =
+    user?.designation === "DESIGN SUPERVISOR" || user?.designation === "DESIGN";
+  const canDelete =
+    user?.designation === "DESIGN SUPERVISOR" ||
+    user?.name === "BILLY JOEL TOPACIO";
+
   switch (columnKey) {
     case "status":
       return (
@@ -47,47 +56,44 @@ export const RenderCell = ({
           <span className="capitalize text-xs">{cellValue}</span>
         </Chip>
       );
+
     case "clientName":
     case "projectDesc":
       return <span>{displayValue(cellValue)}</span>;
+
     case "dateReceived":
-      return <span>{normalizeToYYYYMMDD(cellValue)}</span>;
-    case "salesPersonnel":
-      return <span>{displayValue(cellValue)}</span>;
-    case "systemDiagram":
-      return <span>{displayValue(cellValue)}</span>;
     case "eBoqDate":
-      return <span>{normalizeToYYYYMMDD(cellValue)}</span>;
-    case "structuralBoq":
-      return <span>{displayValue(cellValue)}</span>;
     case "sBoqDate":
-      return <span>{normalizeToYYYYMMDD(cellValue)}</span>;
     case "sirME":
-      return <span>{normalizeToYYYYMMDD(cellValue)}</span>;
     case "sirMJH":
       return <span>{normalizeToYYYYMMDD(cellValue)}</span>;
 
+    case "salesPersonnel":
+    case "systemDiagram":
+    case "structuralBoq":
+      return <span>{displayValue(cellValue)}</span>;
+
     case "actions":
       return (
-        <>
-          <div className="flex items-center gap-4 ">
-            <div>
-              <Tooltip content="Edit table" color="secondary">
-                <button onClick={() => handleEditTask(dtTasks)}>
-                  <EditIcon size={20} fill="#979797" />
-                </button>
-              </Tooltip>
-            </div>
-            <div>
-              <Tooltip content="Delete" color="danger">
-                <button onClick={() => handleDeleteTask(dtTasks)}>
-                  <DeleteIcon size={20} fill="#FF0080" />
-                </button>
-              </Tooltip>
-            </div>
-          </div>
-        </>
+        <div className="flex items-center gap-4">
+          {canEdit && (
+            <Tooltip content="Edit table" color="secondary">
+              <button onClick={() => handleEditTask(dtTasks)}>
+                <EditIcon size={20} fill="#979797" />
+              </button>
+            </Tooltip>
+          )}
+
+          {canDelete && (
+            <Tooltip content="Delete" color="danger">
+              <button onClick={() => handleDeleteTask(dtTasks)}>
+                <DeleteIcon size={20} fill="#FF0080" />
+              </button>
+            </Tooltip>
+          )}
+        </div>
       );
+
     default:
       return <span>{cellValue}</span>;
   }

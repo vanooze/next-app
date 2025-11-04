@@ -109,6 +109,7 @@ export default function CSAT({ project }: CSATProps) {
   const canUpload =
     user?.department.includes("PMO") ||
     user?.department.includes("TMIG") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
     user?.name === "Evelyn Pequiras";
 
   return (

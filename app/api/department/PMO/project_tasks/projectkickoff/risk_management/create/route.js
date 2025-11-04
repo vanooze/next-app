@@ -20,21 +20,18 @@ export async function POST(req) {
       );
     }
 
+    // ✅ Step 1: Delete existing risks for this project to avoid duplication
+    await executeQuery("DELETE FROM risk_management WHERE project_id = ?", [
+      projectId,
+    ]);
+
+    // ✅ Step 2: Insert fresh set of risks
     for (const risk of risks) {
       await executeQuery(
         `
         INSERT INTO risk_management 
           (project_id, risk_id, description, potential_impact, likelihood, severity, iso_clause, mitigation, owner, status, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE())
-        ON DUPLICATE KEY UPDATE
-          description = VALUES(description),
-          potential_impact = VALUES(potential_impact),
-          likelihood = VALUES(likelihood),
-          severity = VALUES(severity),
-          iso_clause = VALUES(iso_clause),
-          mitigation = VALUES(mitigation),
-          owner = VALUES(owner),
-          status = VALUES(status)
         `,
         [
           projectId,

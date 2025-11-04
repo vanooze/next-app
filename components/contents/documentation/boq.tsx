@@ -42,6 +42,7 @@ export default function BOQ({ project }: BOQProps) {
   const canUpload =
     user?.designation.includes("DESIGN SUPERVISOR") ||
     user?.designation.includes("PMO TL") ||
+    user?.designation.includes("DOCUMENT CONTROLLER") ||
     user?.designation.includes("TMIG SUPERVISOR") ||
     user?.designation.includes("TECHNICAL ADMIN CONSULTANT") ||
     user?.designation.includes("TECHNICAL ASSISTANT MANAGER");

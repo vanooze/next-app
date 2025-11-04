@@ -107,7 +107,9 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
   const canUpload =
     user?.designation.includes("SALES") ||
     user?.designation.includes("PMO TL") ||
-    user?.designation.includes("DESIGN") ;
+    user?.restriction === "9" ||
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
+    user?.designation.includes("DESIGN");
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">

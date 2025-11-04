@@ -42,6 +42,7 @@ export default function Proposal({ project }: ProposalProps) {
   const canUpload =
     user?.designation.includes("SALES") ||
     user?.designation.includes("PMO TL") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
     user?.designation.includes("DESIGN");
 
   const key = projectId

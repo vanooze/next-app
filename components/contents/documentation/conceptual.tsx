@@ -48,6 +48,7 @@ export default function Conceptual({ project }: ConceptualProps) {
 
   const canUpload =
     user?.designation.includes("DESIGN") ||
+    user?.designation.includes("DOCUMENT CONTROLLER") ||
     user?.designation.includes("PMO TL");
 
   const key = projectId

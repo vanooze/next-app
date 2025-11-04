@@ -21,10 +21,10 @@ export async function POST(req) {
 
     const updatedAccess = accessList.join(", ");
 
-    await executeQuery(
-      "UPDATE projects_manual SET access = ? WHERE project_id = ?",
-      [updatedAccess, projectId]
-    );
+    await executeQuery("UPDATE projects SET access = ? WHERE project_id = ?", [
+      updatedAccess,
+      projectId,
+    ]);
 
     return NextResponse.json({ success: true, updatedAccess });
   } catch (err) {

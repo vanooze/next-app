@@ -111,7 +111,9 @@ export default function Trainee({ project }: TraineeProps) {
   };
 
   const canUpload =
-    user?.department.includes("TMIG") || user?.designation.includes("PMO TL");
+    user?.department.includes("TMIG") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
+    user?.designation.includes("PMO TL");
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">

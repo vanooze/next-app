@@ -111,7 +111,8 @@ export default function COC({ project }: COCProps) {
     user?.department.includes("PMO") ||
     user?.department.includes("TMIG") ||
     user?.name === "DESIREE SALIVIO" ||
-    user?.department.includes("PURCHASING");
+    user?.department.includes("PURCHASING") ||
+    user?.designation?.includes("DOCUMENT CONTROLLER");
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">
       {canUpload && (

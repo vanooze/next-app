@@ -30,17 +30,13 @@ interface SectionData {
 export default function Accounting({ project }: AccountingProps) {
   const { user } = useUserContext();
 
-  //
-  const canEdit =
-    user?.designation?.includes("PMO TL") ||
-    user?.designation?.includes("Accounting");
+  const canEdit = user?.designation?.includes("DOCUMENT CONTROLLER");
 
   const [data, setData] = useState<SectionData[]>(
     sections.map((title) => ({ title, checked: false, note: "" }))
   );
   const [loading, setLoading] = useState(true);
 
-  //
   useEffect(() => {
     const fetchExisting = async () => {
       try {
@@ -83,17 +79,25 @@ export default function Accounting({ project }: AccountingProps) {
   ) => {
     if (!project?.projectId || !canEdit) return;
 
-    const { noteField, checkField } = sectionMap[title];
-    const payload: Record<string, any> = { projectId: project.projectId };
-
-    if (field === "checked") {
-      payload[checkField] = value ? 1 : 0;
-    } else {
-      payload[noteField] = value;
-    }
+    const payload = {
+      projectId: project.projectId,
+      section: title, // ✅ backend needs this
+      checked:
+        field === "checked"
+          ? value
+            ? 1
+            : 0
+          : data.find((d) => d.title === title)?.checked
+          ? 1
+          : 0,
+      note:
+        field === "note"
+          ? value?.trim() || null
+          : data.find((d) => d.title === title)?.note?.trim() || null,
+    };
 
     try {
-      await fetch(
+      const res = await fetch(
         "/api/department/PMO/project_tasks/projectexecution/accounting",
         {
           method: "POST",
@@ -101,6 +105,10 @@ export default function Accounting({ project }: AccountingProps) {
           body: JSON.stringify(payload),
         }
       );
+
+      if (!res.ok) {
+        console.error("Failed to update accounting section:", await res.text());
+      }
     } catch (err) {
       console.error("Error updating backend:", err);
     }

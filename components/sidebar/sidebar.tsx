@@ -23,7 +23,6 @@ export const SidebarWrapper = () => {
   const { collapsed, setCollapsed } = useSidebarContext();
 
   const SUPERADMIN = user?.restriction === "9";
-  const ME = user?.name === "MARVINNE ESTACIO";
 
   const accessForProject =
     user?.department.includes("SALES") ||
@@ -41,7 +40,7 @@ export const SidebarWrapper = () => {
     error: projectsError,
     isLoading: loadingProjects,
   } = useSWR<any[]>(
-    accessForProject ? "/api/department/PMO/project?status=Ongoing" : null,
+    accessForProject ? "/api/department/PMO/project?status=Active" : null,
     fetcher,
     {
       refreshInterval: 120000,
@@ -53,9 +52,14 @@ export const SidebarWrapper = () => {
   const accessForTask =
     user?.department?.includes("PMO") ||
     user?.department?.includes("DT") ||
+    user?.position?.includes("SALES") ||
+    user?.name === "DESIREE SALIVIO" ||
     SUPERADMIN;
 
-  const accessForSales = user?.position?.includes("SALES") || SUPERADMIN;
+  const accessForSales =
+    user?.position?.includes("SALES") ||
+    SUPERADMIN ||
+    user?.name === "DESIREE SALIVIO";
 
   const accessForInventory =
     user?.department.includes("ACCOUNTING&INVENTORY") ||
@@ -120,10 +124,10 @@ export const SidebarWrapper = () => {
   const projectManagementItems = [
     { label: "Project Monitoring", href: "/project" },
     { label: "Message Board", href: "/project/message_board" },
-    {
-      label: "Ongoing Projects",
-      nestedItems: ongoingItems,
-    },
+    // {
+    //   label: "Active Projects",
+    //   nestedItems: ongoingItems,
+    // },
   ];
 
   return (
@@ -145,23 +149,14 @@ export const SidebarWrapper = () => {
               href="/"
             />
             <SidebarMenu title="Main Menu">
-              {ME ? (
-                <CollapseItems
-                  icon={<AccountsIcon />}
-                  title="Task Designation"
-                  items={[
-                    { label: "Task Designation", href: "/tasks" },
-                    { label: "Awarded Projects", href: "/tasks/awarded" },
-                  ]}
-                />
-              ) : accessForTask ? (
+              {accessForTask && (
                 <SidebarItem
                   isActive={pathname === "/tasks"}
                   title="Task Designation"
                   icon={<AccountsIcon />}
                   href="/tasks"
                 />
-              ) : null}
+              )}
               {accessForProject && (
                 <CollapseItems
                   icon={<ReportsIcon />}
