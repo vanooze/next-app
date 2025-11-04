@@ -22,12 +22,14 @@ interface TableWrapperProps {
   tasks: SalesManagement[];
   loading: boolean;
   fullScreen: boolean;
+  searchValue?: string;
 }
 
 export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
   tasks,
   loading,
   fullScreen,
+  searchValue = "",
 }) => {
   const [page, setPage] = useState(1);
   const { user } = useUserContext();
@@ -40,7 +42,10 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
     column: "status",
     direction: "ascending",
   });
+
   const [filterStatuses, setFilterStatuses] = useState<string[]>([]);
+  const [showAllStatuses, setShowAllStatuses] = useState(false);
+  const [showOnlyOngoing, setShowOnlyOngoing] = useState(true);
 
   const rowsPerPage = 15;
 
@@ -74,15 +79,15 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
     setSelectedTask(null);
   };
 
-  // ✅ Define priority for sorting statuses
   const statusPriority: Record<string, number> = {
     "On Going": 0,
     "On Hold": 1,
     Awarded: 2,
     "Lost Account": 3,
+    Submitted: 4,
   };
 
-  // ✅ Filter by user and status
+  // ✅ Filter by user + status
   const filteredTasks = useMemo(() => {
     if (!user?.name) return [];
 
@@ -102,23 +107,42 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
     };
 
     const userName = user.name.toLowerCase().trim();
-    const mappedName = nameMappings[userName] || userName;
-
+    const mappedName = nameMappings[user.name] || user.name;
     const userFiltered = seeAllUsers.some((u) => u.toLowerCase() === userName)
       ? tasks
       : tasks.filter((task) => {
           const sales = task.salesPersonnel?.toLowerCase().trim() || "";
-          return sales.includes(mappedName) || mappedName.includes(sales);
+          return (
+            sales.includes(mappedName.toLowerCase()) ||
+            mappedName.toLowerCase().includes(sales)
+          );
         });
 
-    if (filterStatuses.length > 0) {
-      return userFiltered.filter((t) => filterStatuses.includes(t.status));
+    let result = userFiltered;
+
+    if (searchValue?.trim()) {
+      return result;
     }
 
-    return userFiltered;
-  }, [tasks, user, filterStatuses]);
+    if (showAllStatuses) {
+      result = result;
+    } else if (filterStatuses.length > 0) {
+      result = result.filter((t) => filterStatuses.includes(t.status));
+    } else if (showOnlyOngoing) {
+      result = result.filter((t) => t.status === "On Going");
+    }
 
-  // ✅ Sort tasks by priority and date
+    return result;
+  }, [
+    tasks,
+    user,
+    filterStatuses,
+    showAllStatuses,
+    showOnlyOngoing,
+    searchValue,
+  ]);
+
+  // ✅ Sort
   const sortedTasks = useMemo(() => {
     if (!filteredTasks.length) return [];
 
@@ -136,7 +160,6 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
   }, [filteredTasks]);
 
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
-
   const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
@@ -149,25 +172,47 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
         fullScreen ? "overflow-auto h-full" : "w-full flex flex-col gap-4"
       }`}
     >
-      {/* ✅ Status Filter */}
+      {/* ✅ Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <span className="text-sm font-medium text-foreground-500">
           Filter by Status:
         </span>
+
         <CheckboxGroup
           orientation="horizontal"
           color="secondary"
           value={filterStatuses}
-          onChange={(value) => setFilterStatuses(value as string[])}
+          onChange={(value) => {
+            const newValues = value as string[];
+            setFilterStatuses(newValues);
+            setShowAllStatuses(false); // disable show all
+            setShowOnlyOngoing(newValues.length === 0); // if none checked → back to On Going
+          }}
         >
-          <Checkbox value="On Going">On Going</Checkbox>
+          <Checkbox value="Submitted">Submitted</Checkbox>
           <Checkbox value="On Hold">On Hold</Checkbox>
           <Checkbox value="Awarded">Awarded</Checkbox>
           <Checkbox value="Lost Account">Lost Account</Checkbox>
         </CheckboxGroup>
+
+        <Checkbox
+          isSelected={showAllStatuses}
+          onChange={(e) => {
+            const checked = e.target.checked;
+            setShowAllStatuses(checked);
+            if (checked) {
+              setFilterStatuses([]); // clear filters
+              setShowOnlyOngoing(false);
+            } else {
+              setShowOnlyOngoing(true);
+            }
+          }}
+        >
+          Show All Statuses
+        </Checkbox>
       </div>
 
-      {/* ✅ Table Section */}
+      {/* ✅ Table */}
       {loading ? (
         <div className="w-full flex justify-center items-center min-h-[200px]">
           <Spinner
@@ -233,6 +278,7 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
         </Table>
       )}
 
+      {/* ✅ Edit Modal */}
       <EditTask
         isOpen={isEditOpen}
         onClose={handleCloseEdit}

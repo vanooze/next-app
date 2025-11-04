@@ -16,28 +16,36 @@ export async function GET(req) {
     const id = searchParams.get("id");
     const status = searchParams.get("status");
 
+    // ✅ Join projects with projects_customer to get customer_name
     let query = `
-      SELECT
-        id,
-        project_id,
-        status,
-        customer_id,
-        start_date,
-        description,
-        created_on,
-        currency,
-        project_manager,
-        access
-      FROM projects
-    `;
+  SELECT
+    p.id,
+    p.project_id,
+    p.status,
+    p.customer_id,
+    c.customer_name,
+    p.start_date,
+    p.description,
+    p.created_on,
+    p.currency,
+    p.project_manager,
+    p.access
+  FROM projects AS p
+  LEFT JOIN (
+    SELECT customer_id, MAX(customer_name) AS customer_name
+    FROM projects_customers
+    GROUP BY customer_id
+  ) AS c
+  ON p.customer_id = c.customer_id
+`;
 
     const params = [];
 
     if (id) {
-      query += " WHERE project_id = ?";
+      query += " WHERE p.project_id = ?";
       params.push(id);
     } else if (status) {
-      query += " WHERE status = ?";
+      query += " WHERE p.status = ?";
       params.push(status);
     }
 
@@ -48,6 +56,7 @@ export async function GET(req) {
       projectId: r.project_id,
       status: r.status,
       customerId: r.customer_id,
+      customerName: r.customer_name,
       startDate: r.start_date,
       description: r.description,
       createdOn: r.created_on,
@@ -58,7 +67,7 @@ export async function GET(req) {
 
     return NextResponse.json(id ? tasks[0] : tasks);
   } catch (error) {
-    console.error("API Error: ", error);
+    console.error("API Error:", error);
     return NextResponse.json(
       { error: "Failed to fetch table" },
       { status: 500 }

@@ -157,13 +157,6 @@ export const SidebarWrapper = () => {
                   href="/tasks"
                 />
               )}
-              {accessForProject && (
-                <CollapseItems
-                  icon={<ReportsIcon />}
-                  title="Project Management"
-                  items={projectManagementItems}
-                />
-              )}
               {accessForSales ? (
                 <SidebarItem
                   isActive={pathname === "/sales"}
@@ -172,6 +165,13 @@ export const SidebarWrapper = () => {
                   href="/sales"
                 />
               ) : null}
+              {accessForProject && (
+                <CollapseItems
+                  icon={<ReportsIcon />}
+                  title="Project Management"
+                  items={projectManagementItems}
+                />
+              )}
               {accessForInventory ? (
                 <CollapseItems
                   icon={<ProductsIcon />}

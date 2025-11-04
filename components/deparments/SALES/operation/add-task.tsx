@@ -8,10 +8,9 @@ import {
   ModalHeader,
   useDisclosure,
   useDraggable,
-  Tooltip,
 } from "@heroui/react";
 import { DatePicker } from "@heroui/date-picker";
-import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date";
+import { CalendarDate } from "@internationalized/date";
 import { Select, SelectItem } from "@heroui/select";
 import { mutate } from "swr";
 import { formatDatetoStr } from "@/helpers/formatDate";
@@ -28,58 +27,100 @@ export const AddTask = () => {
     canOverflow: true,
     isDisabled: !isOpen,
   });
+
   const { user } = useUserContext();
-  const [clientName, setClientName] = useState<string>("");
-  const [projectDesc, setProjectDesc] = useState<string>("");
-  const [salesPersonnel, setSalesPersonnel] = useState<string>("");
+
+  const [clientName, setClientName] = useState("");
+  const [projectDesc, setProjectDesc] = useState("");
+  const [salesPersonnel, setSalesPersonnel] = useState("");
   const [dateReceived, setDateReceived] = useState<CalendarDate | null>(null);
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState("");
   const [filteredStatus, setFilteredStatus] = useState(selectStatus);
   const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   const username = user?.email;
   const password = user?.acu_password;
 
-  const handleAddTask = async (onClose: () => void) => {
-    const dateReceivedStr = formatDatetoStr(dateReceived);
-    const name = user?.name || "Unknown User";
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
 
-    const payload = {
-      clientName,
-      projectDesc,
-      salesPersonnel,
-      dateReceived: dateReceivedStr,
-      status,
-      username,
-      password,
-      name,
-    };
-    console.log("User credentials:", { username, password });
-    try {
-      const res = await fetch("/api/department/ITDT/DT/tasks/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    const allowedTypes = [
+      "application/pdf",
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+    ];
 
-      if (!res.ok) {
-        throw new Error("Failed to create new task");
-      }
+    if (!allowedTypes.includes(selectedFile.type)) {
+      alert("Only PDF and image files are allowed!");
+      return;
+    }
 
-      const data = await res.json();
-      console.log("Task Created:", data);
+    setFile(selectedFile);
 
-      await mutate("/api/department/ITDT/DT/tasks");
-
-      onClose();
-    } catch (err) {
-      console.error(err);
+    // Preview for images
+    if (selectedFile.type.startsWith("image/")) {
+      setPreviewUrl(URL.createObjectURL(selectedFile));
+    } else {
+      setPreviewUrl(null);
     }
   };
 
-  const handleAddTaskWithLoading = async (onClose: () => void) => {
+  const handleAddTask = async (onClose: () => void) => {
     setLoading(true);
     try {
-      await handleAddTask(onClose);
+      const dateReceivedStr = formatDatetoStr(dateReceived);
+      const name = user?.name || "Unknown User";
+
+      // Prepare form data for file + fields
+      const formData = new FormData();
+      formData.append("clientName", clientName);
+      formData.append("projectDesc", projectDesc);
+      formData.append("salesPersonnel", salesPersonnel);
+      if (dateReceived) {
+        formData.append(
+          "dateReceived",
+          formatDatetoStr(dateReceived) || "null"
+        );
+      }
+      formData.append("status", status);
+      formData.append("username", username || "");
+      formData.append("password", password || "");
+      formData.append("name", name);
+
+      if (file) {
+        formData.append("file", file);
+        formData.append("attachment_name", file.name);
+        formData.append("attachment_type", file.type);
+      } else {
+        formData.append("attachment_name", "");
+        formData.append("attachment_type", "");
+      }
+
+      const res = await fetch("/api/department/ITDT/DT/tasks/create", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Failed to create task");
+
+      await mutate("/api/department/ITDT/DT/tasks");
+
+      // Reset form
+      setClientName("");
+      setProjectDesc("");
+      setSalesPersonnel("");
+      setDateReceived(null);
+      setStatus("");
+      setFile(null);
+      setPreviewUrl(null);
+      onClose();
+    } catch (err) {
+      console.error("Error creating task:", err);
     } finally {
       setLoading(false);
     }
@@ -101,9 +142,8 @@ export const AddTask = () => {
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const receivedDate = dateReceived.toDate(timeZone);
     const now = new Date();
-
-    const diffTime = now.getTime() - receivedDate.getTime();
-    const diffDays = diffTime / (1000 * 3600 * 24);
+    const diffDays =
+      (now.getTime() - receivedDate.getTime()) / (1000 * 3600 * 24);
 
     if (diffDays > 3) {
       setStatus("Overdue");
@@ -130,94 +170,116 @@ export const AddTask = () => {
 
   return (
     <div>
-      <>
-        <Button onPress={onOpen} color="primary" endContent={<PlusIcon />}>
-          Add Project
-        </Button>
-        <Modal
-          ref={targetRef}
-          isOpen={isOpen}
-          size="xl"
-          onOpenChange={onOpenChange}
-          placement="top-center"
-        >
-          <ModalContent>
-            {(onClose) => (
-              <>
-                <ModalHeader
-                  {...moveProps}
-                  className="w-full flex flex-col gap-4"
+      <Button onPress={onOpen} color="primary" endContent={<PlusIcon />}>
+        Add Project
+      </Button>
+
+      <Modal
+        ref={targetRef}
+        isOpen={isOpen}
+        size="xl"
+        onOpenChange={onOpenChange}
+        placement="top-center"
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader
+                {...moveProps}
+                className="w-full flex flex-col gap-4"
+              >
+                Add Task
+              </ModalHeader>
+
+              <ModalBody className="grid grid-cols-2 gap-4">
+                <Input
+                  isRequired
+                  label="Client Name"
+                  variant="bordered"
+                  value={clientName}
+                  onValueChange={setClientName}
+                />
+                <Input
+                  isRequired
+                  label="Project Description"
+                  variant="bordered"
+                  value={projectDesc}
+                  onValueChange={setProjectDesc}
+                />
+                <Input
+                  isRequired
+                  label="Sales Personnel"
+                  variant="bordered"
+                  value={salesPersonnel}
+                  onValueChange={setSalesPersonnel}
+                />
+                <DatePicker
+                  label="Date Received"
+                  variant="bordered"
+                  value={dateReceived}
+                  onChange={setDateReceived}
+                />
+                <Select
+                  isRequired
+                  items={filteredStatus}
+                  label="Status"
+                  placeholder="Select a status"
+                  variant="bordered"
+                  selectedKeys={[status]}
+                  onSelectionChange={(keys) =>
+                    setStatus(Array.from(keys)[0] as string)
+                  }
                 >
-                  Add Task
-                </ModalHeader>
-                <ModalBody className="grid grid-cols-2 gap-4">
-                  <Input
-                    isRequired
-                    className=""
-                    label="Client Name"
-                    variant="bordered"
-                    value={clientName}
-                    onValueChange={setClientName}
+                  {(item) => (
+                    <SelectItem key={item.label}>{item.label}</SelectItem>
+                  )}
+                </Select>
+
+                {/* File Upload Section */}
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium mb-1">
+                    Upload File (PDF or Image)
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf, image/png, image/jpeg"
+                    onChange={handleFileChange}
+                    className="w-full border border-gray-300 rounded-md p-2"
                   />
-                  <Input
-                    isRequired
-                    label="Project Description"
-                    variant="bordered"
-                    value={projectDesc}
-                    onValueChange={setProjectDesc}
-                  />
-                  <Input
-                    isRequired
-                    label="Sales Personnel"
-                    variant="bordered"
-                    value={salesPersonnel}
-                    onValueChange={setSalesPersonnel}
-                  />
-                  <DatePicker
-                    label="Date Received"
-                    variant="bordered"
-                    value={dateReceived}
-                    onChange={setDateReceived}
-                  />
-                  <Select
-                    isRequired
-                    items={filteredStatus}
-                    label="Status"
-                    placeholder="Select a status"
-                    variant="bordered"
-                    selectedKeys={[status]}
-                    onSelectionChange={(keys) =>
-                      setStatus(Array.from(keys)[0] as string)
-                    }
-                  >
-                    {(item) => (
-                      <SelectItem key={item.label}>{item.label}</SelectItem>
-                    )}
-                  </Select>
-                </ModalBody>
-                <ModalFooter>
-                  <Button
-                    color="danger"
-                    variant="flat"
-                    onClick={onClose}
-                    isDisabled={loading}
-                  >
-                    Close
-                  </Button>
-                  <Button
-                    color="primary"
-                    onClick={() => handleAddTaskWithLoading(onClose)}
-                    isLoading={loading}
-                    isDisabled={loading}
-                  >
-                    {loading ? "Adding..." : "Add Project"}
-                  </Button>
-                </ModalFooter>
-              </>
-            )}
-          </ModalContent>
-        </Modal>
-      </>
+                  {previewUrl && (
+                    <div className="mt-2">
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="max-h-48 rounded-lg border"
+                      />
+                    </div>
+                  )}
+                </div>
+              </ModalBody>
+
+              <ModalFooter>
+                <Button
+                  color="danger"
+                  variant="flat"
+                  onClick={onClose}
+                  isDisabled={loading}
+                >
+                  Close
+                </Button>
+                <Button
+                  color="primary"
+                  onClick={() => handleAddTask(onClose)}
+                  isLoading={loading}
+                  isDisabled={loading}
+                >
+                  {loading ? "Adding..." : "Add Project"}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 };

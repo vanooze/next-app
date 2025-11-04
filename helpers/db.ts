@@ -8,6 +8,7 @@ export interface dtTask {
   systemDiagram: string | null;
   eBoqDate: string | null;
   structuralBoq: string | null;
+  attachmentName: string | null;
   sBoqDate: string | null;
   sirME: string | null;
   sirMJH: string | null;
@@ -76,6 +77,7 @@ export interface SalesManagement {
   salesPersonnel: string;
   notes: string | null;
   status: string;
+  profitingFile: string | null;
   dateAwarded: string | null;
 }
 

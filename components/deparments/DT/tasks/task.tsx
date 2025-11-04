@@ -115,6 +115,7 @@ export const Tasks = () => {
           tasks={filteredTasks}
           loading={isLoading}
           fullScreen={isFullScreen}
+          searchValue={debouncedFilterValue}
         />
       </div>
     </div>

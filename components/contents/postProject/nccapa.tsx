@@ -115,7 +115,7 @@ export default function NcCapa({ project }: ValueEngProps) {
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">
-      {!canUpload && (
+      {canUpload && (
         <>
           <h1 className="text-lg font-semibold">Select the type</h1>
           <Select
@@ -129,16 +129,18 @@ export default function NcCapa({ project }: ValueEngProps) {
           >
             {(item) => <SelectItem key={item.key}>{item.label}</SelectItem>}
           </Select>
-          <h1 className="text-lg font-semibold">NC / CAPA Details</h1>
+          <h1 className="text-lg font-semibold">QA-QC / NC / CAPA Details</h1>
           <Textarea
             className="max-w-lg"
-            label="Value Engineer Details"
+            label="NC/CAPA Details"
             placeholder="Enter the details here..."
             value={Details}
             onChange={(e) => setDetails(e.target.value)}
           />
 
-          <h1 className="text-lg font-semibold">NC / CAPA Attachment</h1>
+          <h1 className="text-lg font-semibold">
+            QA-QC / NC / CAPA Attachment
+          </h1>
           <div className="border border-dashed rounded max-w-lg">
             <DropZone
               onDrop={handleDrop}

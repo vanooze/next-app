@@ -77,10 +77,7 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
         </Chip>
       );
 
-    case "template":
-      return <span>{displayValue(cellValue)}</span>;
-
-    case "customerId":
+    case "customerName":
       return <span>{displayValue(cellValue)}</span>;
 
     case "startDate":
@@ -91,9 +88,6 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
 
     case "createdOn":
       return <span>{formatDateMMDDYYYY(cellValue)}</span>;
-
-    case "currency":
-      return <span>{displayValue(cellValue)}</span>;
 
     case "projectManager":
       return <span>{displayValue(cellValue)}</span>;

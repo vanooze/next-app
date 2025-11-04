@@ -26,6 +26,7 @@ export async function GET(req) {
       sBoqDate: r.sboq_date,
       sirME: r.sir_me,
       sirMJH: r.sir_mjh,
+      attachmentName: r.attachment_name,
       status: r.status,
     }));
     return Response.json(tasks);

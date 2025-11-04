@@ -37,6 +37,7 @@ export interface Projects {
   status: string | null;
   template: string | null;
   customerId: string | null;
+  customerName: string | null;
   startDate: string | null;
   // endDate: string | null;
   description: string | null;
@@ -49,13 +50,14 @@ export interface Projects {
 export const projectColumns = [
   { name: "Project ID", uid: "projectId" },
   { name: "Status", uid: "status" },
-  { name: "Template", uid: "template" },
-  { name: "Customer ID", uid: "customerId" },
+  // { name: "Template", uid: "template" },
+  // { name: "Customer ID", uid: "customerId" },
+  { name: "Customer Name", uid: "customerName" },
   { name: "Start Date", uid: "startDate" },
   // { name: "End Date", uid: "endDate" },
   { name: "Description", uid: "description" },
   { name: "Created On", uid: "createdOn" },
-  { name: "Currency", uid: "currency" },
+  // { name: "Currency", uid: "currency" },
   { name: "Project Manager", uid: "projectManager" },
   { name: "Actions", uid: "actions" },
 ];

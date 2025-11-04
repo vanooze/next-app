@@ -1,5 +1,5 @@
+"use client";
 import {
-  Link,
   Table,
   TableBody,
   TableCell,
@@ -8,6 +8,8 @@ import {
   TableRow,
   Spinner,
   Pagination,
+  Checkbox,
+  CheckboxGroup,
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
 import React, { useMemo, useState } from "react";
@@ -21,12 +23,14 @@ interface TableWrapperProps {
   tasks: Projects[];
   loading: boolean;
   fullScreen: boolean;
+  searchValue?: string; // ✅ disables default filter when used
 }
 
 export const TableWrapper: React.FC<TableWrapperProps> = ({
   tasks,
   loading,
   fullScreen,
+  searchValue = "",
 }) => {
   const [page, setPage] = useState(1);
   const { user } = useUserContext();
@@ -37,18 +41,22 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     direction: "descending",
   });
 
+  const [filterStatuses, setFilterStatuses] = useState<string[]>([]);
+  const [showAllStatuses, setShowAllStatuses] = useState(false);
+  const [showOnlyPlanning, setShowOnlyPlanning] = useState(true);
+
   const handleSortChange = (descriptor: SortDescriptor) => {
     setSortDescriptor(descriptor);
   };
 
   const rowsPerPage = 15;
 
-  // ✅ Filter tasks by access (same as your original)
-  const filteredTasks = useMemo(() => {
+  // ✅ Step 1: Filter by user access
+  const accessFiltered = useMemo(() => {
     if (!user?.name) return [];
+
     return tasks.filter((task) => {
-      const accessList =
-        task.access?.split(",").map((name) => name.trim()) || [];
+      const accessList = task.access?.split(",").map((n) => n.trim()) || [];
 
       const hasAccessByName = accessList.includes(user.name);
       const hasAccessByRole =
@@ -72,54 +80,79 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     });
   }, [tasks, user]);
 
-  const visibleColumns = useMemo(() => {
-    return fullScreen
-      ? projectColumns.filter((col) => col.uid !== "actions")
-      : projectColumns;
-  }, [fullScreen]);
+  // ✅ Step 2: Apply filter + search logic
+  const statusFiltered = useMemo(() => {
+    // 🧠 Search bypasses filters
+    if (searchValue.trim()) {
+      return accessFiltered.filter((t) =>
+        Object.values(t).some(
+          (val) =>
+            typeof val === "string" &&
+            val.toLowerCase().includes(searchValue.toLowerCase())
+        )
+      );
+    }
 
-  // ✅ Custom Sorting Logic
+    let result = [...accessFiltered];
+
+    if (showAllStatuses) return result;
+
+    if (filterStatuses.length > 0) {
+      result = result.filter((t) => filterStatuses.includes(t.status ?? ""));
+    } else if (showOnlyPlanning) {
+      result = result.filter((t) => t.status === "In Planning");
+    }
+
+    return result;
+  }, [
+    accessFiltered,
+    filterStatuses,
+    showAllStatuses,
+    showOnlyPlanning,
+    searchValue,
+  ]);
+
+  // ✅ Step 3: Sorting
   const statusPriority = {
     "In Planning": 0,
     Active: 1,
-    "On Hold": 2,
-    "Pending Approval": 3,
-    "Pending Upgrade": 4,
-    "Is Empty": 5,
-    Canceled: 6,
-    Suspended: 7,
-    Completed: 8,
+    Completed: 2,
+    "On Hold": 3,
+    "Pending Approval": 4,
+    "Pending Upgrade": 5,
+    "Is Empty": 6,
+    Canceled: 7,
+    Suspended: 8,
   };
 
   const sortedTasks = useMemo(() => {
-    if (!Array.isArray(filteredTasks)) return [];
-
-    // Step 1: Sort by startDate (primary)
-    const dateSorted = [...filteredTasks].sort((a, b) => {
-      const aDate = a.startDate ? new Date(a.startDate).getTime() : 0;
-      const bDate = b.startDate ? new Date(b.startDate).getTime() : 0;
-      return bDate - aDate; // descending
-    });
-
-    // Step 2: Sort by custom status order within same date group
-    const fullySorted = dateSorted.sort((a, b) => {
+    const sorted = [...statusFiltered].sort((a, b) => {
       const aPriority =
         statusPriority[a.status as keyof typeof statusPriority] ?? 99;
       const bPriority =
         statusPriority[b.status as keyof typeof statusPriority] ?? 99;
-      return aPriority - bPriority;
+      if (aPriority !== bPriority) return aPriority - bPriority;
+
+      const aDate = a.startDate ? new Date(a.startDate).getTime() : 0;
+      const bDate = b.startDate ? new Date(b.startDate).getTime() : 0;
+      return bDate - aDate;
     });
+    return sorted;
+  }, [statusFiltered]);
 
-    return fullySorted;
-  }, [filteredTasks]);
-
+  // ✅ Step 4: Pagination
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
-
   const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
     return sortedTasks.slice(start, end);
   }, [page, sortedTasks]);
+
+  const visibleColumns = useMemo(() => {
+    return fullScreen
+      ? projectColumns.filter((col) => col.uid !== "actions")
+      : projectColumns;
+  }, [fullScreen]);
 
   const handleEditProject = (project: Projects) => {
     setSelectedProject(project);
@@ -137,13 +170,52 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         fullScreen ? "overflow-auto h-full" : "w-full flex flex-col gap-4"
       }`}
     >
+      {/* ✅ Filter Controls */}
+      <div className="flex flex-wrap gap-3 items-center mb-2">
+        <span className="text-sm font-medium text-foreground-500">
+          Filter by Status:
+        </span>
+
+        <CheckboxGroup
+          orientation="horizontal"
+          color="secondary"
+          value={filterStatuses}
+          onChange={(value) => {
+            const newValues = value as string[];
+            setFilterStatuses(newValues);
+            setShowAllStatuses(false);
+            setShowOnlyPlanning(newValues.length === 0);
+          }}
+        >
+          <Checkbox value="Active">Active</Checkbox>
+          <Checkbox value="Completed">Completed</Checkbox>
+        </CheckboxGroup>
+
+        <Checkbox
+          isSelected={showAllStatuses}
+          onChange={(e) => {
+            const checked = e.target.checked;
+            setShowAllStatuses(checked);
+            if (checked) {
+              setFilterStatuses([]);
+              setShowOnlyPlanning(false);
+            } else {
+              setShowOnlyPlanning(true);
+            }
+          }}
+        >
+          Show All Statuses
+        </Checkbox>
+      </div>
+
+      {/* ✅ Table */}
       {loading ? (
         <div className="w-full flex justify-center items-center min-h-[200px]">
           <Spinner
             classNames={{ label: "text-foreground mt-4" }}
             size="lg"
             variant="wave"
-            label="Loading tasks..."
+            label="Loading projects..."
           />
         </div>
       ) : (
@@ -182,8 +254,9 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
               </TableColumn>
             )}
           </TableHeader>
+
           <TableBody emptyContent="No rows to display." items={items}>
-            {(item) => (
+            {(item: Projects) => (
               <TableRow key={item.id}>
                 {visibleColumns.map((col) => (
                   <TableCell key={col.uid}>

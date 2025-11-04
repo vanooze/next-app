@@ -43,6 +43,8 @@ export const RenderCell = ({
               ? "bg-danger-100 text-danger-700"
               : cellValue === "On Hold"
               ? "bg-cyan-100 text-cyan-700"
+              : cellValue === "Submitted"
+              ? "bg-success-100 text-success-700"
               : "bg-yellow-100 text-yellow-700"
           }
         >
@@ -54,8 +56,44 @@ export const RenderCell = ({
       return <span>{displayValue(cellValue)}</span>;
     case "dateReceived":
       return <span>{normalizeToYYYYMMDD(cellValue)}</span>;
-    case "sirMJH":
+    case "sirMJH": {
+      const profitingField = dtTasks.profitingFile; // field from DB
+      const profitingFiles =
+        typeof profitingField === "string"
+          ? profitingField
+              .split(",")
+              .map((f) => f.trim())
+              .filter((f) => f.length > 0)
+          : [];
+
+      if (profitingFiles.length > 0) {
+        const tooltipContent = (
+          <div className="flex flex-col">
+            {profitingFiles.map((file, index) => (
+              <span key={index} className="text-xs text-white-600">
+                {file}
+              </span>
+            ))}
+          </div>
+        );
+
+        return (
+          <Tooltip content={tooltipContent} color="primary">
+            <a
+              href={`/uploads/profitting/${profitingFiles[0]}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline font-medium"
+            >
+              {normalizeToYYYYMMDD(cellValue)}
+            </a>
+          </Tooltip>
+        );
+      }
+
       return <span>{normalizeToYYYYMMDD(cellValue)}</span>;
+    }
+
     case "salesPersonnel":
       return <span>{displayValue(cellValue)}</span>;
     case "notes":

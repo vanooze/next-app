@@ -49,7 +49,7 @@ export const Project = () => {
     ? tasks.filter((task) => {
         const query = debouncedFilterValue.toLowerCase();
         return (
-          task.projectId?.toLowerCase().includes(query) ||
+          task.customerName?.toLowerCase().includes(query) ||
           task.description?.toLowerCase().includes(query)
         );
       })
@@ -94,7 +94,7 @@ export const Project = () => {
               input: "w-full",
               mainWrapper: "w-full",
             }}
-            placeholder="Search Project ID / Description"
+            placeholder="Search Customer Name / Description"
             value={filterValue}
             onValueChange={setFilterValue}
           />
@@ -121,6 +121,7 @@ export const Project = () => {
           tasks={filteredTasks}
           loading={isLoading}
           fullScreen={isFullScreen}
+          searchValue={debouncedFilterValue}
         />
       </div>
     </div>

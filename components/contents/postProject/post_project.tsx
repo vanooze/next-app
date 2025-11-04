@@ -50,7 +50,7 @@ function PostProject({ project }: PostProjectProprs) {
         <Tab key="Post Project Review" title="Post Project Review">
           <PostProjectReview project={project} />
         </Tab>
-        <Tab key="NC/CAPA" title="NC/CAPA">
+        <Tab key="NC/CAPA" title="QA-QC/NC/CAPA">
           <NcCapa project={project} />
         </Tab>
       </Tabs>

@@ -18,28 +18,33 @@ import { RenderCell } from "./render-cell";
 import { EditTask } from "../operation/edit-task";
 import { DeleteTask } from "../operation/delete-task";
 import { useUserContext } from "@/components/layout/UserContext";
+import { UploadProfitingModal } from "../operation/upload-file";
 
 interface TableWrapperProps {
   tasks: dtTask[];
   loading: boolean;
   fullScreen: boolean;
+  searchValue?: string; // ✅ Add this prop
 }
 
 export const TableWrapper: React.FC<TableWrapperProps> = ({
   tasks,
   loading,
   fullScreen,
+  searchValue = "", // ✅ default empty string
 }) => {
   const [page, setPage] = useState(1);
   const { user } = useUserContext();
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<dtTask | null>(null);
+  const [showAllStatuses, setShowAllStatuses] = useState(false);
+  const [filterStatuses, setFilterStatuses] = useState<string[]>([]);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "status",
     direction: "ascending",
   });
-  const [filterStatuses, setFilterStatuses] = useState<string[]>([]);
 
   const rowsPerPage = 15;
 
@@ -51,6 +56,16 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
   const handleSortChange = (descriptor: SortDescriptor) => {
     setSortDescriptor(descriptor);
+  };
+
+  const handleOpenUpload = (task: dtTask) => {
+    setSelectedTask(task);
+    setIsUploadOpen(true);
+  };
+
+  const handleCloseUpload = () => {
+    setIsUploadOpen(false);
+    setSelectedTask(null);
   };
 
   const handleOpenEdit = (task: dtTask) => {
@@ -73,7 +88,6 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     setSelectedTask(null);
   };
 
-  // ✅ Status priority for sorting
   const statusPriority: Record<string, number> = {
     Priority: 0,
     OnHold: 1,
@@ -82,7 +96,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     Finished: 4,
   };
 
-  // ✅ Filter tasks by user and status
+  // ✅ Filter tasks by user and status (skip filtering when search is active)
   const filteredTasks = useMemo(() => {
     if (!user?.name) return [];
 
@@ -110,7 +124,6 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     const userName = user.name.toLowerCase().trim();
     const mappedName = nameMappings[user.name] || user.name;
 
-    // ✅ If user can see all, skip filtering by personnel
     const userFiltered = seeAllUsers.some((u) => u.toLowerCase() === userName)
       ? tasks
       : tasks.filter((task) => {
@@ -121,19 +134,30 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           );
         });
 
-    // ✅ Apply status filters if any selected
-    if (filterStatuses.length > 0) {
-      return userFiltered.filter((t) => filterStatuses.includes(t.status));
+    let result = userFiltered;
+
+    // ✅ If searching → show everything (ignore status filters)
+    if (searchValue?.trim()) {
+      return result;
     }
 
-    return userFiltered;
-  }, [tasks, user, filterStatuses]);
+    // ✅ Apply filters only when not searching
+    if (showAllStatuses) {
+      result = result;
+    } else if (filterStatuses.length > 0) {
+      result = result.filter((t) => filterStatuses.includes(t.status));
+    } else {
+      result = result.filter(
+        (t) => t.status === "Pending" || t.status === "Overdue"
+      );
+    }
 
-  // ✅ Sort tasks by status priority and recent date (latest to oldest)
+    return result;
+  }, [tasks, user, showAllStatuses, filterStatuses, searchValue]);
+
   const sortedTasks = useMemo(() => {
     if (!filteredTasks.length) return [];
-
-    const sorted = [...filteredTasks].sort((a, b) => {
+    return [...filteredTasks].sort((a, b) => {
       const aPriority = statusPriority[a.status] ?? 999;
       const bPriority = statusPriority[b.status] ?? 999;
       if (aPriority !== bPriority) return aPriority - bPriority;
@@ -142,12 +166,9 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       const bDate = b.sirMJH ? new Date(b.sirMJH).getTime() : 0;
       return bDate - aDate;
     });
-
-    return sorted;
   }, [filteredTasks]);
 
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
-
   const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
@@ -160,26 +181,40 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         fullScreen ? "overflow-auto h-full" : "w-full flex flex-col gap-4"
       }`}
     >
-      {/* ✅ Filter Section */}
       <div className="flex flex-wrap gap-3 items-center">
         <span className="text-sm font-medium text-foreground-500">
           Filter by Status:
         </span>
+
         <CheckboxGroup
           orientation="horizontal"
           color="secondary"
           value={filterStatuses}
-          onChange={(value) => setFilterStatuses(value as string[])}
+          onChange={(value) => {
+            const newValues = value as string[];
+            setFilterStatuses(newValues);
+            setShowAllStatuses(false);
+          }}
         >
           <Checkbox value="Priority">Priority</Checkbox>
           <Checkbox value="OnHold">On Hold</Checkbox>
-          <Checkbox value="Overdue">Overdue</Checkbox>
-          <Checkbox value="Pending">Pending</Checkbox>
           <Checkbox value="Finished">Finished</Checkbox>
         </CheckboxGroup>
+
+        {/* ✅ Show All toggle */}
+        <Checkbox
+          isSelected={showAllStatuses}
+          onChange={(e) => {
+            const checked = e.target.checked;
+            setShowAllStatuses(checked);
+            if (checked) setFilterStatuses([]); // clear filters
+          }}
+        >
+          Show All Statuses
+        </Checkbox>
       </div>
 
-      {/* ✅ Table Section */}
+      {/* ✅ Table */}
       {loading ? (
         <div className="w-full flex justify-center items-center min-h-[200px]">
           <Spinner
@@ -233,6 +268,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
                     <RenderCell
                       dtTasks={item}
                       columnKey={col.uid as keyof dtTask | "actions"}
+                      handleUploadTask={handleOpenUpload}
                       handleEditTask={handleOpenEdit}
                       handleDeleteTask={handleOpenDelete}
                     />
@@ -244,7 +280,14 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         </Table>
       )}
 
-      {/* ✅ Edit & Delete Modals */}
+      {/* ✅ Operation Modals */}
+
+      <UploadProfitingModal
+        isOpen={isUploadOpen}
+        onClose={handleCloseUpload}
+        taskId={selectedTask?.id ?? 0}
+      />
+
       <EditTask
         isOpen={isEditOpen}
         onClose={handleCloseEdit}

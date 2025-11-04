@@ -119,6 +119,7 @@ export const Sales = () => {
           tasks={filteredTasks}
           loading={isLoading}
           fullScreen={isFullScreen}
+          searchValue={debouncedFilterValue}
         />
       </div>
     </div>
