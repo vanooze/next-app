@@ -35,20 +35,24 @@ export async function POST(request) {
       );
     }
 
-    const token = await createToken({
-      userId: user.user_id,
-      username: user.username,
-      department: user.department,
-    });
+    const token = await createToken(
+      {
+        userId: user.user_id,
+        username: user.username,
+        department: user.department,
+      },
+      "1h" // expires in 1 hour
+    );
 
+    // ✅ Remove password field before sending back to client
     const { password: _, ...userWithoutPassword } = user;
 
-    // ✅ Set the cookie using cookies() API
+    // ✅ Set cookie lifetime to 1 hour (in seconds)
     cookies().set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60, // 1 hour
     });
 
     return NextResponse.json({

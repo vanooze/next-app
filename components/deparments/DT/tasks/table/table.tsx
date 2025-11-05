@@ -19,6 +19,7 @@ import { EditTask } from "../operation/edit-task";
 import { DeleteTask } from "../operation/delete-task";
 import { useUserContext } from "@/components/layout/UserContext";
 import { UploadProfitingModal } from "../operation/upload-file";
+import { GenerateReport } from "../generateReport";
 
 interface TableWrapperProps {
   tasks: dtTask[];
@@ -181,37 +182,45 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         fullScreen ? "overflow-auto h-full" : "w-full flex flex-col gap-4"
       }`}
     >
-      <div className="flex flex-wrap gap-3 items-center">
-        <span className="text-sm font-medium text-foreground-500">
-          Filter by Status:
-        </span>
+      <div className="flex flex-wrap gap-3 items-center justify-between">
+        {/* Left side: filter checkboxes */}
+        <div className="flex flex-wrap gap-3 items-center">
+          <span className="text-sm font-medium text-foreground-500">
+            Filter by Status:
+          </span>
 
-        <CheckboxGroup
-          orientation="horizontal"
-          color="secondary"
-          value={filterStatuses}
-          onChange={(value) => {
-            const newValues = value as string[];
-            setFilterStatuses(newValues);
-            setShowAllStatuses(false);
-          }}
-        >
-          <Checkbox value="Priority">Priority</Checkbox>
-          <Checkbox value="OnHold">On Hold</Checkbox>
-          <Checkbox value="Finished">Finished</Checkbox>
-        </CheckboxGroup>
+          <CheckboxGroup
+            orientation="horizontal"
+            color="secondary"
+            value={filterStatuses}
+            onChange={(value) => {
+              const newValues = value as string[];
+              setFilterStatuses(newValues);
+              setShowAllStatuses(false);
+            }}
+          >
+            <Checkbox value="Priority">Priority</Checkbox>
+            <Checkbox value="OnHold">On Hold</Checkbox>
+            <Checkbox value="Finished">Finished</Checkbox>
+          </CheckboxGroup>
 
-        {/* ✅ Show All toggle */}
-        <Checkbox
-          isSelected={showAllStatuses}
-          onChange={(e) => {
-            const checked = e.target.checked;
-            setShowAllStatuses(checked);
-            if (checked) setFilterStatuses([]); // clear filters
-          }}
-        >
-          Show All Statuses
-        </Checkbox>
+          {/* Show All toggle */}
+          <Checkbox
+            isSelected={showAllStatuses}
+            onChange={(e) => {
+              const checked = e.target.checked;
+              setShowAllStatuses(checked);
+              if (checked) setFilterStatuses([]); // clear filters
+            }}
+          >
+            Show All Statuses
+          </Checkbox>
+        </div>
+
+        {/* Right side: Generate Report button */}
+        <div>
+          <GenerateReport />
+        </div>
       </div>
 
       {/* ✅ Table */}

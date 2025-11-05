@@ -11,12 +11,10 @@ import {
 } from "@heroui/react";
 import { DatePicker } from "@heroui/date-picker";
 import { CalendarDate } from "@internationalized/date";
-import { Select, SelectItem } from "@heroui/select";
 import { mutate } from "swr";
 import { formatDatetoStr } from "@/helpers/formatDate";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { PlusIcon } from "@/components/icons/table/add-icon";
-import { selectStatus } from "@/helpers/data";
 import { useUserContext } from "@/components/layout/UserContext";
 
 export const AddTask = () => {
@@ -34,8 +32,7 @@ export const AddTask = () => {
   const [projectDesc, setProjectDesc] = useState("");
   const [salesPersonnel, setSalesPersonnel] = useState("");
   const [dateReceived, setDateReceived] = useState<CalendarDate | null>(null);
-  const [status, setStatus] = useState("");
-  const [filteredStatus, setFilteredStatus] = useState(selectStatus);
+  const [status] = useState("Pending"); // ✅ Fixed to Pending
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -43,7 +40,6 @@ export const AddTask = () => {
   const username = user?.email;
   const password = user?.acu_password;
 
-  // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
@@ -61,8 +57,6 @@ export const AddTask = () => {
     }
 
     setFile(selectedFile);
-
-    // Preview for images
     if (selectedFile.type.startsWith("image/")) {
       setPreviewUrl(URL.createObjectURL(selectedFile));
     } else {
@@ -76,16 +70,12 @@ export const AddTask = () => {
       const dateReceivedStr = formatDatetoStr(dateReceived);
       const name = user?.name || "Unknown User";
 
-      // Prepare form data for file + fields
       const formData = new FormData();
       formData.append("clientName", clientName);
       formData.append("projectDesc", projectDesc);
       formData.append("salesPersonnel", salesPersonnel);
       if (dateReceived) {
-        formData.append(
-          "dateReceived",
-          formatDatetoStr(dateReceived) || "null"
-        );
+        formData.append("dateReceived", dateReceivedStr || "null");
       }
       formData.append("status", status);
       formData.append("username", username || "");
@@ -110,12 +100,10 @@ export const AddTask = () => {
 
       await mutate("/api/department/ITDT/DT/tasks");
 
-      // Reset form
       setClientName("");
       setProjectDesc("");
       setSalesPersonnel("");
       setDateReceived(null);
-      setStatus("");
       setFile(null);
       setPreviewUrl(null);
       onClose();
@@ -125,48 +113,6 @@ export const AddTask = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (!dateReceived) {
-      setFilteredStatus(
-        selectStatus.filter(
-          (item) =>
-            item.label === "Pending" ||
-            item.label === "Priority" ||
-            item.label === "OnHold"
-        )
-      );
-      return;
-    }
-
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const receivedDate = dateReceived.toDate(timeZone);
-    const now = new Date();
-    const diffDays =
-      (now.getTime() - receivedDate.getTime()) / (1000 * 3600 * 24);
-
-    if (diffDays > 3) {
-      setStatus("Overdue");
-      setFilteredStatus(
-        selectStatus.filter(
-          (item) =>
-            item.label === "Overdue" ||
-            item.label === "Priority" ||
-            item.label === "OnHold"
-        )
-      );
-    } else {
-      setStatus("Pending");
-      setFilteredStatus(
-        selectStatus.filter(
-          (item) =>
-            item.label === "Pending" ||
-            item.label === "Priority" ||
-            item.label === "OnHold"
-        )
-      );
-    }
-  }, [dateReceived]);
 
   return (
     <div>
@@ -219,23 +165,15 @@ export const AddTask = () => {
                   value={dateReceived}
                   onChange={setDateReceived}
                 />
-                <Select
-                  isRequired
-                  items={filteredStatus}
+                {/* ✅ Fixed Status Input */}
+                <Input
+                  isReadOnly
                   label="Status"
-                  placeholder="Select a status"
                   variant="bordered"
-                  selectedKeys={[status]}
-                  onSelectionChange={(keys) =>
-                    setStatus(Array.from(keys)[0] as string)
-                  }
-                >
-                  {(item) => (
-                    <SelectItem key={item.label}>{item.label}</SelectItem>
-                  )}
-                </Select>
+                  value="Pending"
+                />
 
-                {/* File Upload Section */}
+                {/* File Upload */}
                 <div className="col-span-2">
                   <label className="block text-sm font-medium mb-1">
                     Upload File (PDF or Image)

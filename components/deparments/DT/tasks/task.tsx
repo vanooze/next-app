@@ -56,6 +56,8 @@ export const Tasks = () => {
     return () => document.removeEventListener("keydown", handleKey);
   }, []);
 
+  const canGenerate = user?.department.includes("DESIGN");
+
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
       <ul className="flex">
@@ -99,10 +101,7 @@ export const Tasks = () => {
             </Tooltip>
           </div>
         </div>
-        <div className="flex flex-row gap-3.5 flex-wrap">
-          {/*<AddTask />*/}
-          {/* <AddReport /> */}
-        </div>
+        <div className="flex flex-row gap-3.5 flex-wrap">{/*<AddTask />*/}</div>
       </div>
       <div
         className={`${

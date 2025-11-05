@@ -46,17 +46,17 @@ export async function GET(req) {
 
     const reports = rows.map((r) => ({
       id: r.id,
-      projectId: r.project_id,
+      project_id: r.project_id,
       category: r.category,
-      date: r.date,
-      timeIn: r.time_in,
-      timeOut: r.time_out,
+      report_date: r.date,
+      time_in: r.time_in,
+      time_out: r.time_out,
       activity: r.activity,
       concern: r.concern,
-      actionTaken: r.action_taken,
+      action_taken: r.action_taken,
       remarks: r.remarks,
-      attachmentName: r.attachment_name,
-      attachmentType: r.attachment_type,
+      attachment_name: r.attachment_name || "",
+      attachment_type: r.attachment_type || "",
     }));
 
     return NextResponse.json(reports);

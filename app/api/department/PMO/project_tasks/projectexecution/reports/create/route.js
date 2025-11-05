@@ -24,7 +24,6 @@ export async function POST(req) {
     const actionTaken = formData.get("action_taken");
     const remarks = formData.get("remarks");
     const personnel = formData.get("personnel");
-    const file = formData.get("file");
 
     if (!projectId || !date || !category) {
       return NextResponse.json(
@@ -33,34 +32,26 @@ export async function POST(req) {
       );
     }
 
-    let filename = null;
-    let fileType = null;
+    const files = formData.getAll("files[]");
+    const savedFiles = [];
 
-    if (
-      file &&
-      typeof file === "object" &&
-      "arrayBuffer" in file &&
-      file.size > 0
-    ) {
+    const dirPath = path.join(
+      process.cwd(),
+      "public",
+      "uploads",
+      "reports",
+      projectId
+    );
+    if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+
+    for (const file of files) {
+      if (!file || file.size === 0) continue;
+
       const buffer = Buffer.from(await file.arrayBuffer());
-      fileType = file.type;
-
-      const dirPath = path.join(
-        process.cwd(),
-        "public",
-        "uploads",
-        "reports",
-        projectId
-      );
-      if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
-      }
-
       const ext = path.extname(file.name);
       const base = path.basename(file.name, ext);
       const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-      filename = `${base}-${todayStr}${ext}`;
-
+      let filename = `${base}-${todayStr}${ext}`;
       let version = 1;
       while (fs.existsSync(path.join(dirPath, filename))) {
         filename = `${base}-${todayStr}-v${version}${ext}`;
@@ -69,6 +60,8 @@ export async function POST(req) {
 
       const savePath = path.join(dirPath, filename);
       fs.writeFileSync(savePath, buffer);
+
+      savedFiles.push({ name: filename, type: file.type });
     }
 
     let user = null;
@@ -76,6 +69,7 @@ export async function POST(req) {
       user = await getUserFromToken(req);
     } catch {}
 
+    // Insert report record
     await executeQuery(
       `INSERT INTO reporting (
         project_id, date, time_in, time_out,
@@ -93,8 +87,8 @@ export async function POST(req) {
         actionTaken || null,
         remarks || null,
         personnel || null,
-        filename,
-        fileType,
+        savedFiles.map((f) => f.name).join(","),
+        savedFiles.map((f) => f.type).join(","),
       ]
     );
 

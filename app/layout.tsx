@@ -3,10 +3,11 @@ import type { Metadata } from "next";
 import { Providers } from "./providers";
 import { fontSans } from "@/config/fonts";
 import clsx from "clsx";
+import SessionWatcher from "../components/layout/sessionWatcher";
 
 export const metadata: Metadata = {
-  title: "Dashboard",
-  description: "Created using next.js",
+  title: "BMS",
+  description: "Business Management System for Avolution!",
 };
 
 export default function RootLayout({
@@ -15,9 +16,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang='en'>
+    <html lang="en">
       <body className={clsx("font-sans antialiased", fontSans.className)}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <SessionWatcher />
+          {children}
+        </Providers>
       </body>
     </html>
   );

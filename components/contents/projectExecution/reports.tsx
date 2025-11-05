@@ -24,6 +24,7 @@ import {
 import { Time } from "@internationalized/date";
 import { ReportCategories } from "@/helpers/data";
 import { Projects } from "@/helpers/acumatica";
+import { Tab } from "react-aria-components";
 
 interface ReportingProps {
   project: Projects | null;
@@ -44,7 +45,7 @@ export default function ReportPage({ project }: ReportingProps) {
     concern: "",
     actionTaken: "",
     remarks: "",
-    attachment: null as File | null,
+    attachment: [] as File[],
   });
 
   const handleChange = (key: string, value: any) => {
@@ -52,8 +53,8 @@ export default function ReportPage({ project }: ReportingProps) {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    handleChange("attachment", file);
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    handleChange("attachment", files);
   };
 
   useEffect(() => {
@@ -100,40 +101,54 @@ export default function ReportPage({ project }: ReportingProps) {
     data.append("concern", formData.concern);
     data.append("action_taken", formData.actionTaken);
     data.append("remarks", formData.remarks);
-    if (formData.attachment) {
-      data.append("file", formData.attachment);
-      data.append("attachment_name", formData.attachment.name);
-      data.append("attachment_type", formData.attachment.type);
+    if (formData.attachment.length > 0) {
+      formData.attachment.forEach((file, index) => {
+        data.append("files[]", file);
+        data.append(`attachment_name[${index}]`, file.name);
+        data.append(`attachment_type[${index}]`, file.type);
+      });
     }
 
     setLoading(true);
     try {
       const res = await fetch(
         "/api/department/PMO/project_tasks/projectexecution/reports/create",
-        {
-          method: "POST",
-          body: data,
-        }
+        { method: "POST", body: data }
       );
 
-      if (res.ok) {
-        alert("Report saved successfully!");
-        onClose();
-        setFormData({
-          date: "",
-          timeIn: null,
-          timeOut: null,
-          category: "",
-          activity: "",
-          concern: "",
-          actionTaken: "",
-          remarks: "",
-          attachment: null,
-        });
-        fetchReports();
-      } else {
+      if (!res.ok) {
         alert("Failed to save report.");
+        return;
       }
+
+      if (formData.concern?.trim()) {
+        await fetch(
+          "/api/department/PMO/project_tasks/postProject/post_project_review",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              projectId: project.projectId,
+              list: formData.concern,
+            }),
+          }
+        );
+      }
+
+      alert("Report saved successfully!");
+      onClose();
+      setFormData({
+        date: "",
+        timeIn: null,
+        timeOut: null,
+        category: "",
+        activity: "",
+        concern: "",
+        actionTaken: "",
+        remarks: "",
+        attachment: [],
+      });
+      fetchReports();
     } finally {
       setLoading(false);
     }
@@ -158,17 +173,57 @@ export default function ReportPage({ project }: ReportingProps) {
             <TableColumn>Date</TableColumn>
             <TableColumn>Category</TableColumn>
             <TableColumn>Activity</TableColumn>
+            <TableColumn>Concern</TableColumn>
             <TableColumn>Remarks</TableColumn>
+            <TableColumn>Files</TableColumn>
           </TableHeader>
           <TableBody>
-            {reports.map((r) => (
-              <TableRow key={r.id}>
-                <TableCell>{r.report_date}</TableCell>
-                <TableCell>{r.category}</TableCell>
-                <TableCell>{r.activity}</TableCell>
-                <TableCell>{r.remarks}</TableCell>
-              </TableRow>
-            ))}
+            {reports.map((r) => {
+              const files: string[] = r.attachment_name
+                ? r.attachment_name
+                    .split(",")
+                    .map((f: string) => f.trim())
+                    .filter((f: string) => f.length > 0)
+                : [];
+
+              return (
+                <TableRow key={r.id}>
+                  <TableCell>
+                    {r.report_date
+                      ? new Date(r.report_date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "2-digit",
+                        })
+                      : ""}
+                  </TableCell>
+                  <TableCell>{r.category}</TableCell>
+                  <TableCell>{r.activity}</TableCell>
+                  <TableCell>{r.concern}</TableCell>
+                  <TableCell>{r.remarks}</TableCell>
+                  <TableCell>
+                    {files.length > 0 ? (
+                      <ul className="text-xs sm:text-sm mt-1">
+                        {files.map((file, i) => (
+                          <li key={i}>
+                            <a
+                              href={`/uploads/reports/${r.project_id}/${file}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 underline"
+                            >
+                              {file}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span className="text-default-500">No files</span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       )}
@@ -184,7 +239,7 @@ export default function ReportPage({ project }: ReportingProps) {
           base: "mx-2 sm:mx-4",
           body: "px-2 sm:px-6",
           header: "px-2 sm:px-6",
-          footer: "px-2 sm:px-6"
+          footer: "px-2 sm:px-6",
         }}
       >
         <ModalContent>
@@ -209,6 +264,7 @@ export default function ReportPage({ project }: ReportingProps) {
                   selectedKeys={formData.category ? [formData.category] : []}
                   onChange={(e) => handleChange("category", e.target.value)}
                   size="sm"
+                  isRequired
                 >
                   {ReportCategories.map((cat) => (
                     <SelectItem key={cat.key}>{cat.value}</SelectItem>
@@ -270,20 +326,34 @@ export default function ReportPage({ project }: ReportingProps) {
                   onChange={handleFileChange}
                   accept="image/*,.pdf,.doc,.docx"
                   size="sm"
+                  multiple
                 />
-                {formData.attachment && (
-                  <p className="text-xs sm:text-sm text-default-500 mt-1 break-words">
-                    Selected: {formData.attachment.name}
-                  </p>
+                {formData.attachment.length > 0 && (
+                  <ul className="text-xs sm:text-sm text-default-500 mt-1 break-words">
+                    {formData.attachment.map((file, i) => (
+                      <li key={i}>{file.name}</li>
+                    ))}
+                  </ul>
                 )}
               </div>
             </div>
           </ModalBody>
           <ModalFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="light" onPress={onClose} className="w-full sm:w-auto" size="sm">
+            <Button
+              variant="light"
+              onPress={onClose}
+              className="w-full sm:w-auto"
+              size="sm"
+            >
               Cancel
             </Button>
-            <Button color="primary" onPress={handleSubmit} isLoading={loading} className="w-full sm:w-auto" size="sm">
+            <Button
+              color="primary"
+              onPress={handleSubmit}
+              isLoading={loading}
+              className="w-full sm:w-auto"
+              size="sm"
+            >
               {loading ? "Saving..." : "Save Report"}
             </Button>
           </ModalFooter>

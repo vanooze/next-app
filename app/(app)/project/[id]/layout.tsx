@@ -152,9 +152,9 @@ export default function ProjectLayout({
           ← Back
         </button>
       </div>
-
-      <h3 className="text-2xl font-semibold">{project.description}</h3>
-      <h1 className="text-lg font-semibold">
+      <h3 className="text-2xl font-semibold">{project.customerName}</h3>
+      <h3 className="text-xl font-semibold">{project.description}</h3>
+      <h1 className="text-medium font-semibold">
         {startDate ? formatDatetoStr(startDate) : ""}
         {/* {endDate ? formatDatetoStr(endDate) : ""} */}
       </h1>
