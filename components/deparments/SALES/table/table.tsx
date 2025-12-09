@@ -17,6 +17,7 @@ import { SalesManagementColumns, SalesManagement } from "@/helpers/db";
 import { RenderCell } from "./render-cell";
 import { EditTask } from "../operation/update";
 import { useUserContext } from "@/components/layout/UserContext";
+import { DeleteTask } from "../operation/delete-task";
 
 interface TableWrapperProps {
   tasks: SalesManagement[];
@@ -79,13 +80,18 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
     setSelectedTask(null);
   };
 
-  const statusPriority: Record<string, number> = {
-    "On Going": 0,
-    "On Hold": 1,
-    Awarded: 2,
-    "Lost Account": 3,
-    Submitted: 4,
-  };
+  const statusPriority: Record<string, number> = useMemo(
+    () => ({
+      Declined: 0,
+      "On Going": 1,
+      "On Hold": 2,
+      Awarded: 2,
+      Accepted: 3,
+      Submitted: 4,
+      "Lost Account": 5,
+    }),
+    []
+  );
 
   // ✅ Filter by user + status
   const filteredTasks = useMemo(() => {
@@ -97,6 +103,8 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
       "MARIA LEA BERMUDEZ",
       "MARVIN JIMENEZ",
       "DESIREE SALIVIO",
+      "RAMIELYN MALAYA",
+      "Cellano Cyril Nicolo D. Javan",
     ];
 
     const nameMappings: Record<string, string> = {
@@ -104,6 +112,7 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
       "Genevel Garcia": "GEN",
       "KENNETH BAUTISTA": "KENNETH",
       "Ida Ma. Catherine C. Madamba": "IDA",
+      "Earl Jan E. Acierda": "EARL JAN",
     };
 
     const userName = user.name.toLowerCase().trim();
@@ -129,7 +138,9 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
     } else if (filterStatuses.length > 0) {
       result = result.filter((t) => filterStatuses.includes(t.status));
     } else if (showOnlyOngoing) {
-      result = result.filter((t) => t.status === "On Going");
+      result = result.filter(
+        (t) => t.status === "On Going" || t.status === "Declined"
+      );
     }
 
     return result;
@@ -157,7 +168,7 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
     });
 
     return sorted;
-  }, [filteredTasks]);
+  }, [filteredTasks, statusPriority]);
 
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
   const items = useMemo(() => {
@@ -172,6 +183,7 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
         fullScreen ? "overflow-auto h-full" : "w-full flex flex-col gap-4"
       }`}
     >
+      <div className="flex flex-wrap gap-3 items-center justify-between"></div>
       {/* ✅ Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <span className="text-sm font-medium text-foreground-500">
@@ -189,9 +201,10 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
             setShowOnlyOngoing(newValues.length === 0); // if none checked → back to On Going
           }}
         >
+          <Checkbox value="Awarded">Awarded</Checkbox>
+          <Checkbox value="Accepted">Accepted</Checkbox>
           <Checkbox value="Submitted">Submitted</Checkbox>
           <Checkbox value="On Hold">On Hold</Checkbox>
-          <Checkbox value="Awarded">Awarded</Checkbox>
           <Checkbox value="Lost Account">Lost Account</Checkbox>
         </CheckboxGroup>
 
@@ -283,6 +296,11 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
         isOpen={isEditOpen}
         onClose={handleCloseEdit}
         task={selectedTask}
+      />
+      <DeleteTask
+        isOpen={isDeleteOpen}
+        onClose={handleCloseDelete}
+        taskId={selectedTask?.id ?? 0}
       />
     </div>
   );

@@ -26,24 +26,19 @@ export async function middleware(request: NextRequest) {
   );
   const isPublicUploadPage = /^\/contract\/upload\/[^\/]+$/.test(pathname);
 
-  // Allow public upload routes
   if (isPublicUploadPage) return NextResponse.next();
-
   const response = NextResponse.next();
   const user = token ? await verifyToken(token) : null;
 
-  // 🔒 Token exists but invalid/expired → clear cookie and redirect
   if (token && !user) {
     response.cookies.delete("token");
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // 🚫 Prevent logged-in users from accessing login/register
   if (isAuthPage && user) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // 🔐 Prevent unauthenticated access to protected routes
   if (isProtectedPage && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
@@ -54,6 +49,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/",
+    "/chat",
     "/login",
     "/register",
     "/tasks",

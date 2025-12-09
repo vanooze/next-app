@@ -64,12 +64,12 @@ export const AwardedTableWrapper: React.FC<TableWrapperProps> = ({
     setSelectedTask(null);
   };
 
-  const statusPriority: Record<string, number> = {
+  const statusPriority: Record<string, number> = useMemo(() => ({
     Awarded: 0,
     "Lost Account": 1,
     "On Going": 2,
     "On Hold": 3,
-  };
+  }), []);
 
   const sortedTasks = useMemo(() => {
     if (!Array.isArray(tasks)) return [];
@@ -87,7 +87,7 @@ export const AwardedTableWrapper: React.FC<TableWrapperProps> = ({
 
       return bDate - aDate;
     });
-  }, [tasks]);
+  }, [tasks, statusPriority]);
 
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
 

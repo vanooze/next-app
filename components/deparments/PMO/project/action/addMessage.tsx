@@ -22,7 +22,7 @@ export const NotesPage = ({ project }: MessageProps) => {
     }
   }, [project]);
 
-  const fetchMessage = async () => {
+  const fetchMessage = React.useCallback(async () => {
     if (!projectId) return;
     setLoading(true);
     try {
@@ -36,11 +36,11 @@ export const NotesPage = ({ project }: MessageProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
 
   useEffect(() => {
     fetchMessage();
-  }, [projectId]);
+  }, [fetchMessage]);
 
   const handleAddMessage = async () => {
     if (!input.trim() || !projectId) return;

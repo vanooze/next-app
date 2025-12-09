@@ -29,13 +29,20 @@ export default function ProjectTimelineWrapper() {
   if (!projects.length) return <p>No projects available.</p>;
 
   const chartData = projects
-    .filter((p) => p.startDate && p.endDate)
-    .map((p) => ({
-      projectId: p.projectId ?? String(p.id),
-      projectName: p.description || `Project ${p.projectId}`,
-      start_date: p.startDate!,
-      end_date: p.endDate!,
-    }));
+    .filter((p) => p.startDate)
+    .map((p) => {
+      // Calculate default end date (3 months after start date) if not provided
+      const startDate = new Date(p.startDate!);
+      const defaultEndDate = new Date(startDate);
+      defaultEndDate.setMonth(defaultEndDate.getMonth() + 3);
+      
+      return {
+        projectId: p.projectId ?? String(p.id),
+        projectName: p.description || `Project ${p.projectId}`,
+        start_date: p.startDate!,
+        end_date: defaultEndDate.toISOString().split('T')[0],
+      };
+    });
 
   console.log("📊 Chart Data:", chartData);
 

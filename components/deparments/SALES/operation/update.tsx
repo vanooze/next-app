@@ -12,7 +12,6 @@ import { DatePicker } from "@heroui/date-picker";
 import {
   CalendarDate,
   getLocalTimeZone,
-  today,
   parseDate,
 } from "@internationalized/date";
 import { Select, SelectItem } from "@heroui/select";
@@ -30,7 +29,6 @@ interface EditTaskProps {
 }
 
 export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
-  let defaultDate = today(getLocalTimeZone());
   const targetRef = React.useRef(null);
   const { moveProps } = useDraggable({
     targetRef,
@@ -54,6 +52,7 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
   const [status, setStatus] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [dateAwarded, setDateAwarded] = useState<CalendarDate | null>(null);
+  const [newUpdate, setNewUpdate] = useState<string>(""); // New update input
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -85,20 +84,16 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
 
   const handleUpdateTask = async (onClose: () => void) => {
     const dateReceivedStr = formatDatetoStr(dateReceived);
-    const sirmjhDateStr = formatDatetoStr(sirmjh);
     const dateAwardedStr = formatDatetoStr(dateAwarded);
+    const finalStatus = dateAwarded ? "Awarded" : status;
 
+    // Only send the new update
     const payload = {
       id,
-      clientId,
-      clientName,
-      projectDesc,
-      salesPersonnel,
-      dateReceived: dateReceivedStr,
-      sirMJH: sirmjhDateStr,
-      status,
+      status: finalStatus,
       notes,
       dateAwarded: dateAwardedStr,
+      updates: newUpdate?.trim() || "", // Send empty string if no input
     };
 
     try {
@@ -113,7 +108,7 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
       const data = await res.json();
       console.log("Task updated:", data);
 
-      if (status === "Awarded") {
+      if (finalStatus === "Awarded" && clientId) {
         await sendToAcumatica(clientId, projectDesc, dateReceivedStr);
       }
 
@@ -141,21 +136,13 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
         projectDesc,
         dateReceived,
       };
-
-      console.log("Sending to Acumatica:", payload);
-
       const res = await fetch("/api/department/SALES/acumatica", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       const result = await res.json();
-      if (result.success) {
-        console.log("Project created in Acumatica:", result.data);
-      } else {
-        console.error("Failed to create project in Acumatica:", result.error);
-      }
+      if (!result.success) console.error("Acumatica error:", result.error);
     } catch (error) {
       console.error("Error sending to Acumatica:", error);
     }
@@ -170,136 +157,109 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
     }
   };
 
-  useEffect(() => {
-    if (dateAwarded) {
-      setStatus("Awarded");
-    } else if (!dateAwarded && status === "Awarded") {
-      setStatus("");
-    }
-  }, [dateAwarded]);
-
   return (
-    <div>
-      <>
-        <Modal
-          ref={targetRef}
-          isOpen={isOpen}
-          size="xl"
-          onOpenChange={onClose}
-          placement="top-center"
-        >
-          <ModalContent>
-            {(onClose) => (
-              <>
-                <ModalHeader
-                  {...moveProps}
-                  className="w-full flex flex-col gap-4"
-                >
-                  Update Task
-                </ModalHeader>
-                <ModalBody className="grid grid-cols-2 gap-4">
-                  <Input
-                    className=""
-                    label="Client Name"
-                    variant="bordered"
-                    value={clientName}
-                    onValueChange={setClientName}
-                    isDisabled
-                  />
-                  <Input
-                    label="Project Description"
-                    variant="bordered"
-                    value={projectDesc}
-                    onValueChange={setProjectDesc}
-                    isDisabled
-                  />
-                  <Input
-                    isDisabled
-                    label="Sales Personnel"
-                    variant="bordered"
-                    value={salesPersonnel}
-                    onValueChange={setSalesPersonnel}
-                  />
-                  <DatePicker
-                    label="Date Received"
-                    variant="bordered"
-                    value={dateReceived}
-                    onChange={setDateReceived}
-                    isDisabled
-                  />
-                  <DatePicker
-                    label="Sir MJ/Harold"
-                    variant="bordered"
-                    value={sirmjh}
-                    onChange={setSirmjh}
-                    isDisabled
-                  />
-                  <Input
-                    label="Notes"
-                    variant="bordered"
-                    value={notes}
-                    onValueChange={setNotes}
-                  />
-                  <DatePicker
-                    label="Date Awarded"
-                    variant="bordered"
-                    value={dateAwarded}
-                    onChange={setDateAwarded}
-                  />
-                  <Select
-                    isRequired
-                    selectedKeys={
-                      dateAwarded ? new Set(["Awarded"]) : new Set([status])
-                    }
-                    onSelectionChange={(keys) => {
-                      if (dateAwarded) return;
-                      const selected = Array.from(keys)[0];
-                      if (typeof selected === "string") setStatus(selected);
-                    }}
-                    label="Status"
-                    placeholder="Select a status"
-                    variant="bordered"
-                    isDisabled={!!dateAwarded}
-                    items={
-                      dateAwarded
-                        ? selectSalesStatus.filter(
-                            (item) => item.key === "Awarded"
-                          )
-                        : selectSalesStatus.filter((item) =>
-                            ["On Going", "On Hold", "Lost Account"].includes(
-                              item.key
-                            )
-                          )
-                    }
-                  >
-                    {(item) => (
-                      <SelectItem key={item.key}>{item.label}</SelectItem>
-                    )}
-                  </Select>
-                </ModalBody>
-                <ModalFooter>
-                  <Button
-                    color="danger"
-                    variant="flat"
-                    onClick={onClose}
-                    isDisabled={loading}
-                  >
-                    Close
-                  </Button>
-                  <Button
-                    color="primary"
-                    onPress={() => handleUpdateTaskWithLoading(onClose)}
-                    isLoading={loading}
-                    isDisabled={loading}
-                  >
-                    {loading ? "Updating..." : "Update Task"}
-                  </Button>
-                </ModalFooter>
-              </>
-            )}
-          </ModalContent>
-        </Modal>
-      </>
-    </div>
+    <Modal
+      ref={targetRef}
+      isOpen={isOpen}
+      size="xl"
+      onOpenChange={onClose}
+      placement="top-center"
+    >
+      <ModalContent>
+        {(onClose) => (
+          <>
+            <ModalHeader {...moveProps} className="w-full flex flex-col gap-4">
+              Update Task
+            </ModalHeader>
+            <ModalBody className="grid grid-cols-2 gap-4">
+              <Input
+                label="Client Name"
+                value={clientName}
+                onValueChange={setClientName}
+                isDisabled
+              />
+              <Input
+                label="Project Description"
+                value={projectDesc}
+                onValueChange={setProjectDesc}
+                isDisabled
+              />
+              <Input
+                label="Sales Personnel"
+                value={salesPersonnel}
+                onValueChange={setSalesPersonnel}
+                isDisabled
+              />
+              <DatePicker
+                label="Date Received"
+                value={dateReceived}
+                onChange={setDateReceived}
+                isDisabled
+              />
+              <DatePicker
+                label="Sir MJ/Harold"
+                value={sirmjh}
+                onChange={setSirmjh}
+                isDisabled
+              />
+              <Input label="Notes" value={notes} onValueChange={setNotes} />
+              <DatePicker
+                label="Date Awarded"
+                value={dateAwarded}
+                onChange={setDateAwarded}
+              />
+              <Input
+                label="New Update"
+                value={newUpdate}
+                onValueChange={setNewUpdate}
+                placeholder="Add a new update..."
+              />
+              <Select
+                isRequired
+                selectedKeys={
+                  dateAwarded ? new Set(["Awarded"]) : new Set([status])
+                }
+                onSelectionChange={(keys) => {
+                  if (dateAwarded) return;
+                  const selected = Array.from(keys)[0];
+                  if (typeof selected === "string") setStatus(selected);
+                }}
+                label="Status"
+                placeholder="Select a status"
+                items={
+                  dateAwarded
+                    ? selectSalesStatus.filter((item) => item.key === "Awarded")
+                    : selectSalesStatus.filter((item) =>
+                        ["On Going", "On Hold", "Lost Account"].includes(
+                          item.key
+                        )
+                      )
+                }
+              >
+                {(item) => <SelectItem key={item.key}>{item.label}</SelectItem>}
+              </Select>
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                color="danger"
+                variant="flat"
+                onClick={onClose}
+                isDisabled={loading}
+              >
+                Close
+              </Button>
+              <Button
+                color="primary"
+                onPress={() => handleUpdateTaskWithLoading(onClose)}
+                isLoading={loading}
+                isDisabled={loading}
+              >
+                {loading ? "Updating..." : "Update Task"}
+              </Button>
+            </ModalFooter>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
   );
 };

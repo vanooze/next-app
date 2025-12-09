@@ -12,6 +12,7 @@ import { EyeIcon } from "@/components/icons/table/eye-icon";
 import { SalesManagement } from "@/helpers/db";
 import { SalesTableWrapper } from "./table/table";
 import { AddTask } from "./operation/add-task";
+import { GenerateReport } from "./generateReport";
 
 export const Sales = () => {
   const { user } = useUserContext();
@@ -105,6 +106,7 @@ export const Sales = () => {
         </div>
         <div className="flex flex-row gap-3.5 flex-wrap">
           <AddTask />
+          {user?.name === "DESIREE SALIVIO" && <GenerateReport />}
           {/* <AddReport /> */}
         </div>
       </div>

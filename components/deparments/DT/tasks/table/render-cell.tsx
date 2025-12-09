@@ -1,5 +1,5 @@
 import { Tooltip, Chip } from "@heroui/react";
-import React from "react";
+import React, { useState } from "react";
 import { DeleteIcon } from "../../../../icons/table/delete-icon";
 import { EditIcon } from "../../../../icons/table/edit-icon";
 import { dtTask } from "../../../../../helpers/db";
@@ -7,6 +7,7 @@ import { displayValue } from "@/helpers/displayValue";
 import { normalizeToYYYYMMDD } from "@/helpers/formatDate";
 import { useUserContext } from "@/components/layout/UserContext";
 import { UploadIcon } from "@/components/icons/upload-icon";
+import { FilesModal } from "./showFile";
 
 interface Props {
   dtTasks: dtTask;
@@ -25,6 +26,7 @@ export const RenderCell = ({
 }: Props) => {
   const { user } = useUserContext();
   const cellValue = dtTasks[columnKey as keyof dtTask];
+  const [isFilesModalOpen, setIsFilesModalOpen] = useState(false);
 
   const canUpload =
     user?.name === "HAROLD DAVID" || user?.name === "MARVIN JIMENEZ";
@@ -32,7 +34,8 @@ export const RenderCell = ({
     user?.designation === "DESIGN SUPERVISOR" || user?.designation === "DESIGN";
   const canDelete =
     user?.designation === "DESIGN SUPERVISOR" ||
-    user?.name === "BILLY JOEL TOPACIO";
+    user?.name === "BILLY JOEL TOPACIO" ||
+    user?.designation.includes("IT SUPERVISOR");
 
   const attachmentField = dtTasks.attachmentName;
 
@@ -52,7 +55,13 @@ export const RenderCell = ({
           variant="flat"
           color={
             typeof cellValue === "string" &&
-            ["Finished", "Overdue", "Priority", "OnHold"].includes(cellValue)
+            [
+              "Finished",
+              "Overdue",
+              "Priority",
+              "OnHold",
+              "For Proposal",
+            ].includes(cellValue)
               ? "default"
               : "warning"
           }
@@ -61,9 +70,13 @@ export const RenderCell = ({
               ? "bg-success-100 text-success-700"
               : cellValue === "Overdue"
               ? "bg-danger-100 text-danger-700"
+              : cellValue === "Declined"
+              ? "bg-danger-100 text-danger-700"
               : cellValue === "Priority"
               ? "bg-purple-100 text-purple-700"
               : cellValue === "OnHold"
+              ? "bg-cyan-100 text-cyan-700"
+              : cellValue === "For Proposal"
               ? "bg-cyan-100 text-cyan-700"
               : "bg-yellow-100 text-yellow-700"
           }
@@ -84,30 +97,31 @@ export const RenderCell = ({
       return <span>{normalizeToYYYYMMDD(cellValue)}</span>;
 
     case "salesPersonnel": {
+      // Show file link if there are attachments
       if (attachments.length > 0) {
-        const tooltipContent = (
-          <div className="flex flex-col">
-            {attachments.map((file, index) => (
-              <span key={index} className="text-xs text-white-600">
-                {file}
-              </span>
-            ))}
-          </div>
-        );
-
         return (
-          <Tooltip content={tooltipContent} color="primary">
+          <>
             <a
-              href={`/uploads/ocular report/${attachments[0]}`}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setIsFilesModalOpen(true);
+              }}
               className="text-blue-500 hover:underline font-medium"
             >
               {displayValue(cellValue)}
             </a>
-          </Tooltip>
+
+            <FilesModal
+              isOpen={isFilesModalOpen}
+              onClose={() => setIsFilesModalOpen(false)}
+              taskId={dtTasks.id}
+              folder="ocular report"
+            />
+          </>
         );
       }
+
       return <span>{displayValue(cellValue)}</span>;
     }
 

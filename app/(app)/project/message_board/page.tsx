@@ -11,7 +11,7 @@ interface Message {
   projectDescription: string | null;
 }
 
-export const AllMessages = () => {
+export default function AllMessages() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -70,6 +70,4 @@ export const AllMessages = () => {
       )}
     </div>
   );
-};
-
-export default AllMessages;
+}

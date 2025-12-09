@@ -16,6 +16,7 @@ import { useSidebarContext } from "../layout/layout-context";
 import { usePathname } from "next/navigation";
 import { useUserContext } from "../layout/UserContext";
 import { BalanceIcon } from "../icons/sidebar/balance-icon";
+import { ChatIcon } from "../icons/sidebar/chat-icon";
 
 export const SidebarWrapper = () => {
   const { user } = useUserContext();
@@ -148,6 +149,12 @@ export const SidebarWrapper = () => {
               isActive={pathname === "/"}
               href="/"
             />
+            <SidebarItem
+              title="Chat Assistant"
+              icon={<ChatIcon />}
+              isActive={pathname === "/chat"}
+              href="/chat"
+            />
             <SidebarMenu title="Main Menu">
               {accessForTask && (
                 <SidebarItem
@@ -182,6 +189,12 @@ export const SidebarWrapper = () => {
                   ]}
                 />
               ) : null}
+              <SidebarItem
+                isActive={pathname === "/qms"}
+                title="QMS Files"
+                icon={<ReportsIcon />}
+                href="/qms"
+              />
             </SidebarMenu>
           </div>
         </div>

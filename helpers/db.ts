@@ -78,6 +78,8 @@ export interface SalesManagement {
   notes: string | null;
   status: string;
   profitingFile: string | null;
+  updateDates: string | null;
+  updates: string | null;
   dateAwarded: string | null;
 }
 
@@ -88,6 +90,7 @@ export const SalesManagementColumns = [
   { name: "Date Received", uid: "dateReceived" },
   { name: "Sir MJ/Harold", uid: "sirMJH" },
   { name: "Sales Personnel", uid: "salesPersonnel" },
+  { name: "Updates", uid: "updates" },
   { name: "Notes", uid: "notes" },
   { name: "Date Awarded", uid: "dateAwarded" },
   { name: "Actions", uid: "actions" },

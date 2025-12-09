@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Button,
   Input,
@@ -8,6 +10,9 @@ import {
   ModalHeader,
   useDisclosure,
   useDraggable,
+  Select,
+  SelectItem,
+  SelectSection,
 } from "@heroui/react";
 import { DatePicker } from "@heroui/date-picker";
 import { CalendarDate } from "@internationalized/date";
@@ -16,6 +21,7 @@ import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useState } from "react";
 import { PlusIcon } from "@/components/icons/table/add-icon";
 import { useUserContext } from "@/components/layout/UserContext";
+import Image from "next/image";
 
 export const AddTask = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -30,38 +36,54 @@ export const AddTask = () => {
 
   const [clientName, setClientName] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
-  const [salesPersonnel, setSalesPersonnel] = useState("");
+  const [salesPersonnel, setSalesPersonnel] = useState<string>("");
   const [dateReceived, setDateReceived] = useState<CalendarDate | null>(null);
-  const [status] = useState("Pending"); // ✅ Fixed to Pending
+  const [status] = useState("Pending");
   const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [isCustom, setIsCustom] = useState(false);
 
   const username = user?.email;
   const password = user?.acu_password;
 
+  const handleSelectionChange = (keys: any) => {
+    const selected = Array.from(keys)[0] as string;
+    if (selected === "OTHER") {
+      setIsCustom(true);
+      setSalesPersonnel("");
+    } else {
+      setIsCustom(false);
+      setSalesPersonnel(selected);
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length === 0) return;
 
     const allowedTypes = [
       "application/pdf",
       "image/png",
       "image/jpeg",
-      "image/jpg",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/x-rar-compressed",
+      "application/octet-stream", // some RARs are detected as this
     ];
 
-    if (!allowedTypes.includes(selectedFile.type)) {
-      alert("Only PDF and image files are allowed!");
-      return;
+    const validFiles = selectedFiles.filter((file) =>
+      allowedTypes.includes(file.type)
+    );
+
+    if (validFiles.length !== selectedFiles.length) {
+      alert(
+        "Some files were skipped. Only PDF, images, Word, Excel, or RAR are allowed."
+      );
     }
 
-    setFile(selectedFile);
-    if (selectedFile.type.startsWith("image/")) {
-      setPreviewUrl(URL.createObjectURL(selectedFile));
-    } else {
-      setPreviewUrl(null);
-    }
+    setFiles(validFiles);
   };
 
   const handleAddTask = async (onClose: () => void) => {
@@ -82,14 +104,10 @@ export const AddTask = () => {
       formData.append("password", password || "");
       formData.append("name", name);
 
-      if (file) {
-        formData.append("file", file);
-        formData.append("attachment_name", file.name);
-        formData.append("attachment_type", file.type);
-      } else {
-        formData.append("attachment_name", "");
-        formData.append("attachment_type", "");
-      }
+      // ✅ Append multiple files
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
 
       const res = await fetch("/api/department/ITDT/DT/tasks/create", {
         method: "POST",
@@ -100,12 +118,12 @@ export const AddTask = () => {
 
       await mutate("/api/department/ITDT/DT/tasks");
 
+      // Reset form
       setClientName("");
       setProjectDesc("");
       setSalesPersonnel("");
       setDateReceived(null);
-      setFile(null);
-      setPreviewUrl(null);
+      setFiles([]);
       onClose();
     } catch (err) {
       console.error("Error creating task:", err);
@@ -152,46 +170,100 @@ export const AddTask = () => {
                   value={projectDesc}
                   onValueChange={setProjectDesc}
                 />
-                <Input
-                  isRequired
-                  label="Sales Personnel"
-                  variant="bordered"
-                  value={salesPersonnel}
-                  onValueChange={setSalesPersonnel}
-                />
+                {!isCustom ? (
+                  <Select
+                    isRequired
+                    label="Sales Personnel"
+                    variant="bordered"
+                    selectedKeys={salesPersonnel ? [salesPersonnel] : []}
+                    onSelectionChange={handleSelectionChange}
+                    placeholder="Select or add a name"
+                  >
+                    <SelectSection title="Executives">
+                      <SelectItem key="LSC">Lani Campos</SelectItem>
+                      <SelectItem key="MLB">Lea Bermudez</SelectItem>
+                      <SelectItem key="MJ">Marvin Jimenez</SelectItem>
+                      <SelectItem key="HAROLD">Harold David</SelectItem>
+                    </SelectSection>
+                    <SelectSection title="Sales">
+                      <SelectItem key="ALI">Alliah Pear Robles</SelectItem>
+                      <SelectItem key="KENNETH">Kenneth Bautista</SelectItem>
+                      <SelectItem key="SAIRA">Saira Gatdula</SelectItem>
+                      <SelectItem key="JHOAN">Jhoannah Sicat</SelectItem>
+                      <SelectItem key="DESIREE">Desiree Salivio</SelectItem>
+                      <SelectItem key="IDA">Ida Madamba</SelectItem>
+                      <SelectItem key="EVE">Evelyn Pequiras</SelectItem>
+                      <SelectItem key="GENEVEL">Genevel Garcia</SelectItem>
+                      <SelectItem key="JAM">Judie Ann Manuel</SelectItem>
+                      <SelectItem key="ERWIN T.">Erwin Talavera</SelectItem>
+                      <SelectItem key="CYRIL">
+                        Cellano Cyril D. Javan
+                      </SelectItem>
+                      <SelectItem key="RONALD">Ronaldo Francisco</SelectItem>
+                    </SelectSection>
+                    <SelectSection title="Technical">
+                      <SelectItem key="ERWIN">Erwin Del Rosario</SelectItem>
+                      <SelectItem key="ENCHONG">Lawrence Ducut</SelectItem>
+                      <SelectItem key="AARON">Aaron Opinaldo</SelectItem>
+                      <SelectItem key="ASH">Ashly Alvaro</SelectItem>
+                    </SelectSection>
+                    <SelectSection title="Davao Team">
+                      <SelectItem key="JOEMAR">Joemar Banichina</SelectItem>
+                      <SelectItem key="RAM">Ramielyn Malaya</SelectItem>
+                      <SelectItem key="RITZ">Ritzgerald Lopez</SelectItem>
+                      <SelectItem key="EARL JAN">
+                        Earl Jan E. Acierda
+                      </SelectItem>
+                    </SelectSection>
+                    <SelectItem
+                      key="OTHER"
+                      className="text-primary font-medium"
+                    >
+                      ➕ Others (Type manually)
+                    </SelectItem>
+                  </Select>
+                ) : (
+                  <Input
+                    isRequired
+                    label="Custom Sales Personnel"
+                    placeholder="Type name manually"
+                    value={salesPersonnel}
+                    onChange={(e) => setSalesPersonnel(e.target.value)}
+                    onBlur={() => {
+                      if (!salesPersonnel.trim()) setIsCustom(false);
+                    }}
+                  />
+                )}
                 <DatePicker
                   label="Date Received"
                   variant="bordered"
                   value={dateReceived}
                   onChange={setDateReceived}
+                  isRequired
                 />
-                {/* ✅ Fixed Status Input */}
                 <Input
                   isReadOnly
                   label="Status"
                   variant="bordered"
                   value="Pending"
                 />
-
-                {/* File Upload */}
                 <div className="col-span-2">
                   <label className="block text-sm font-medium mb-1">
-                    Upload File (PDF or Image)
+                    Upload Files (PDF, Image, Word, Excel, or RAR)
                   </label>
                   <input
                     type="file"
-                    accept=".pdf, image/png, image/jpeg"
+                    accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx,.rar"
                     onChange={handleFileChange}
                     className="w-full border border-gray-300 rounded-md p-2"
+                    multiple
                   />
-                  {previewUrl && (
-                    <div className="mt-2">
-                      <img
-                        src={previewUrl}
-                        alt="Preview"
-                        className="max-h-48 rounded-lg border"
-                      />
-                    </div>
+                  {files.length > 0 && (
+                    <ul className="mt-2 list-disc pl-5 text-sm text-gray-700">
+                      {files.map((file, idx) => (
+                        <li key={idx}>{file.name}</li>
+                      ))}
+                    </ul>
                   )}
                 </div>
               </ModalBody>
