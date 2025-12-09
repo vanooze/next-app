@@ -25,6 +25,8 @@ export async function GET(req) {
       notes: r.notes,
       status: r.status,
       profitingFile: r.profiting_file,
+      updateDates: r.update_dates,
+      updates: r.updates,
       dateAwarded: r.date_awarded,
     }));
     return Response.json(tasks);

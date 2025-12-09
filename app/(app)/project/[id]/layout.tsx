@@ -142,6 +142,22 @@ export default function ProjectLayout({
     { key: "post-project", title: "Post Project" },
   ];
 
+  // Get current tab from pathname
+  const getCurrentTab = () => {
+    const pathSegments = pathname.split("/").filter(Boolean);
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    // If we're on the base project page, default to sales-order
+    if (lastSegment === projectId || !lastSegment) {
+      return "sales-order";
+    }
+    return lastSegment;
+  };
+
+  const handleTabChange = (key: React.Key) => {
+    const tabKey = key as string;
+    router.push(`/project/${projectId}/${tabKey}`);
+  };
+
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
       <div className="flex items-center gap-3">
@@ -223,13 +239,13 @@ export default function ProjectLayout({
         aria-label="Project Sections"
         placement="top"
         variant="underlined"
-        selectedKey={pathname.split("/").pop()}
+        selectedKey={getCurrentTab()}
+        onSelectionChange={handleTabChange}
       >
         {tabs.map((tab) => (
           <Tab
             key={tab.key}
             title={tab.title}
-            href={`/project/${projectId}/${tab.key}`}
           />
         ))}
       </Tabs>

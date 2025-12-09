@@ -89,13 +89,18 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     setSelectedTask(null);
   };
 
-  const statusPriority: Record<string, number> = {
-    Priority: 0,
-    OnHold: 1,
-    Overdue: 2,
-    Pending: 3,
-    Finished: 4,
-  };
+  const statusPriority: Record<string, number> = useMemo(
+    () => ({
+      Declined: 0,
+      "For Proposal": 1,
+      Priority: 2,
+      OnHold: 3,
+      Overdue: 4,
+      Pending: 5,
+      Finished: 6,
+    }),
+    []
+  );
 
   // ✅ Filter tasks by user and status (skip filtering when search is active)
   const filteredTasks = useMemo(() => {
@@ -120,6 +125,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       "Genevel Garcia": "GEN",
       "KENNETH BAUTISTA": "KENNETH",
       "Ida Ma. Catherine C. Madamba": "IDA",
+      "Cellano Cyril Nicolo D. Javan": "CYRIL",
     };
 
     const userName = user.name.toLowerCase().trim();
@@ -149,12 +155,17 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       result = result.filter((t) => filterStatuses.includes(t.status));
     } else {
       result = result.filter(
-        (t) => t.status === "Pending" || t.status === "Overdue"
+        (t) =>
+          t.status === "Pending" ||
+          t.status === "Overdue" ||
+          t.status === "Declined"
       );
     }
 
     return result;
   }, [tasks, user, showAllStatuses, filterStatuses, searchValue]);
+
+  const canGenerate = user?.department === "DESIGN";
 
   const sortedTasks = useMemo(() => {
     if (!filteredTasks.length) return [];
@@ -167,7 +178,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       const bDate = b.sirMJH ? new Date(b.sirMJH).getTime() : 0;
       return bDate - aDate;
     });
-  }, [filteredTasks]);
+  }, [filteredTasks, statusPriority]);
 
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
   const items = useMemo(() => {
@@ -201,6 +212,8 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           >
             <Checkbox value="Priority">Priority</Checkbox>
             <Checkbox value="OnHold">On Hold</Checkbox>
+            <Checkbox value="Declined">Declined</Checkbox>
+            <Checkbox value="For Proposal">For Proposal</Checkbox>
             <Checkbox value="Finished">Finished</Checkbox>
           </CheckboxGroup>
 
@@ -218,9 +231,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         </div>
 
         {/* Right side: Generate Report button */}
-        <div>
-          <GenerateReport />
-        </div>
+        <div>{canGenerate && <GenerateReport />}</div>
       </div>
 
       {/* ✅ Table */}

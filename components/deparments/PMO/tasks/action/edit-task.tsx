@@ -81,8 +81,8 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
   }, [task]);
 
   useEffect(() => {
-    if (dateFinished && status !== "Finished") {
-      setStatus("Finished");
+    if (dateFinished) {
+      setStatus((prevStatus) => (prevStatus !== "Finished" ? "Finished" : prevStatus));
     }
   }, [dateFinished]);
 

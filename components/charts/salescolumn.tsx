@@ -6,6 +6,7 @@ const salesMap: Record<string, string> = {
   KENNETH: "Kenneth",
   JHOAN: "Jhoan",
   IDA: "Ida",
+  HAROLD: "Harold",
   MJ: "MJ",
 };
 

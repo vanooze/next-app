@@ -63,7 +63,7 @@ export default function ReportPage({ project }: ReportingProps) {
     }
   }, [project]);
 
-  const fetchReports = async () => {
+  const fetchReports = React.useCallback(async () => {
     if (!project?.projectId) return;
     try {
       const res = await fetch(
@@ -74,11 +74,11 @@ export default function ReportPage({ project }: ReportingProps) {
     } catch (err) {
       console.error("Failed to fetch reports:", err);
     }
-  };
+  }, [project?.projectId]);
 
   useEffect(() => {
     fetchReports();
-  }, [project]);
+  }, [fetchReports]);
 
   const handleSubmit = async () => {
     if (!project?.projectId) {

@@ -1,5 +1,6 @@
 "use client";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useState, useEffect, useRef } from "react";
 import { useUserContext } from "@/components/layout/UserContext";
 
@@ -46,7 +47,10 @@ export default function ChatPage() {
 
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: data.reply },
+        {
+          role: "assistant",
+          content: data.output ?? "AI response not available",
+        },
       ]);
     } catch {
       setMessages((prev) => [
@@ -61,7 +65,21 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#1E1F20] transition-colors">
       <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto space-y-6 flex flex-col">
+          {messages.length === 0 && !loading && (
+            <div className="flex-1 flex items-center justify-center text-center px-4">
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                This is a Chat Assistant for <strong>Avolution</strong>. <br />
+                You can ask questions about filling Requisition Slips,Certain
+                Project information, listing all the status, and more! <br />
+                <em>
+                  Note: This Chat Assistant is under development and more
+                  information will be available soon.
+                </em>
+              </p>
+            </div>
+          )}
+
           {messages.map((msg, i) => (
             <div
               key={i}
@@ -76,7 +94,9 @@ export default function ChatPage() {
                     : "bg-gray-100 text-gray-900 dark:bg-[#2A2B2C] dark:text-gray-100"
                 }`}
               >
-                <ReactMarkdown>{msg.content}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {msg.content}
+                </ReactMarkdown>
               </div>
             </div>
           ))}

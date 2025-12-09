@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 
@@ -11,10 +11,14 @@ interface JWTPayload {
 
 export default function useAutoLogout(token?: string | null) {
   const router = useRouter();
+  const redirectToLogin = useCallback(() => {
+    router.push("/login");
+    router.refresh();
+  }, [router]);
 
   useEffect(() => {
     if (!token) {
-      router.push("/login");
+      redirectToLogin();
       return;
     }
 
@@ -25,12 +29,12 @@ export default function useAutoLogout(token?: string | null) {
 
       if (expiry <= now) {
         // Already expired → redirect immediately
-        router.push("/login");
+        redirectToLogin();
       } else {
         // Set a timer for auto-logout at expiry
         const timeout = setTimeout(() => {
           alert("Session expired. Please log in again.");
-          router.push("/login");
+          redirectToLogin();
         }, expiry - now);
 
         return () => clearTimeout(timeout);
@@ -38,7 +42,7 @@ export default function useAutoLogout(token?: string | null) {
       console.log("Expires in:", (expiry - now) / 1000, "seconds");
     } catch (err) {
       console.error("Invalid or malformed token:", err);
-      router.push("/login");
+      redirectToLogin();
     }
-  }, [token, router]);
+  }, [token, redirectToLogin]);
 }

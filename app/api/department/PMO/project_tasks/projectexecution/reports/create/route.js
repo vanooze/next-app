@@ -4,12 +4,6 @@ import path from "path";
 import { executeQuery } from "@/app/lib/db";
 import { getUserFromToken } from "@/app/lib/auth";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 export async function POST(req) {
   try {
     const formData = await req.formData();

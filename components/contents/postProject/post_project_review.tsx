@@ -23,7 +23,7 @@ export default function PostProjectReview({ project }: PostProjectProps) {
 
   const canEdit = user?.designation.includes("DOCUMENT CONTROLLER");
 
-  const fetchReviews = async () => {
+  const fetchReviews = React.useCallback(async () => {
     if (!projectId) return;
     setLoading(true);
     const res = await fetch(
@@ -32,11 +32,11 @@ export default function PostProjectReview({ project }: PostProjectProps) {
     const data = await res.json();
     setReviews(data);
     setLoading(false);
-  };
+  }, [projectId]);
 
   useEffect(() => {
     fetchReviews();
-  }, [projectId]);
+  }, [fetchReviews]);
 
   const handleSubmit = async () => {
     console.log("Submit pressed", inputValue, projectId);
