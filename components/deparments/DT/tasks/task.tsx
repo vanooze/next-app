@@ -1,7 +1,7 @@
 "use client";
 import { Button, Input, Tooltip } from "@heroui/react";
 import Link from "next/link";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/app/lib/fetcher";
 import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
@@ -12,6 +12,7 @@ import { dtTask } from "../../../../helpers/db";
 import { AddTask } from "./operation/add-task";
 import { SearchIcon } from "../../../icons/searchicon";
 import { EyeIcon } from "../../../icons/table/eye-icon";
+import { GenerateReport } from "./generateReport";
 
 export const Tasks = () => {
   const { user } = useUserContext();
@@ -19,35 +20,26 @@ export const Tasks = () => {
   const [debouncedFilterValue, setDebouncedFilterValue] = useState(filterValue);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
-  const {
-    data: tasks = [],
-    error,
-    isLoading,
-  } = useSWR<dtTask[]>("/api/department/ITDT/DT/tasks", fetcher, {
-    refreshInterval: 120000, // every 120 seconds
-    revalidateOnFocus: true, // optional but useful
-  });
+  // ✅ New date range states
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
+  const { data: tasks = [], isLoading } = useSWR<dtTask[]>(
+    "/api/department/ITDT/DT/tasks",
+    fetcher,
+    {
+      refreshInterval: 120000,
+      revalidateOnFocus: true,
+    }
+  );
+
+  // Debounce search input
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedFilterValue(filterValue);
-    }, 300);
-
-    return () => {
-      clearTimeout(handler);
-    };
+    const handler = setTimeout(() => setDebouncedFilterValue(filterValue), 300);
+    return () => clearTimeout(handler);
   }, [filterValue]);
 
-  const filteredTasks = debouncedFilterValue
-    ? tasks.filter((task) => {
-        const query = debouncedFilterValue.toLowerCase();
-        return (
-          task.clientName?.toLowerCase().includes(query) ||
-          task.salesPersonnel?.toLowerCase().includes(query)
-        );
-      })
-    : tasks;
-
+  // Reset fullscreen on Escape
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsFullScreen(false);
@@ -60,19 +52,19 @@ export const Tasks = () => {
 
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
+      {/* Breadcrumb */}
       <ul className="flex">
         <li className="flex gap-2">
           <HouseIcon />
           <Link href={"/"}>
             <span>Home</span>
           </Link>
-          <span> / </span>{" "}
+          <span> / </span>
         </li>
-
         <li className="flex gap-2">
           <UsersIcon />
           <span>Task</span>
-          <span> / </span>{" "}
+          <span> / </span>
         </li>
         <li className="flex gap-2">
           <span>List</span>
@@ -80,29 +72,50 @@ export const Tasks = () => {
       </ul>
 
       <h3 className="text-xl font-semibold">All Tasks</h3>
+
+      {/* Top controls: Search + Date Range + Fullscreen */}
       <div className="flex justify-between flex-wrap gap-4 items-center">
         <div className="flex items-center gap-3 flex-wrap md:flex-nowrap">
           <Input
             isClearable
             startContent={<SearchIcon />}
-            classNames={{
-              input: "w-full",
-              mainWrapper: "w-full",
-            }}
-            placeholder="Search Client/Sales Name"
+            classNames={{ input: "w-full", mainWrapper: "w-full" }}
+            placeholder="Search Client/Sales/Design Name"
             value={filterValue}
             onValueChange={setFilterValue}
           />
-          <div className="flex items-center ">
-            <Tooltip content="View in fullscreen" color="secondary">
-              <button onClick={() => setIsFullScreen((prev) => !prev)}>
-                <EyeIcon size={20} fill="#979797" />
-              </button>
-            </Tooltip>
+
+          {/* ✅ Date Range Filter */}
+          <div className="flex items-center gap-1">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="border rounded p-1 text-sm"
+            />
+            <span>-</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="border rounded p-1 text-sm"
+            />
           </div>
+
+          <Tooltip content="View in fullscreen" color="secondary">
+            <button onClick={() => setIsFullScreen((prev) => !prev)}>
+              <EyeIcon size={20} fill="#979797" />
+            </button>
+          </Tooltip>
         </div>
-        <div className="flex flex-row gap-3.5 flex-wrap">{/*<AddTask />*/}</div>
+
+        <div className="flex flex-row gap-3.5 flex-wrap">
+          {/*<AddTask />*/}
+          <GenerateReport />
+        </div>
       </div>
+
+      {/* Table */}
       <div
         className={`${
           isFullScreen
@@ -111,10 +124,12 @@ export const Tasks = () => {
         } transition-all duration-300`}
       >
         <TableWrapper
-          tasks={filteredTasks}
+          tasks={tasks}
           loading={isLoading}
           fullScreen={isFullScreen}
           searchValue={debouncedFilterValue}
+          startDate={startDate}
+          endDate={endDate}
         />
       </div>
     </div>

@@ -14,12 +14,12 @@ export async function PATCH(req) {
 
   try {
     await executeQuery(
-      "UPDATE activity_logs SET seen = 1 WHERE id = ? AND deleted = 0",
+      "UPDATE notifications_logs SET active = 0 WHERE id = ?",
       [id]
     );
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error(err);
+    console.error("Mark notification seen error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

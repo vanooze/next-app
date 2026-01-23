@@ -25,14 +25,18 @@ interface TableWrapperProps {
   tasks: dtTask[];
   loading: boolean;
   fullScreen: boolean;
-  searchValue?: string; // ✅ Add this prop
+  searchValue?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export const TableWrapper: React.FC<TableWrapperProps> = ({
   tasks,
   loading,
   fullScreen,
-  searchValue = "", // ✅ default empty string
+  searchValue = "",
+  startDate,
+  endDate,
 }) => {
   const [page, setPage] = useState(1);
   const { user } = useUserContext();
@@ -89,13 +93,18 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     setSelectedTask(null);
   };
 
-  const statusPriority: Record<string, number> = {
-    Priority: 0,
-    OnHold: 1,
-    Overdue: 2,
-    Pending: 3,
-    Finished: 4,
-  };
+  const statusPriority: Record<string, number> = useMemo(
+    () => ({
+      Declined: 0,
+      "For Proposal": 1,
+      Priority: 2,
+      OnHold: 3,
+      Overdue: 4,
+      Pending: 5,
+      Finished: 6,
+    }),
+    [],
+  );
 
   // ✅ Filter tasks by user and status (skip filtering when search is active)
   const filteredTasks = useMemo(() => {
@@ -113,6 +122,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       "John Eden Ross V. Cola",
       "BILLY JOEL TOPACIO",
       "MARVINNE ESTACIO",
+      "ERWIN DEL ROSARIO",
     ];
 
     const nameMappings: Record<string, string> = {
@@ -120,41 +130,77 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       "Genevel Garcia": "GEN",
       "KENNETH BAUTISTA": "KENNETH",
       "Ida Ma. Catherine C. Madamba": "IDA",
+      "Cellano Cyril Nicolo D. Javan": "CYRIL",
+      "Evelyn Pequiras": "EVE",
     };
 
-    const userName = user.name.toLowerCase().trim();
     const mappedName = nameMappings[user.name] || user.name;
+    const canSeeAll = seeAllUsers.some(
+      (u) => u.toLowerCase() === user.name.toLowerCase(),
+    );
 
-    const userFiltered = seeAllUsers.some((u) => u.toLowerCase() === userName)
+    let result = canSeeAll
       ? tasks
-      : tasks.filter((task) => {
-          const personnel = task.salesPersonnel?.toLowerCase().trim() || "";
-          return (
-            personnel.includes(mappedName.toLowerCase()) ||
-            mappedName.toLowerCase().includes(personnel)
-          );
-        });
+      : tasks.filter((t) =>
+          t.salesPersonnel?.toLowerCase().includes(mappedName.toLowerCase()),
+        );
 
-    let result = userFiltered;
-
-    // ✅ If searching → show everything (ignore status filters)
-    if (searchValue?.trim()) {
-      return result;
+    if (startDate && endDate) {
+      const start = new Date(startDate).getTime();
+      const end = new Date(endDate).getTime();
+      result = result.filter((t) => {
+        const taskDate = t.dateReceived
+          ? new Date(t.dateReceived).getTime()
+          : 0;
+        return taskDate >= start && taskDate <= end;
+      });
     }
 
-    // ✅ Apply filters only when not searching
-    if (showAllStatuses) {
-      result = result;
-    } else if (filterStatuses.length > 0) {
-      result = result.filter((t) => filterStatuses.includes(t.status));
-    } else {
+    // ✅ Search filter
+    if (searchValue?.trim()) {
+      const query = searchValue.toLowerCase();
       result = result.filter(
-        (t) => t.status === "Pending" || t.status === "Overdue"
+        (t) =>
+          t.clientName?.toLowerCase().includes(query) ||
+          t.salesPersonnel?.toLowerCase().includes(query) ||
+          t.structuralBoq?.toLowerCase().includes(query) ||
+          t.systemDiagram?.toLowerCase().includes(query),
       );
     }
 
+    // ✅ Status filter
+    if (!showAllStatuses && filterStatuses.length > 0) {
+      result = result.filter((t) => filterStatuses.includes(t.status));
+    } else if (!showAllStatuses && filterStatuses.length === 0) {
+      result = result.filter((t) =>
+        ["Pending", "Overdue", "Declined"].includes(t.status),
+      );
+    }
+
+    // ✅ Date filter
+    if (startDate && endDate) {
+      const start = new Date(startDate).getTime();
+      const end = new Date(endDate).getTime();
+      result = result.filter((t) => {
+        const taskDate = t.dateReceived
+          ? new Date(t.dateReceived).getTime()
+          : 0;
+        return taskDate >= start && taskDate <= end;
+      });
+    }
+
     return result;
-  }, [tasks, user, showAllStatuses, filterStatuses, searchValue]);
+  }, [
+    tasks,
+    user,
+    searchValue,
+    filterStatuses,
+    showAllStatuses,
+    startDate,
+    endDate,
+  ]);
+
+  const canGenerate = user?.department === "DESIGN";
 
   const sortedTasks = useMemo(() => {
     if (!filteredTasks.length) return [];
@@ -167,7 +213,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       const bDate = b.sirMJH ? new Date(b.sirMJH).getTime() : 0;
       return bDate - aDate;
     });
-  }, [filteredTasks]);
+  }, [filteredTasks, statusPriority]);
 
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
   const items = useMemo(() => {
@@ -201,6 +247,8 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           >
             <Checkbox value="Priority">Priority</Checkbox>
             <Checkbox value="OnHold">On Hold</Checkbox>
+            <Checkbox value="Declined">Declined</Checkbox>
+            <Checkbox value="For Proposal">For Proposal</Checkbox>
             <Checkbox value="Finished">Finished</Checkbox>
           </CheckboxGroup>
 
@@ -218,9 +266,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         </div>
 
         {/* Right side: Generate Report button */}
-        <div>
-          <GenerateReport />
-        </div>
+        <div>{canGenerate && <GenerateReport />}</div>
       </div>
 
       {/* ✅ Table */}
@@ -263,7 +309,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
                 key={column.uid}
                 hideHeader={column.uid === "actions"}
                 align={column.uid === "actions" ? "center" : "start"}
-                allowsSorting
+                allowsSorting={false}
               >
                 {column.name}
               </TableColumn>

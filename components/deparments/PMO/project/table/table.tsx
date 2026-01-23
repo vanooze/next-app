@@ -12,7 +12,7 @@ import {
   CheckboxGroup,
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { projectColumns } from "@/helpers/acumatica";
 import { RenderCell } from "./render-cell";
 import { useUserContext } from "@/components/layout/UserContext";
@@ -50,6 +50,24 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   };
 
   const rowsPerPage = 15;
+
+  useEffect(() => {
+    if (!tasks || tasks.length === 0) return;
+
+    const hasInPlanning = tasks.some((t) => t.status === "In Planning");
+    const hasActive = tasks.some((t) => t.status === "Active");
+
+    if (hasInPlanning) {
+      setShowOnlyPlanning(true);
+      setFilterStatuses([]);
+    } else if (hasActive) {
+      setShowOnlyPlanning(false);
+      setFilterStatuses(["Active"]);
+    } else {
+      setShowOnlyPlanning(false);
+      setShowAllStatuses(true);
+    }
+  }, [tasks]);
 
   // ✅ Step 1: Filter by user access
   const accessFiltered = useMemo(() => {
@@ -113,17 +131,20 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   ]);
 
   // ✅ Step 3: Sorting
-  const statusPriority = {
-    "In Planning": 0,
-    Active: 1,
-    Completed: 2,
-    "On Hold": 3,
-    "Pending Approval": 4,
-    "Pending Upgrade": 5,
-    "Is Empty": 6,
-    Canceled: 7,
-    Suspended: 8,
-  };
+  const statusPriority = useMemo(
+    () => ({
+      "In Planning": 0,
+      Active: 1,
+      Completed: 2,
+      "On Hold": 3,
+      "Pending Approval": 4,
+      "Pending Upgrade": 5,
+      "Is Empty": 6,
+      Canceled: 7,
+      Suspended: 8,
+    }),
+    []
+  );
 
   const sortedTasks = useMemo(() => {
     const sorted = [...statusFiltered].sort((a, b) => {
@@ -138,7 +159,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       return bDate - aDate;
     });
     return sorted;
-  }, [statusFiltered]);
+  }, [statusFiltered, statusPriority]);
 
   // ✅ Step 4: Pagination
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);

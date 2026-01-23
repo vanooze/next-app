@@ -99,6 +99,27 @@ export default function BOQ({ project }: BOQProps) {
 
         const result = await res.json();
         if (!res.ok || !result?.file) throw new Error("Upload failed");
+        const webhookFormData = new FormData();
+        webhookFormData.append("projectId", projectId.toString());
+        webhookFormData.append(
+          "assignedPersonnel",
+          assignedPersonnel || "null"
+        );
+        webhookFormData.append("description", PODetails || "null");
+        webhookFormData.append("status", status);
+        webhookFormData.append("attachDate", attachDate);
+        webhookFormData.append("fileType", file.type);
+        webhookFormData.append("type", type);
+        webhookFormData.append("file", file);
+
+        // await fetch(
+        //   "http://localhost:5678/webhook-test/75d91fd6-cbca-432e-b115-935e48ce8461",
+        //http://localhost:5678/webhook/75d91fd6-cbca-432e-b115-935e48ce8461
+        //   {
+        //     method: "POST",
+        //     body: webhookFormData,
+        //   }
+        // );
       }
 
       // Reset form
@@ -128,6 +149,10 @@ export default function BOQ({ project }: BOQProps) {
           />
 
           <h1 className="text-lg font-semibold">BOQ Attachment</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-300 italic">
+            Upload Excel first for data Extracting, then upload the PDF for
+            documentation and version control
+          </p>
           <div className="border border-dashed rounded max-w-lg">
             <DropZone
               onDrop={handleDrop}

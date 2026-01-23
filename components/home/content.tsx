@@ -6,13 +6,12 @@ import { Card0 } from "./card";
 import { Card1 } from "./card1";
 import { Card2 } from "./card2";
 import { Card3 } from "./card3";
-import { Link, Card, CardBody } from "@heroui/react";
+import { Link, Tabs, Tab } from "@heroui/react";
 import NextLink from "next/link";
 import { useUserContext } from "../layout/UserContext";
 import { usePMOTasks } from "@/components/hooks/usePmoTasks";
 import { useSalesManagement } from "@/components/hooks/useSalesManagement";
 import { useDesignTasks } from "../hooks/useDesignTasks";
-import { AllMessages } from "../home/message-board";
 import { TableWrapper as DesignTable } from "../deparments/DT/tasks/table/table";
 import { PMOTableWrapper } from "../deparments/PMO/tasks/table/table";
 import { SalesTableWrapper } from "../deparments/SALES/table/table";
@@ -59,7 +58,7 @@ export const Content = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 🔹 Helper to calculate task stats
+  // Stats helper
   const getStats = (tasks: any[], type: "PMO" | "SALES" | "DESIGN") => {
     const onPendingTasks = tasks.filter((task) => {
       if (type === "SALES") return task.status === "On Going";
@@ -79,19 +78,17 @@ export const Content = () => {
     const finishedTasks = tasks.filter((task) => {
       let finishedDate: string | null;
 
-      if (type === "PMO") {
-        finishedDate = (task as PMOTasks).dateFinished;
-      } else if (type === "SALES") {
+      if (type === "PMO") finishedDate = (task as PMOTasks).dateFinished;
+      else if (type === "SALES")
         finishedDate = (task as SalesManagement).sirMJH;
-      } else {
-        finishedDate = (task as dtTask).sirMJH;
-      }
+      else finishedDate = (task as dtTask).sirMJH;
 
       if (!finishedDate) return false;
 
       const diffDays =
         (now.getTime() - new Date(finishedDate).getTime()) /
         (1000 * 60 * 60 * 24);
+
       return diffDays <= 30;
     }).length;
 
@@ -109,8 +106,7 @@ export const Content = () => {
     const renderChart = () => {
       if (type === "PMO") return <PMOColumnChart tasks={tasks} />;
       if (type === "SALES") return <SalesColumnChart tasks={tasks} />;
-      if (type === "DESIGN") return <ColumnChart tasks={tasks} />;
-      return null;
+      return <ColumnChart tasks={tasks} />;
     };
 
     const renderTable = () => {
@@ -126,19 +122,15 @@ export const Content = () => {
             fullScreen={false}
           />
         );
-      if (type === "DESIGN")
-        return (
-          <DesignTable tasks={tasks} loading={loading} fullScreen={false} />
-        );
-      return null;
+      return <DesignTable tasks={tasks} loading={loading} fullScreen={false} />;
     };
 
     return (
       <div className="h-full lg:px-6">
-        <div className="grid grid-cols-1 2xl:grid-cols-5 gap-6 pt-3 px-4 lg:px-0 sm:pt-10 max-w-[90rem] mx-auto w-full">
+        <div className="grid grid-cols-1 2xl:grid-cols-5 gap-6 pt-3 px-4 sm:pt-10 max-w-[90rem] mx-auto w-full">
           <div className="col-span-5 flex flex-col gap-2">
             <h3 className="text-xl font-semibold">{type} Tasks</h3>
-            <div className="grid md:grid-cols-2 grid-cols-1 2xl:grid-cols-4 gap-5 w-full">
+            <div className="grid md:grid-cols-2 2xl:grid-cols-4 gap-5">
               <Card0 Rush={onRushTasks} />
               <Card1 Pending={onPendingTasks} />
               <Card2 Overdue={overdueTasks} />
@@ -146,22 +138,16 @@ export const Content = () => {
             </div>
           </div>
 
-          <div className="col-span-4 h-full flex flex-col gap-2">
+          <div className="col-span-4 flex flex-col gap-2">
             <h3 className="text-xl font-semibold">Statistics</h3>
             <div className="w-full bg-default-50 shadow-lg rounded-2xl p-6">
               {renderChart()}
             </div>
           </div>
-
-          {/* Message Board */}
-          <div className="col-span-1 h-full flex flex-col gap-2">
-            {/* <h3 className="text-xl font-semibold">Message Board</h3>
-            <AllMessages maxHeight={425 + 48} /> */}
-          </div>
         </div>
 
-        <div className="flex flex-col justify-center w-full py-5 px-4 lg:px-0 max-w-[90rem] mx-auto gap-3">
-          <div className="flex flex-wrap justify-between">
+        <div className="flex flex-col w-full py-5 px-4 max-w-[90rem] mx-auto gap-3">
+          <div className="flex justify-between">
             <h3 className="text-xl font-semibold">Tasks Designation</h3>
             <Link href="/tasks" as={NextLink} color="primary">
               View All
@@ -173,24 +159,36 @@ export const Content = () => {
     );
   };
 
-  // if (restriction === "9") {
-  //   return (
-  //     <Tabs aria-label="Departments" variant="underlined">
-  //       <Tab key="PMO" title="PMO">
-  //         {renderDepartment("PMO", pmoTasks, pmoLoading)}
-  //       </Tab>
-  //       <Tab key="SALES" title="Sales">
-  //         {renderDepartment("SALES", salesTasks, salesLoading)}
-  //       </Tab>
-  //       <Tab key="DESIGN" title="Design">
-  //         {renderDepartment("DESIGN", designTasks, designLoading)}
-  //       </Tab>
-  //     </Tabs>
-  //   );
-  // }
+  // ===================================================================================
+  // ⭐ EXECUTIVE VIEW — HeroUI Tabs
+  // ===================================================================================
+  if (restriction === "9") {
+    return (
+      <div className="w-full px-4 pt-6">
+        <Tabs
+          variant="underlined"
+          aria-label="Executive Tabs"
+          defaultSelectedKey="DESIGN"
+        >
+          <Tab key="DESIGN" title="DESIGN">
+            {renderDepartment("DESIGN", designTasks, designLoading)}
+          </Tab>
 
-  // 🔹 Else → Just show based on user's department
+          <Tab key="PMO" title="PMO">
+            {renderDepartment("PMO", pmoTasks, pmoLoading)}
+          </Tab>
 
+          <Tab key="SALES" title="SALES">
+            {renderDepartment("SALES", salesTasks, salesLoading)}
+          </Tab>
+        </Tabs>
+      </div>
+    );
+  }
+
+  // ===================================================================================
+  // NORMAL (NON-EXECUTIVE) USERS
+  // ===================================================================================
   if (
     department?.includes("PMO") ||
     department?.includes("DOCUMENT CONTROLLER")
@@ -203,7 +201,6 @@ export const Content = () => {
   if (department?.includes("DESIGN"))
     return renderDepartment("DESIGN", designTasks, designLoading);
 
-  // ✅ Fallback if department doesn’t match any of the above
   return (
     <div className="flex flex-col items-center justify-center h-full text-center p-6">
       <h2 className="text-2xl font-semibold mb-2">🚧 Dashboard in Progress</h2>

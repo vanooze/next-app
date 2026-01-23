@@ -3,8 +3,9 @@ import Chart from "react-apexcharts";
 import { PMOTasks } from "@/helpers/db";
 
 const pmoMap: Record<string, string> = {
-  "Joshua A. Calimutan": "Joshua",
+  "Kaye Kimberly L. Manuel": "Kaye",
   "Ryan Joseph DL. Raymundo": "Ryan",
+  "Natasha Feliesh Y. Villafranca": "Natasha",
 };
 
 const colorMap: Record<string, string> = {

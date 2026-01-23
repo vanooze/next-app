@@ -5,12 +5,6 @@ import fs from "fs";
 import path from "path";
 import { form } from "@heroui/theme";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 export async function POST(req) {
   try {
     const formData = await req.formData();

@@ -10,31 +10,24 @@ interface ColumnProps {
 }
 
 export const Column: React.FC<ColumnProps> = ({ tasks }) => {
-  const sboqMap: Record<string, string> = {
-    "J.COLA": "JER",
-    "J.ARDINEL": "Jil",
-  };
-
-  const eboqMap: Record<string, string> = {
-    "M.GIGANTE": "Marcial",
-    "J.CAMERO": "Jan",
-    "B.TOPACIO": "Billy",
-  };
-
-  const statusList = ["Priority", "Overdue", "OnHold", "Pending"];
-  const colorMap: Record<string, string> = {
-    Priority: "#7828c8",
-    Overdue: "#dc2626",
-    OnHold: "#09AACD",
-    Pending: "#f59e0b",
-  };
-
   const { categories, series } = useMemo(() => {
+    const sboqMap: Record<string, string> = {
+      "J.COLA": "JER",
+      "J.ARDINEL": "Jil",
+    };
+
+    const eboqMap: Record<string, string> = {
+      "M.GIGANTE": "Marcial",
+      "J.CAMERO": "Jan",
+      "B.TOPACIO": "Billy",
+    };
+
+    const statusList = ["Priority", "Overdue", "OnHold", "Pending"];
+
     const counts: Record<string, Record<string, number>> = {};
     const nameSet = new Set<string>([
       ...Object.values(sboqMap),
       ...Object.values(eboqMap),
-      "Sir ME",
     ]);
 
     for (const status of statusList) {
@@ -87,6 +80,15 @@ export const Column: React.FC<ColumnProps> = ({ tasks }) => {
 
     return { categories, series };
   }, [tasks]);
+
+  const colorMap: Record<string, string> = {
+    Priority: "#7828c8",
+    Overdue: "#dc2626",
+    OnHold: "#09AACD",
+    Pending: "#f59e0b",
+  };
+
+  const statusList = ["Priority", "Overdue", "OnHold", "Pending"];
 
   const options: ApexCharts.ApexOptions = {
     chart: {

@@ -109,6 +109,7 @@ export default function SOProjectOrder({ project }: SOProjectOrderProps) {
     user?.designation.includes("PMO TL") ||
     user?.restriction === "9" ||
     user?.designation?.includes("DOCUMENT CONTROLLER") ||
+    user?.designation?.includes("TECHNICAL SUPERVISOR") ||
     user?.designation.includes("DESIGN");
 
   return (

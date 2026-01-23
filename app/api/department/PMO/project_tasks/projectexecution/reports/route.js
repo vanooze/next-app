@@ -27,16 +27,13 @@ export async function GET(req) {
       SELECT 
         id,
         project_id,
-        category,
         date,
-        time_in,
-        time_out,
-        activity,
-        concern,
-        action_taken,
         remarks,
+        personnel,
         attachment_name,
-        attachment_type
+        attachment_type,
+        note,
+        note_personnel
       FROM reporting
       WHERE project_id = ?
       ORDER BY date DESC
@@ -47,16 +44,13 @@ export async function GET(req) {
     const reports = rows.map((r) => ({
       id: r.id,
       project_id: r.project_id,
-      category: r.category,
       report_date: r.date,
-      time_in: r.time_in,
-      time_out: r.time_out,
-      activity: r.activity,
-      concern: r.concern,
-      action_taken: r.action_taken,
+      personnel: r.personnel,
       remarks: r.remarks,
       attachment_name: r.attachment_name || "",
       attachment_type: r.attachment_type || "",
+      note: r.note,
+      note_personnel: r.note_personnel,
     }));
 
     return NextResponse.json(reports);

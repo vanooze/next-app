@@ -4,28 +4,16 @@ import path from "path";
 import { executeQuery } from "@/app/lib/db";
 import { getUserFromToken } from "@/app/lib/auth";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 export async function POST(req) {
   try {
     const formData = await req.formData();
 
     const projectId = formData.get("project_id");
     const date = formData.get("date");
-    const timeIn = formData.get("time_in");
-    const timeOut = formData.get("time_out");
-    const category = formData.get("category");
-    const activity = formData.get("activity");
-    const concern = formData.get("concern");
-    const actionTaken = formData.get("action_taken");
     const remarks = formData.get("remarks");
     const personnel = formData.get("personnel");
 
-    if (!projectId || !date || !category) {
+    if (!projectId || !date) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -72,19 +60,11 @@ export async function POST(req) {
     // Insert report record
     await executeQuery(
       `INSERT INTO reporting (
-        project_id, date, time_in, time_out,
-        category, activity, concern, action_taken, remarks, personnel,
-        attachment_name, attachment_type
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        project_id, date, remarks, personnel, attachment_name, attachment_type
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
       [
         projectId,
         date,
-        timeIn || null,
-        timeOut || null,
-        category,
-        activity || null,
-        concern || null,
-        actionTaken || null,
         remarks || null,
         personnel || null,
         savedFiles.map((f) => f.name).join(","),

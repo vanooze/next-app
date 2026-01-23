@@ -73,13 +73,13 @@ export const PMOTableWrapper: React.FC<TableWrapperProps> = ({
     setSelectedTask(null);
   };
 
-  const statusPriority = {
+  const statusPriority = useMemo(() => ({
     Priority: 0,
     OnHold: 1,
     Overdue: 2,
     Pending: 3,
     Finished: 4,
-  };
+  }), []);
 
   const sortedTasks = useMemo(() => {
     if (!Array.isArray(tasks)) return [];
@@ -126,7 +126,7 @@ export const PMOTableWrapper: React.FC<TableWrapperProps> = ({
 
       return 0;
     });
-  }, [tasks, sortDescriptor]);
+  }, [tasks, sortDescriptor, statusPriority]);
 
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
 

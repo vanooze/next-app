@@ -113,6 +113,7 @@ export default function Trainee({ project }: TraineeProps) {
   const canUpload =
     user?.department.includes("TMIG") ||
     user?.designation?.includes("DOCUMENT CONTROLLER") ||
+    user?.designation?.includes("PMO") ||
     user?.designation.includes("PMO TL");
 
   return (

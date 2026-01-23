@@ -51,7 +51,8 @@ export const GenerateReport = () => {
       setDownloadUrl(null);
 
       const res = await fetch(
-        "http://localhost:5678/webhook-test/74e4ab54-d347-4631-bcc0-d9c40633e65f",
+        // "http://localhost:5678/webhook-test/74e4ab54-d347-4631-bcc0-d9c40633e65f",
+        "http://192.168.3.192:5678/webhook/74e4ab54-d347-4631-bcc0-d9c40633e65f",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

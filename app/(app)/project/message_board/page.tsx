@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Spinner } from "@heroui/react";
+import { parseBulletMessage } from "@/helpers/parsedBullet";
 
 interface Message {
   id: number;
@@ -11,7 +12,7 @@ interface Message {
   projectDescription: string | null;
 }
 
-export const AllMessages = () => {
+export default function AllMessages() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -53,16 +54,21 @@ export const AllMessages = () => {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className="w-full p-4 border rounded-lg shadow-sm 
-                         bg-white dark:bg-gray-800 
+              className="p-4 border rounded-lg shadow-sm
+                         bg-white dark:bg-gray-800
                          border-gray-200 dark:border-gray-700"
             >
-              <p className="text-gray-800 dark:text-gray-200">{msg.message}</p>
-              <div className="text-sm mt-2 flex justify-between text-gray-500 dark:text-gray-400">
-                <span>
-                  {msg.projectDescription || "No project description"}
+              <div className="text-gray-800 dark:text-gray-200">
+                {parseBulletMessage(msg.message)}
+              </div>
+
+              <div className="text-sm mt-3 flex justify-between text-gray-500 dark:text-gray-400">
+                <span className="italic">
+                  {msg.projectDescription || "General Update"}
                 </span>
-                <span>{new Date(msg.date).toLocaleDateString()}</span>
+                <span className="font-medium">
+                  {new Date(msg.date).toLocaleDateString()}
+                </span>
               </div>
             </div>
           ))}
@@ -70,6 +76,4 @@ export const AllMessages = () => {
       )}
     </div>
   );
-};
-
-export default AllMessages;
+}

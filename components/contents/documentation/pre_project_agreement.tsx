@@ -41,7 +41,7 @@ export default function PrePorjectAgreement({ project }: PreProjectProps) {
 
   const canUpload =
     user?.designation.includes("SALES") ||
-    user?.designation.includes("PMO") ||
+    user?.designation.includes("DESIGN") ||
     user?.designation.includes("DOCUMENT CONTROLLER");
 
   const key = projectId

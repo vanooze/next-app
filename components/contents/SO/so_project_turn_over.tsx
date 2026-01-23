@@ -44,6 +44,7 @@ export default function ProjectTurnOver({ project }: ProjectTurnOverProps) {
     user?.designation.includes("SALES") ||
     user?.designation.includes("PMO TL") ||
     user?.designation?.includes("DOCUMENT CONTROLLER") ||
+    user?.designation?.includes("TECHNICAL SUPERVISOR") ||
     user?.designation.includes("DESIGN");
 
   const key = projectId

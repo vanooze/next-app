@@ -11,19 +11,9 @@ export async function POST(req) {
         { status: 403 }
       );
     }
-    const body = await req.json();
 
-    const {
-      id,
-      clientName,
-      projectDesc,
-      dateReceived,
-      salesPersonnel,
-      sirMJH,
-      status,
-      notes,
-      dateAwarded,
-    } = body;
+    const body = await req.json();
+    const { id, status, notes, dateAwarded, updates } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -32,30 +22,40 @@ export async function POST(req) {
       );
     }
 
+    let updatesQueryPart = "";
+    let params = [status, notes, dateAwarded];
+
+    if (updates && updates.trim() !== "") {
+      const now = new Date().toISOString().split("T")[0];
+
+      updatesQueryPart = `,
+        updates = CONCAT(
+          COALESCE(updates, ''),
+          CASE WHEN COALESCE(updates, '') != '' THEN '\n' ELSE '' END,
+          ?
+        ),
+        update_dates = CONCAT(
+          COALESCE(update_dates, ''),
+          CASE WHEN COALESCE(update_dates, '') != '' THEN ',' ELSE '' END,
+          ?
+        )
+      `;
+      params.push(updates, now);
+    }
+
+    params.push(id);
+
     const query = `
-      UPDATE sales_management SET
-        client_name = ?,
-        proj_desc = ?,
-        date_received = ?,
-        sales_personnel = ?,
-        sir_mjh = ?,
+      UPDATE sales_management
+      SET
         status = ?,
-        notes =?, 
+        notes = ?,
         date_awarded = ?
+        ${updatesQueryPart}
       WHERE id = ? AND deleted = 0
     `;
 
-    const result = await executeQuery(query, [
-      clientName,
-      projectDesc,
-      dateReceived,
-      salesPersonnel,
-      sirMJH,
-      status,
-      notes,
-      dateAwarded,
-      id,
-    ]);
+    const result = await executeQuery(query, params);
 
     return NextResponse.json({
       success: true,
