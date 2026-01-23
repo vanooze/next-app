@@ -149,6 +149,7 @@ export const Content = () => {
         <div className="flex flex-col w-full py-5 px-4 max-w-[90rem] mx-auto gap-3">
           <div className="flex justify-between">
             <h3 className="text-xl font-semibold">Tasks Designation</h3>
+
             <Link href="/tasks" as={NextLink} color="primary">
               View All
             </Link>

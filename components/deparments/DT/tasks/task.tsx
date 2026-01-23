@@ -10,6 +10,7 @@ import { TableWrapper } from "@/components/deparments/DT/tasks/table/table";
 import { useUserContext } from "../../../layout/UserContext";
 import { dtTask } from "../../../../helpers/db";
 import { AddTask } from "./operation/add-task";
+import { GenerateReport } from "./generateReport";
 import { SearchIcon } from "../../../icons/searchicon";
 import { EyeIcon } from "../../../icons/table/eye-icon";
 import { GenerateReport } from "./generateReport";
