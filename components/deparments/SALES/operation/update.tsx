@@ -52,7 +52,7 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
   const [status, setStatus] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [dateAwarded, setDateAwarded] = useState<CalendarDate | null>(null);
-  const [newUpdate, setNewUpdate] = useState<string>(""); // New update input
+  const [newUpdate, setNewUpdate] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -83,40 +83,42 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
   }, [task]);
 
   const handleUpdateTask = async (onClose: () => void) => {
+    if (!id) return;
+
     const dateReceivedStr = formatDatetoStr(dateReceived);
     const dateAwardedStr = formatDatetoStr(dateAwarded);
     const finalStatus = dateAwarded ? "Awarded" : status;
 
-    // Only send the new update
     const payload = {
       id,
       status: finalStatus,
       notes,
       dateAwarded: dateAwardedStr,
-      updates: newUpdate?.trim() || "", // Send empty string if no input
+      updates: newUpdate?.trim() || "",
     };
 
     try {
+      if (finalStatus === "Awarded" && clientId) {
+        await sendToAcumatica(clientId, projectDesc, dateReceivedStr);
+      }
+
       const res = await fetch("/api/department/SALES/sales_management/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Failed to update task");
-
-      const data = await res.json();
-      console.log("Task updated:", data);
-
-      if (finalStatus === "Awarded" && clientId) {
-        await sendToAcumatica(clientId, projectDesc, dateReceivedStr);
+      if (!res.ok) {
+        throw new Error("Failed to update sales management");
       }
+
+      await res.json();
 
       await mutate("/api/department/SALES/sales_management");
       onClose();
-      return data;
-    } catch (err) {
-      console.error("Error updating task:", err);
+    } catch (err: any) {
+      console.error("Update aborted:", err);
+      alert(err?.message || "Update failed. Sales Management was NOT updated.");
       throw err;
     }
   };
@@ -128,24 +130,28 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
   ) => {
     const username = user?.email;
     const password = user?.acu_password;
-    try {
-      const payload = {
-        username,
-        password,
-        clientId,
-        projectDesc,
-        dateReceived,
-      };
-      const res = await fetch("/api/department/SALES/acumatica", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const result = await res.json();
-      if (!result.success) console.error("Acumatica error:", result.error);
-    } catch (error) {
-      console.error("Error sending to Acumatica:", error);
+
+    const payload = {
+      username,
+      password,
+      clientId,
+      projectDesc,
+      dateReceived,
+    };
+
+    const res = await fetch("/api/department/SALES/acumatica", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok || !result.success) {
+      throw new Error(result.error || "Acumatica sync failed");
     }
+
+    return result;
   };
 
   const handleUpdateTaskWithLoading = async (onClose: () => void) => {

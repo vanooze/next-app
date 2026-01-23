@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardBody, CardFooter, Input, Button } from "@heroui/react";
 import { Projects } from "@/helpers/acumatica";
 import { useUserContext } from "@/components/layout/UserContext";
+import { parseBulletMessage } from "@/helpers/parsedBullet";
 
 interface MessageProps {
   project: Projects | null;
@@ -17,12 +18,12 @@ export const NotesPage = ({ project }: MessageProps) => {
   const [input, setInput] = useState("");
 
   useEffect(() => {
-    if (project) {
+    if (project?.projectId) {
       setProjectId(project.projectId);
     }
   }, [project]);
 
-  const fetchMessage = React.useCallback(async () => {
+  const fetchMessage = useCallback(async () => {
     if (!projectId) return;
     setLoading(true);
     try {
@@ -49,10 +50,7 @@ export const NotesPage = ({ project }: MessageProps) => {
       await fetch("/api/department/PMO/messageBoard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectId,
-          message: input,
-        }),
+        body: JSON.stringify({ projectId, message: input }),
       });
       setInput("");
       fetchMessage();
@@ -69,7 +67,7 @@ export const NotesPage = ({ project }: MessageProps) => {
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-black">
       {userHasAccess && (
-        <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-black sticky top-0 z-10">
+        <div className="sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-black">
           <div className="max-w-2xl mx-auto flex items-center gap-2 p-4">
             <Input
               fullWidth
@@ -120,11 +118,10 @@ export const NotesPage = ({ project }: MessageProps) => {
                 radius="lg"
                 className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
               >
-                <CardBody>
-                  <p className="text-sm text-gray-800 dark:text-gray-200">
-                    {message.message}
-                  </p>
+                <CardBody className="text-gray-800 dark:text-gray-200">
+                  {parseBulletMessage(message.message)}
                 </CardBody>
+
                 <CardFooter className="text-xs text-gray-500 dark:text-gray-400">
                   {new Date(message.date).toLocaleDateString("en-US", {
                     year: "numeric",

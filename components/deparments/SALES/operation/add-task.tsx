@@ -201,6 +201,9 @@ export const AddTask = () => {
                       </SelectItem>
                       <SelectItem key="RONALD">Ronaldo Francisco</SelectItem>
                     </SelectSection>
+                    <SelectSection title="Marketing">
+                      <SelectItem key="EVE">Evelyn Pequiras</SelectItem>
+                    </SelectSection>
                     <SelectSection title="Technical">
                       <SelectItem key="ERWIN">Erwin Del Rosario</SelectItem>
                       <SelectItem key="ENCHONG">Lawrence Ducut</SelectItem>

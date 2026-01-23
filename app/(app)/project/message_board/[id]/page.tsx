@@ -6,30 +6,58 @@ import { Spinner } from "@heroui/react";
 import { NotesPage } from "@/components/deparments/PMO/project/action/addMessage";
 import { Projects } from "@/helpers/acumatica";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error("Failed to fetch project");
+  }
+  return res.json();
+};
 
 export default function ProjectNotesPage() {
-  const { id } = useParams();
+  const params = useParams();
 
-  const { data, error, isLoading } = useSWR<Projects>(
-    id ? `/api/department/PMO/project?id=${id}` : null,
-    fetcher
+  // ✅ normalize id (Next.js can return string | string[])
+  const projectId =
+    typeof params?.id === "string" ? params.id : params?.id?.[0];
+
+  const {
+    data: project,
+    error,
+    isLoading,
+  } = useSWR<Projects>(
+    projectId
+      ? `/api/department/PMO/project?id=${encodeURIComponent(projectId)}`
+      : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+    }
   );
 
+  /* ---------------- LOADING ---------------- */
   if (isLoading) {
     return (
       <div className="w-full flex justify-center items-center h-64">
-        <Spinner label="Loading project message..." />
-      </div>
-    );
-  }
-  if (error || !data) {
-    return (
-      <div className="w-full text-center mt-10 text-red-500">
-        Failed to load project details.
+        <Spinner label="Loading project messages..." />
       </div>
     );
   }
 
-  return <NotesPage project={data} />;
+  /* ---------------- ERROR ---------------- */
+  if (error || !project) {
+    return (
+      <div className="w-full text-center mt-10">
+        <p className="text-red-500 font-medium">
+          Failed to load project details.
+        </p>
+        <p className="text-sm text-gray-500 mt-2">
+          Please refresh the page or contact PMO.
+        </p>
+      </div>
+    );
+  }
+
+  /* ---------------- SUCCESS ---------------- */
+  return <NotesPage project={project} />;
 }

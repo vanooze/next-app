@@ -8,7 +8,7 @@ export async function GET(req) {
     if (!user) {
       return NextResponse.json(
         { error: "Unauthorized access" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -70,7 +70,7 @@ export async function GET(req) {
     console.error("API Error:", error);
     return NextResponse.json(
       { error: "Failed to fetch table" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

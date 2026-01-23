@@ -9,25 +9,22 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  useDisclosure,
-  useDraggable,
   Textarea,
-  Spinner,
 } from "@heroui/react";
 import { mutate } from "swr";
 
 interface UploadQmsFileProps {
   isOpen: boolean;
   onClose: () => void;
+  parentFolderId: number | null;
 }
 
-export const UploadQmsFile = ({ isOpen, onClose }: UploadQmsFileProps) => {
-  const targetRef = useRef(null);
-  const { moveProps } = useDraggable({
-    targetRef,
-    canOverflow: true,
-    isDisabled: !isOpen,
-  });
+export const UploadQmsFile = ({
+  isOpen,
+  onClose,
+  parentFolderId,
+}: UploadQmsFileProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [fileTitle, setFileTitle] = useState("");
   const [fileDescription, setFileDescription] = useState("");
@@ -35,10 +32,8 @@ export const UploadQmsFile = ({ isOpen, onClose }: UploadQmsFileProps) => {
   const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-    }
+    const selectedFile = e.target.files?.[0] || null;
+    setFile(selectedFile);
   };
 
   const handleUpload = async () => {
@@ -48,13 +43,18 @@ export const UploadQmsFile = ({ isOpen, onClose }: UploadQmsFileProps) => {
     }
 
     setLoading(true);
+
     try {
       const formData = new FormData();
       formData.append("fileTitle", fileTitle);
       formData.append("fileDescription", fileDescription);
       formData.append("file", file);
 
-      const res = await fetch("/api/department/PMO/qms", {
+      if (parentFolderId !== null) {
+        formData.append("folderId", String(parentFolderId));
+      }
+
+      const res = await fetch("/api/files", {
         method: "POST",
         body: formData,
       });
@@ -62,11 +62,13 @@ export const UploadQmsFile = ({ isOpen, onClose }: UploadQmsFileProps) => {
       const result = await res.json();
 
       if (result.success) {
-        await mutate("/api/department/PMO/qms");
-        // Reset form
+        await mutate("/api/files");
+
         setFileTitle("");
         setFileDescription("");
         setFile(null);
+        fileInputRef.current && (fileInputRef.current.value = "");
+
         onClose();
         alert("File uploaded successfully!");
       } else {
@@ -81,79 +83,41 @@ export const UploadQmsFile = ({ isOpen, onClose }: UploadQmsFileProps) => {
   };
 
   return (
-    <Modal
-      ref={targetRef}
-      isOpen={isOpen}
-      onOpenChange={onClose}
-      size="xl"
-      placement="top-center"
-    >
+    <Modal isOpen={isOpen} onOpenChange={onClose} size="xl">
       <ModalContent>
-        {(onClose) => (
-          <>
-            <ModalHeader {...moveProps} className="w-full flex flex-col gap-4">
-              Upload QMS File
-            </ModalHeader>
+        <ModalHeader>Upload QMS File</ModalHeader>
 
-            <ModalBody className="flex flex-col gap-4">
-              <Input
-                isRequired
-                label="File Title"
-                variant="bordered"
-                value={fileTitle}
-                onValueChange={setFileTitle}
-                placeholder="Enter file title"
-              />
+        <ModalBody className="flex flex-col gap-4">
+          <Input
+            isRequired
+            label="File Title"
+            value={fileTitle}
+            onValueChange={setFileTitle}
+          />
 
-              <Textarea
-                label="File Description"
-                variant="bordered"
-                value={fileDescription}
-                onValueChange={setFileDescription}
-                placeholder="Enter file description (optional)"
-                minRows={3}
-              />
+          <Textarea
+            label="File Description"
+            value={fileDescription}
+            onValueChange={setFileDescription}
+          />
 
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Select File <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  className="w-full border border-gray-300 rounded-md p-2"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
-                />
-                {file && (
-                  <p className="text-sm text-gray-600 mt-2">
-                    Selected: {file.name}
-                  </p>
-                )}
-              </div>
-            </ModalBody>
+          <input
+            ref={fileInputRef}
+            type="file"
+            onChange={handleFileChange}
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+          />
+        </ModalBody>
 
-            <ModalFooter>
-              <Button
-                color="danger"
-                variant="flat"
-                onClick={onClose}
-                isDisabled={loading}
-              >
-                Cancel
-              </Button>
-              <Button
-                color="primary"
-                onClick={handleUpload}
-                isLoading={loading}
-                isDisabled={loading || !fileTitle.trim() || !file}
-              >
-                {loading ? "Uploading..." : "Upload File"}
-              </Button>
-            </ModalFooter>
-          </>
-        )}
+        <ModalFooter>
+          <Button variant="flat" onPress={onClose} isDisabled={loading}>
+            Cancel
+          </Button>
+          <Button color="primary" isLoading={loading} onPress={handleUpload}>
+            Upload
+          </Button>
+        </ModalFooter>
       </ModalContent>
     </Modal>
   );
 };
-

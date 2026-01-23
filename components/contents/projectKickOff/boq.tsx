@@ -146,10 +146,6 @@ export default function BOQ({ project }: BOQProps) {
           />
 
           <h1 className="text-lg font-semibold">Signed BOQ Attachment</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-300 italic">
-            Upload Excel first for data Extracting, then upload the PDF for
-            documentation and version control
-          </p>
           <div className="border border-dashed rounded max-w-lg">
             <DropZone
               onDrop={handleDrop}

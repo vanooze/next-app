@@ -10,8 +10,7 @@ async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
     const { payload } = await jwtVerify(token, secret);
     return payload;
-  } catch (error) {
-    console.error("Token verification failed:", error);
+  } catch {
     return null;
   }
 }
@@ -26,30 +25,44 @@ export async function middleware(request: NextRequest) {
   );
   const isPublicUploadPage = /^\/contract\/upload\/[^\/]+$/.test(pathname);
 
+  // ✅ Allow public routes immediately
   if (isPublicUploadPage) return NextResponse.next();
-  const response = NextResponse.next();
-  const user = token ? await verifyToken(token) : null;
 
-  if (token && !user) {
-    response.cookies.delete("token");
-    return NextResponse.redirect(new URL("/login", request.url));
+  // ✅ IMPORTANT: Do NOT verify token on auth pages
+  if (isAuthPage) {
+    if (!token) return NextResponse.next();
+
+    const user = await verifyToken(token);
+    if (user) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    // expired token on login → just delete & continue
+    const res = NextResponse.next();
+    res.cookies.delete("token");
+    return res;
   }
 
-  if (isAuthPage && user) {
-    return NextResponse.redirect(new URL("/", request.url));
+  // 🔒 Protected routes
+  if (isProtectedPage) {
+    if (!token) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    const user = await verifyToken(token);
+    if (!user) {
+      const res = NextResponse.redirect(new URL("/login", request.url));
+      res.cookies.delete("token");
+      return res;
+    }
   }
 
-  if (isProtectedPage && !user) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
     "/",
-    "/chat",
     "/login",
     "/register",
     "/tasks",

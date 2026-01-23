@@ -1,20 +1,31 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Spinner,
-} from "@heroui/react";
+import { Button, Card, CardBody, CardHeader, Spinner } from "@heroui/react";
 import { useUserContext } from "@/components/layout/UserContext";
 import { PlusIcon } from "@/components/icons/table/add-icon";
 import { DeleteIcon } from "@/components/icons/table/delete-icon";
+import { CreateQmsFolder } from "./operations/createQmsFolder";
+import { DeleteConfirmModal } from "./operations/deleteQmsFolder";
+import { UpdateQmsFolder } from "./operations/updateQmsFolder";
 import { UploadQmsFile } from "./UploadQmsFile";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { fetcher } from "@/app/lib/fetcher";
-import { mutate } from "swr";
+import { EditIcon } from "@/components/icons/table/edit-icon";
+import {
+  selectHeads,
+  selectSupervisors,
+  SelectExecutive,
+} from "@/helpers/data";
+
+// ----------------- TYPES -----------------
+interface Folder {
+  id: number;
+  name: string;
+  parent_id: number | null;
+  created_by: string;
+  access: string | null;
+}
 
 interface QmsFile {
   id: number;
@@ -22,35 +33,103 @@ interface QmsFile {
   file_description: string | null;
   file_date: string;
   file_name: string;
+  folder_id: number | null;
+  access: string | null;
 }
 
+// ----------------- COMPONENT -----------------
 export const QmsFiles = () => {
   const { user } = useUserContext();
+  const [currentFolderId, setCurrentFolderId] = useState<number | null>(null);
+  const [folderStack, setFolderStack] = useState<Folder[]>([]);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [folderToDelete, setFolderToDelete] = useState<Folder | null>(null);
+  const [folderToEdit, setFolderToEdit] = useState<Folder | null>(null);
+  const allUsers = [...SelectExecutive, ...selectHeads, ...selectSupervisors];
 
   const canUpload = user?.designation?.includes("DOCUMENT CONTROLLER");
+  const canUpdate = user?.designation?.includes("DOCUMENT CONTROLLER");
   const canDelete = user?.designation?.includes("DOCUMENT CONTROLLER");
 
-  const { data, error, isLoading } = useSWR<{ success: boolean; files: QmsFile[] }>(
-    "/api/department/PMO/qms",
-    fetcher
+  const { data, error, isLoading } = useSWR<{
+    folders: Folder[];
+    files: QmsFile[];
+  }>("/api/files", fetcher);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Spinner label="Loading QMS files..." />
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p className="text-red-500">Failed to load QMS files</p>
+      </div>
+    );
+  }
+
+  const { folders = [], files = [] } = data || {};
+
+  const hasAccess = (access: string | null, userId?: string | number) => {
+    if (user?.designation?.includes("DOCUMENT CONTROLLER")) return true;
+    // 🌍 Public folder
+    if (!access) return true;
+
+    // 🔒 Restricted but user not logged in
+    if (!userId) return false;
+
+    try {
+      const allowedUsers: string[] = JSON.parse(access);
+      return allowedUsers.includes(String(userId));
+    } catch {
+      return false;
+    }
+  };
+  // ----------------- FILTER VISIBLE -----------------
+  const visibleFolders = folders.filter((f) => {
+    const correctParent =
+      currentFolderId === null
+        ? f.parent_id === null
+        : f.parent_id === currentFolderId;
+
+    return correctParent && hasAccess(f.access, user?.user_id);
+  });
+
+  const visibleFiles = files.filter(
+    (f) =>
+      f.folder_id === currentFolderId && hasAccess(f.access, user?.user_id),
   );
+  // ----------------- HANDLERS -----------------
+  const enterFolder = (folder: Folder) => {
+    setFolderStack((prev) => [...prev, folder]);
+    setCurrentFolderId(folder.id);
+  };
+
+  const goBack = () => {
+    const updatedStack = [...folderStack];
+    updatedStack.pop();
+    setFolderStack(updatedStack);
+    setCurrentFolderId(updatedStack.at(-1)?.id ?? null);
+  };
 
   const handleDelete = async (fileId: number) => {
-    if (!confirm("Are you sure you want to delete this file?")) {
-      return;
-    }
+    if (!confirm("Are you sure you want to delete this file?")) return;
 
     setDeletingId(fileId);
     try {
-      const res = await fetch(`/api/department/PMO/qms/delete?id=${fileId}`, {
+      const res = await fetch(`/api/files/delete?id=${fileId}`, {
         method: "DELETE",
       });
 
       const result = await res.json();
       if (result.success) {
-        await mutate("/api/department/PMO/qms");
+        await mutate("/api/files");
         alert("File deleted successfully");
       } else {
         alert(result.error || "Failed to delete file");
@@ -73,46 +152,106 @@ export const QmsFiles = () => {
     link.remove();
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Spinner label="Loading QMS files..." />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-red-500">Failed to load QMS files</p>
-      </div>
-    );
-  }
-
-  const files = data?.files || [];
+  // ----------------- BREADCRUMB TITLE -----------------
+  const currentFolderName = folderStack.at(-1)?.name ?? "QMS Files";
 
   return (
     <div className="p-6">
+      {/* ---------- HEADER ---------- */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">QMS Files</h1>
-        {canUpload && (
-          <Button
-            color="primary"
-            endContent={<PlusIcon />}
-            onPress={() => setIsUploadModalOpen(true)}
-          >
-            Upload File
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          {folderStack.length > 0 && (
+            <Button size="sm" variant="flat" onPress={goBack}>
+              ← Back
+            </Button>
+          )}
+          <h1 className="text-2xl font-bold">{currentFolderName}</h1>
+        </div>
+
+        <div className="flex gap-2">
+          {/* Upload file is only enabled inside folders */}
+          {canUpload && currentFolderId !== null && (
+            <Button
+              color="primary"
+              endContent={<PlusIcon />}
+              onPress={() => setIsUploadModalOpen(true)}
+            >
+              Upload File
+            </Button>
+          )}
+
+          {/* New folder is only enabled at top-level (currentFolderId === null) */}
+          {canUpload && (
+            <Button
+              variant="flat"
+              color="secondary"
+              startContent={<PlusIcon />}
+              onPress={() => setIsCreateFolderOpen(true)}
+            >
+              New Folder
+            </Button>
+          )}
+        </div>
       </div>
 
-      {files.length === 0 ? (
-        <div className="flex justify-center items-center h-64">
-          <p className="text-gray-500">No QMS files available</p>
+      {/* ---------- FOLDERS ---------- */}
+      {visibleFolders.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {visibleFolders.map((folder) => (
+            <Card
+              key={folder.id}
+              isPressable
+              onPress={() => enterFolder(folder)}
+              className="hover:shadow-md transition-shadow"
+            >
+              <CardBody>
+                <div className="grid grid-cols-3 gap-4 items-center">
+                  <div className="col-span-2">
+                    <p className="font-semibold">📁 {folder.name}</p>
+                  </div>
+                  <div className="col-start-3 flex justify-end gap-2">
+                    {canUpdate && (
+                      <Button
+                        size="sm"
+                        variant="flat"
+                        isIconOnly
+                        onPress={(e) => {
+                          setFolderToEdit(folder);
+                        }}
+                      >
+                        <EditIcon size={20} fill="#979797" />
+                      </Button>
+                    )}
+                    {canDelete && (
+                      <Button
+                        size="sm"
+                        color="danger"
+                        variant="flat"
+                        isIconOnly
+                        isLoading={deletingId === folder.id}
+                        onPress={(e) => {
+                          setFolderToDelete(folder);
+                        }}
+                      >
+                        <DeleteIcon size={20} fill="#FF0080" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+          ))}
         </div>
+      )}
+
+      {/* ---------- FILES ---------- */}
+      {visibleFiles.length === 0 ? (
+        currentFolderId !== null && (
+          <p className="text-gray-500">No files in this folder</p>
+        )
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {files.map((file) => (
+          {visibleFiles.map((file) => (
             <Card key={file.id} className="hover:shadow-lg transition-shadow">
               <CardHeader className="flex flex-col items-start pb-2">
                 <h3 className="text-lg font-semibold line-clamp-2">
@@ -140,7 +279,9 @@ export const QmsFiles = () => {
                     color="primary"
                     variant="flat"
                     className="flex-1"
-                    onPress={() => handleDownload(file.file_name, file.file_title)}
+                    onPress={() =>
+                      handleDownload(file.file_name, file.file_title)
+                    }
                   >
                     Download
                   </Button>
@@ -163,11 +304,53 @@ export const QmsFiles = () => {
         </div>
       )}
 
+      {/* ---------- MODALS ---------- */}
       <UploadQmsFile
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
+        parentFolderId={currentFolderId}
+      />
+      <CreateQmsFolder
+        isOpen={isCreateFolderOpen}
+        onClose={() => setIsCreateFolderOpen(false)}
+        parentFolderId={currentFolderId} // only top-level
+      />
+
+      <DeleteConfirmModal
+        isOpen={!!folderToDelete}
+        onClose={() => setFolderToDelete(null)}
+        itemName={folderToDelete?.name || ""}
+        itemId={folderToDelete?.id || null}
+        isDeleting={deletingId === folderToDelete?.id}
+        onDelete={async (id: number) => {
+          setDeletingId(id);
+          try {
+            const res = await fetch(`/api/files/folder/delete?id=${id}`, {
+              method: "DELETE",
+            });
+            const result = await res.json();
+            if (result.success) {
+              await mutate("/api/department/PMO/qms");
+              alert("Folder deleted successfully");
+            } else {
+              alert(result.error || "Failed to delete folder");
+            }
+          } catch (err) {
+            console.error("Error deleting folder:", err);
+            alert("Failed to delete folder");
+          } finally {
+            setDeletingId(null);
+            setFolderToDelete(null);
+          }
+        }}
+      />
+
+      <UpdateQmsFolder
+        isOpen={!!folderToEdit}
+        onClose={() => setFolderToEdit(null)}
+        folder={folderToEdit}
+        users={allUsers}
       />
     </div>
   );
 };
-

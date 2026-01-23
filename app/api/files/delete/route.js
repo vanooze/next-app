@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { executeQuery } from "@/app/lib/db";
 import { getUserFromToken } from "@/app/lib/auth";
 
-// DELETE - Soft delete QMS file (set deleted = 1)
 export async function DELETE(req) {
   try {
     const user = await getUserFromToken(req);
