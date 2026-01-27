@@ -13,16 +13,16 @@ import {
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
 import React, { useState, useMemo } from "react";
-import { dtColumns, dtTask } from "../../../../../helpers/db";
+import { ItColumns, ItTasks } from "../../../../../helpers/db";
 import { RenderCell } from "./render-cell";
 import { EditTask } from "../operation/edit-task";
 import { DeleteTask } from "../operation/delete-task";
 import { useUserContext } from "@/components/layout/UserContext";
-import { UploadProfitingModal } from "../operation/upload-file";
 import { GenerateReport } from "../generateReport";
+import { UploadItReporting } from "../operation/upload-file";
 
 interface TableWrapperProps {
-  tasks: dtTask[];
+  tasks: ItTasks[];
   loading: boolean;
   fullScreen: boolean;
   searchValue?: string;
@@ -43,7 +43,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<dtTask | null>(null);
+  const [selectedTask, setSelectedTask] = useState<ItTasks | null>(null);
   const [showAllStatuses, setShowAllStatuses] = useState(false);
   const [filterStatuses, setFilterStatuses] = useState<string[]>([]);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
@@ -55,15 +55,15 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
   const visibleColumns = useMemo(() => {
     return fullScreen
-      ? dtColumns.filter((col) => col.uid !== "actions")
-      : dtColumns;
+      ? ItColumns.filter((col) => col.uid !== "actions")
+      : ItColumns;
   }, [fullScreen]);
 
   const handleSortChange = (descriptor: SortDescriptor) => {
     setSortDescriptor(descriptor);
   };
 
-  const handleOpenUpload = (task: dtTask) => {
+  const handleOpenUpload = (task: ItTasks) => {
     setSelectedTask(task);
     setIsUploadOpen(true);
   };
@@ -73,7 +73,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     setSelectedTask(null);
   };
 
-  const handleOpenEdit = (task: dtTask) => {
+  const handleOpenEdit = (task: ItTasks) => {
     setSelectedTask(task);
     setIsEditOpen(true);
   };
@@ -83,7 +83,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     setSelectedTask(null);
   };
 
-  const handleOpenDelete = (task: dtTask) => {
+  const handleOpenDelete = (task: ItTasks) => {
     setSelectedTask(task);
     setIsDeleteOpen(true);
   };
@@ -95,99 +95,87 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
   const statusPriority: Record<string, number> = useMemo(
     () => ({
-      Declined: 0,
-      "For Proposal": 1,
-      Priority: 2,
-      OnHold: 3,
-      Overdue: 4,
-      Pending: 5,
-      Finished: 6,
+      Priority: 1,
+      OnHold: 2,
+      Overdue: 3,
+      Pending: 4,
+      Finished: 5,
     }),
     [],
   );
 
-  // ✅ Filter tasks by user and status (skip filtering when search is active)
   const filteredTasks = useMemo(() => {
     if (!user?.name) return [];
-
-    const seeAllUsers = [
-      "HAROLD DAVID",
-      "LANI KIMBER CAMPOS",
-      "MARIA LEA BERMUDEZ",
-      "MARVIN JIMENEZ",
-      "DESIREE SALIVIO",
-      "Jan Ronnell V. Camero",
-      "Marcial A. Gigante III",
-      "Jilian Mark H. Ardinel",
-      "John Eden Ross V. Cola",
-      "BILLY JOEL TOPACIO",
-      "MARVINNE ESTACIO",
-      "ERWIN DEL ROSARIO",
-    ];
-
-    const nameMappings: Record<string, string> = {
-      "Jhoannah Rose-Mil L. Sicat ": "JHOAN",
-      "Genevel Garcia": "GEN",
-      "KENNETH BAUTISTA": "KENNETH",
-      "Ida Ma. Catherine C. Madamba": "IDA",
-      "Cellano Cyril Nicolo D. Javan": "CYRIL",
-      "Evelyn Pequiras": "EVE",
-      "Ronaldo J. Francisco": "RONALD",
+    const seeAllUsers = ["HAROLD DAVID"];
+    const userPersonnelFilter: Record<string, string[]> = {
+      "RAMON CHRISTOPHER CO": ["ivan", "hassan", "rhon", "charles joseph"],
+      "ERWIN DEL ROSARIO": ["aaron", "ashley", "eliezer"],
+    };
+    const selfPersonnelMap: Record<string, string> = {
+      "Ivan Bradley Balo": "ivan",
+      "Hassan E. Ayonan": "hassan",
+      "RHON PACLEB": "rhon",
+      "Charles Joseph R. Cabrera": "charles joseph",
+      "Aaron Vincent A. Opinaldo": "aaron",
+      "ASHLY ALVARO": "ashley",
+      "ELIEZER MANUEL HERRERA": "eliezer",
     };
 
-    const mappedName = nameMappings[user.name] || user.name;
+    const userNameLower = user.name.toLowerCase();
+    const userNameUpper = user.name.toUpperCase();
+
     const canSeeAll = seeAllUsers.some(
-      (u) => u.toLowerCase() === user.name.toLowerCase(),
+      (u) => u.toLowerCase() === userNameLower,
     );
 
-    let result = canSeeAll
-      ? tasks
-      : tasks.filter((t) =>
-          t.salesPersonnel?.toLowerCase().includes(mappedName.toLowerCase()),
-        );
+    let result = tasks;
 
+    // 🔐 Apply visibility rules
+    if (!canSeeAll) {
+      const allowedPersonnel = userPersonnelFilter[user.name];
+
+      if (allowedPersonnel) {
+        // Manager view
+        result = tasks.filter((t) =>
+          allowedPersonnel.some((p) => t.personnel?.toLowerCase().includes(p)),
+        );
+      } else {
+        // Individual contributor view
+        const selfKey = selfPersonnelMap[userNameUpper] || userNameLower;
+
+        result = tasks.filter((t) =>
+          t.personnel?.toLowerCase().includes(selfKey),
+        );
+      }
+    }
+
+    // 📅 Date filter
     if (startDate && endDate) {
       const start = new Date(startDate).getTime();
       const end = new Date(endDate).getTime();
       result = result.filter((t) => {
-        const taskDate = t.dateReceived
-          ? new Date(t.dateReceived).getTime()
-          : 0;
+        const taskDate = t.dateStart ? new Date(t.dateStart).getTime() : 0;
         return taskDate >= start && taskDate <= end;
       });
     }
 
-    // ✅ Search filter
+    // 🔍 Search filter
     if (searchValue?.trim()) {
       const query = searchValue.toLowerCase();
       result = result.filter(
         (t) =>
-          t.clientName?.toLowerCase().includes(query) ||
-          t.salesPersonnel?.toLowerCase().includes(query) ||
-          t.structuralBoq?.toLowerCase().includes(query) ||
-          t.systemDiagram?.toLowerCase().includes(query),
+          t.project?.toLowerCase().includes(query) ||
+          t.projectDesc?.toLowerCase().includes(query),
       );
     }
 
-    // ✅ Status filter
+    // 🚦 Status filter
     if (!showAllStatuses && filterStatuses.length > 0) {
       result = result.filter((t) => filterStatuses.includes(t.status));
     } else if (!showAllStatuses && filterStatuses.length === 0) {
       result = result.filter((t) =>
         ["Pending", "Overdue", "Declined"].includes(t.status),
       );
-    }
-
-    // ✅ Date filter
-    if (startDate && endDate) {
-      const start = new Date(startDate).getTime();
-      const end = new Date(endDate).getTime();
-      result = result.filter((t) => {
-        const taskDate = t.dateReceived
-          ? new Date(t.dateReceived).getTime()
-          : 0;
-        return taskDate >= start && taskDate <= end;
-      });
     }
 
     return result;
@@ -201,7 +189,10 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     endDate,
   ]);
 
-  const canGenerate = user?.department === "DESIGN";
+  const canGenerate =
+    user?.designation.includes("PROGRAMMER") ||
+    user?.designation.includes("MMC") ||
+    user?.designation === "TECHNICAL";
 
   const sortedTasks = useMemo(() => {
     if (!filteredTasks.length) return [];
@@ -210,8 +201,8 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       const bPriority = statusPriority[b.status] ?? 999;
       if (aPriority !== bPriority) return aPriority - bPriority;
 
-      const aDate = a.sirMJH ? new Date(a.sirMJH).getTime() : 0;
-      const bDate = b.sirMJH ? new Date(b.sirMJH).getTime() : 0;
+      const aDate = a.dateStart ? new Date(a.dateStart).getTime() : 0;
+      const bDate = b.dateEnd ? new Date(b.dateEnd).getTime() : 0;
       return bDate - aDate;
     });
   }, [filteredTasks, statusPriority]);
@@ -248,8 +239,6 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           >
             <Checkbox value="Priority">Priority</Checkbox>
             <Checkbox value="OnHold">On Hold</Checkbox>
-            <Checkbox value="Declined">Declined</Checkbox>
-            <Checkbox value="For Proposal">For Proposal</Checkbox>
             <Checkbox value="Finished">Finished</Checkbox>
           </CheckboxGroup>
 
@@ -267,7 +256,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         </div>
 
         {/* Right side: Generate Report button */}
-        <div>{canGenerate && <GenerateReport />}</div>
+        {/* <div>{canGenerate && <GenerateReport />}</div> */}
       </div>
 
       {/* ✅ Table */}
@@ -322,8 +311,8 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
                 {visibleColumns.map((col) => (
                   <TableCell key={col.uid}>
                     <RenderCell
-                      dtTasks={item}
-                      columnKey={col.uid as keyof dtTask | "actions"}
+                      ItTasks={item}
+                      columnKey={col.uid as keyof ItTasks | "actions"}
                       handleUploadTask={handleOpenUpload}
                       handleEditTask={handleOpenEdit}
                       handleDeleteTask={handleOpenDelete}
@@ -338,7 +327,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
       {/* ✅ Operation Modals */}
 
-      <UploadProfitingModal
+      <UploadItReporting
         isOpen={isUploadOpen}
         onClose={handleCloseUpload}
         taskId={selectedTask?.id ?? 0}

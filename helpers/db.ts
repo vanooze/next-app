@@ -42,6 +42,29 @@ export interface BoqItem {
   remarks: string | null;
 }
 
+// ------------------------- IT MONITORING -------------------------
+export interface ItTasks {
+  id: number;
+  project: string;
+  projectDesc: string;
+  tasks: string;
+  personnel: string;
+  dateStart: string | null;
+  dateEnd: string | null;
+  attachmentName: string | null;
+  status: string;
+}
+
+export const ItColumns = [
+  { name: "Status", uid: "status" },
+  { name: "Project", uid: "project" },
+  { name: "Project Description", uid: "projectDesc" },
+  { name: "Tasks", uid: "tasks" },
+  { name: "Personnel", uid: "personnel" },
+  { name: "Date Start", uid: "dateStart" },
+  { name: "Date End", uid: "dateEnd" },
+  { name: "Actions", uid: "actions" },
+];
 // ------------------------- PROJECT MONITORING -------------------------
 
 export interface ProjectMonitoring {
@@ -87,7 +110,7 @@ export const SalesManagementColumns = [
   { name: "Status", uid: "status" },
   { name: "Client Name", uid: "clientName" },
   { name: "Project Description", uid: "projectDesc" },
-  { name: "Date Received", uid: "dateReceived" },
+  { name: "Date Filed", uid: "dateReceived" },
   { name: "Sir MJ/Harold", uid: "sirMJH" },
   { name: "Sales Personnel", uid: "salesPersonnel" },
   { name: "Updates", uid: "updates" },

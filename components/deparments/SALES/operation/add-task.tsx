@@ -199,6 +199,7 @@ export const AddTask = () => {
                       <SelectItem key="CYRIL">
                         Cellano Cyril D. Javan
                       </SelectItem>
+                      <SelectItem key="KISHA">Francine Kisha Guatlo</SelectItem>
                       <SelectItem key="RONALD">Ronaldo Francisco</SelectItem>
                     </SelectSection>
                     <SelectSection title="Marketing">
@@ -238,7 +239,7 @@ export const AddTask = () => {
                   />
                 )}
                 <DatePicker
-                  label="Date Received"
+                  label="Date Filed"
                   variant="bordered"
                   value={dateReceived}
                   onChange={setDateReceived}

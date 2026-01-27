@@ -6,15 +6,14 @@ import useSWR from "swr";
 import { fetcher } from "@/app/lib/fetcher";
 import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
 import { UsersIcon } from "@/components/icons/breadcrumb/users-icon";
-import { TableWrapper } from "@/components/deparments/DT/tasks/table/table";
+import { TableWrapper } from "@/components/deparments/IT/tasks/table/table";
 import { useUserContext } from "../../../layout/UserContext";
-import { dtTask } from "../../../../helpers/db";
-import { AddTask } from "./operation/add-task";
-import { GenerateReport } from "./generateReport";
+import { ItTasks } from "../../../../helpers/db";
 import { SearchIcon } from "../../../icons/searchicon";
 import { EyeIcon } from "../../../icons/table/eye-icon";
+import { AddTask } from "./operation/add-task";
 
-export const Tasks = () => {
+export const ITTasks = () => {
   const { user } = useUserContext();
   const [filterValue, setFilterValue] = useState("");
   const [debouncedFilterValue, setDebouncedFilterValue] = useState(filterValue);
@@ -24,8 +23,8 @@ export const Tasks = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const { data: tasks = [], isLoading } = useSWR<dtTask[]>(
-    "/api/department/ITDT/DT/tasks",
+  const { data: tasks = [], isLoading } = useSWR<ItTasks[]>(
+    "/api/department/ITDT/IT/tasks",
     fetcher,
     {
       refreshInterval: 120000,
@@ -48,7 +47,10 @@ export const Tasks = () => {
     return () => document.removeEventListener("keydown", handleKey);
   }, []);
 
-  const canGenerate = user?.department.includes("DESIGN");
+  const canGenerate =
+    user?.designation.includes("PROGRAMMER") ||
+    user?.designation.includes("MMC") ||
+    user?.designation === "TECHNICAL";
 
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
@@ -80,7 +82,7 @@ export const Tasks = () => {
             isClearable
             startContent={<SearchIcon />}
             classNames={{ input: "w-full", mainWrapper: "w-full" }}
-            placeholder="Search Client/Sales/Design Name"
+            placeholder="Search Project/Personnel"
             value={filterValue}
             onValueChange={setFilterValue}
           />
@@ -110,8 +112,8 @@ export const Tasks = () => {
         </div>
 
         <div className="flex flex-row gap-3.5 flex-wrap">
-          {/*<AddTask />*/}
-          <GenerateReport />
+          <AddTask />
+          {/* <GenerateReport /> */}
         </div>
       </div>
 

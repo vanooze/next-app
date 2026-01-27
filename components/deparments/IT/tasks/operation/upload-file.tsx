@@ -14,18 +14,18 @@ import {
 } from "@heroui/react";
 import { mutate } from "swr";
 
-interface UploadProfitingModalProps {
+interface UploadItReportingProps {
   isOpen: boolean;
   onClose: () => void;
   taskId: number;
-  folder?: string; // optional folder name, default "profitting"
+  folder?: string; // optional folder name, default "IT Reporting"
 }
 
-export const UploadProfitingModal: React.FC<UploadProfitingModalProps> = ({
+export const UploadItReporting: React.FC<UploadItReportingProps> = ({
   isOpen,
   onClose,
   taskId,
-  folder = "profitting",
+  folder = "IT Reporting",
 }) => {
   const targetRef = useRef<HTMLDivElement | null>(null);
   const { moveProps } = useDraggable({
@@ -76,7 +76,7 @@ export const UploadProfitingModal: React.FC<UploadProfitingModalProps> = ({
       formData.append("taskId", String(taskId));
       files.forEach((f) => formData.append("files", f));
 
-      const res = await fetch("/api/department/ITDT/DT/tasks/upload", {
+      const res = await fetch("/api/department/ITDT/IT/tasks/upload", {
         method: "POST",
         body: formData,
       });
@@ -88,7 +88,7 @@ export const UploadProfitingModal: React.FC<UploadProfitingModalProps> = ({
       }
 
       // Refresh task files
-      await mutate(`/api/department/ITDT/DT/tasks/files?taskId=${taskId}`);
+      await mutate(`/api/department/ITDT/IT/tasks/files?taskId=${taskId}`);
 
       // Clear selected files
       setFiles([]);

@@ -105,6 +105,7 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
       "DESIREE SALIVIO",
       "RAMIELYN MALAYA",
       "Cellano Cyril Nicolo D. Javan",
+      "Ronaldo J. Francisco",
     ];
 
     const nameMappings: Record<string, string> = {

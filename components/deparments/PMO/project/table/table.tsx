@@ -90,7 +90,6 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         user.department?.includes("TMIG") ||
         user.department?.includes("DESIGN") ||
         user.department?.includes("PMO") ||
-        user?.name === "Kaye Kimberly L. Manuel" ||
         user?.name === "DESIREE SALIVIO" ||
         user.restriction === "9";
 
@@ -106,8 +105,8 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         Object.values(t).some(
           (val) =>
             typeof val === "string" &&
-            val.toLowerCase().includes(searchValue.toLowerCase())
-        )
+            val.toLowerCase().includes(searchValue.toLowerCase()),
+        ),
       );
     }
 
@@ -135,15 +134,16 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     () => ({
       "In Planning": 0,
       Active: 1,
-      Completed: 2,
-      "On Hold": 3,
-      "Pending Approval": 4,
-      "Pending Upgrade": 5,
-      "Is Empty": 6,
-      Canceled: 7,
-      Suspended: 8,
+      "For Payment": 2,
+      Completed: 3,
+      "On Hold": 4,
+      "Pending Approval": 5,
+      "Pending Upgrade": 6,
+      "Is Empty": 7,
+      Canceled: 8,
+      Suspended: 9,
     }),
-    []
+    [],
   );
 
   const sortedTasks = useMemo(() => {
@@ -209,6 +209,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
           }}
         >
           <Checkbox value="Active">Active</Checkbox>
+          <Checkbox value="For Payment">For Payment</Checkbox>
           <Checkbox value="Completed">Completed</Checkbox>
         </CheckboxGroup>
 

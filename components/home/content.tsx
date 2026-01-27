@@ -15,20 +15,26 @@ import { useDesignTasks } from "../hooks/useDesignTasks";
 import { TableWrapper as DesignTable } from "../deparments/DT/tasks/table/table";
 import { PMOTableWrapper } from "../deparments/PMO/tasks/table/table";
 import { SalesTableWrapper } from "../deparments/SALES/table/table";
+import { useITTasks } from "../hooks/useITTasks";
 
 import { PMOTasks, dtTask, SalesManagement } from "@/helpers/db";
 
 const ColumnChart = dynamic(
   () => import("../charts/column").then((mod) => mod.Column),
-  { ssr: false }
+  { ssr: false },
 );
 const PMOColumnChart = dynamic(
   () => import("../charts/pmocolumn").then((mod) => mod.PMOColumn),
-  { ssr: false }
+  { ssr: false },
 );
 const SalesColumnChart = dynamic(
   () => import("../charts/salescolumn").then((mod) => mod.SalesColumn),
-  { ssr: false }
+  { ssr: false },
+);
+
+const ITColumnChart = dynamic(
+  () => import("../charts/itcolumn").then((mod) => mod.ITColumn),
+  { ssr: false },
 );
 
 export const Content = () => {
@@ -39,6 +45,7 @@ export const Content = () => {
   const { tasks: designTasks, loading: designLoading } = useDesignTasks();
   const { tasks: pmoTasks, loading: pmoLoading } = usePMOTasks();
   const { tasks: salesTasks, loading: salesLoading } = useSalesManagement();
+  const { tasks: ITTasks, loading: ITLoading } = useITTasks();
 
   const chartRef = useRef<HTMLDivElement>(null);
   const [chartHeight, setChartHeight] = useState<number>(0);
@@ -58,8 +65,7 @@ export const Content = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Stats helper
-  const getStats = (tasks: any[], type: "PMO" | "SALES" | "DESIGN") => {
+  const getStats = (tasks: any[], type: "PMO" | "SALES" | "DESIGN" | "IT") => {
     const onPendingTasks = tasks.filter((task) => {
       if (type === "SALES") return task.status === "On Going";
       return task.status === "Pending";
@@ -96,9 +102,9 @@ export const Content = () => {
   };
 
   const renderDepartment = (
-    type: "PMO" | "SALES" | "DESIGN",
+    type: "PMO" | "SALES" | "DESIGN" | "IT",
     tasks: any[],
-    loading: boolean
+    loading: boolean,
   ) => {
     const { onPendingTasks, onRushTasks, overdueTasks, finishedTasks } =
       getStats(tasks, type);
@@ -106,6 +112,7 @@ export const Content = () => {
     const renderChart = () => {
       if (type === "PMO") return <PMOColumnChart tasks={tasks} />;
       if (type === "SALES") return <SalesColumnChart tasks={tasks} />;
+      if (type === "IT") return <ITColumnChart tasks={tasks} />;
       return <ColumnChart tasks={tasks} />;
     };
 
@@ -174,13 +181,14 @@ export const Content = () => {
           <Tab key="DESIGN" title="DESIGN">
             {renderDepartment("DESIGN", designTasks, designLoading)}
           </Tab>
-
           <Tab key="PMO" title="PMO">
             {renderDepartment("PMO", pmoTasks, pmoLoading)}
           </Tab>
-
           <Tab key="SALES" title="SALES">
             {renderDepartment("SALES", salesTasks, salesLoading)}
+          </Tab>
+          <Tab key="IT" title="IT">
+            {renderDepartment("IT", ITTasks, ITLoading)}
           </Tab>
         </Tabs>
       </div>
@@ -201,6 +209,14 @@ export const Content = () => {
 
   if (department?.includes("DESIGN"))
     return renderDepartment("DESIGN", designTasks, designLoading);
+
+  if (
+    department?.includes("PROGRAMMER") ||
+    department?.includes("MMC") ||
+    department === "TECHNICAL"
+  ) {
+    return renderDepartment("IT", ITTasks, ITLoading);
+  }
 
   return (
     <div className="flex flex-col items-center justify-center h-full text-center p-6">

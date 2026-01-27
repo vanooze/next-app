@@ -33,7 +33,7 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
       user.designation?.includes("DESIGN SUPERVISOR") ||
       user.designation?.includes("TECHNICAL ADMIN CONSULTANT") ||
       user.designation?.includes("TECHNICAL MANAGER") ||
-      user?.name === "Kaye Kimberly L. Manuel" ||
+      user?.designation?.includes("PMO") ||
       user?.name === "DESIREE SALIVIO" ||
       user.restriction === "9";
 
@@ -44,8 +44,12 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
     return isManager || accessList.includes(user.name);
   })();
 
+  const canToggleStatus =
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
+    user?.designation?.includes("PMO");
+
   const userDocumentController = user?.designation?.includes(
-    "DOCUMENT CONTROLLER"
+    "DOCUMENT CONTROLLER",
   );
 
   // ✅ Centralized color map for statuses
@@ -55,6 +59,7 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
   > = {
     Completed: "success",
     Active: "secondary",
+    "For Payment": "primary",
     "In Planning": "warning",
     "On Hold": "default",
     Cancelled: "danger",
@@ -65,18 +70,52 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
     case "projectId":
       return <span>{displayValue(cellValue)}</span>;
 
-    case "status":
+    case "status": {
+      const isToggleable =
+        canToggleStatus &&
+        (cellValue === "Active" || cellValue === "For Payment");
+
+      const [localStatus, setLocalStatus] = React.useState(cellValue as string);
+
+      const nextStatus = localStatus === "Active" ? "For Payment" : "Active";
+
+      const handleToggleStatus = async () => {
+        if (!isToggleable) return;
+        setLocalStatus(nextStatus);
+
+        try {
+          const res = await fetch("/api/department/PMO/project/update-status", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              projectId: Tasks.projectId,
+              status: nextStatus,
+            }),
+          });
+
+          if (!res.ok) {
+            throw new Error("Failed to update");
+          }
+        } catch (err) {
+          console.error("Failed to toggle status", err);
+          setLocalStatus(cellValue as string);
+        }
+      };
+
       return (
         <Chip
           size="sm"
           variant="flat"
-          color={statusColorMap[cellValue as string] || "default"}
-          className="capitalize text-xs font-medium"
+          color={statusColorMap[localStatus] || "default"}
+          className={`capitalize text-xs font-medium ${
+            isToggleable ? "cursor-pointer hover:opacity-80" : ""
+          }`}
+          onClick={handleToggleStatus}
         >
-          {cellValue || "Unknown"}
+          {localStatus}
         </Chip>
       );
-
+    }
     case "customerName":
       return <span>{displayValue(cellValue)}</span>;
 
