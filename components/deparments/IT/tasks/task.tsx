@@ -6,7 +6,7 @@ import useSWR from "swr";
 import { fetcher } from "@/app/lib/fetcher";
 import { HouseIcon } from "@/components/icons/breadcrumb/house-icon";
 import { UsersIcon } from "@/components/icons/breadcrumb/users-icon";
-import { TableWrapper } from "@/components/deparments/IT/tasks/table/table";
+import { ITTableWrapper } from "@/components/deparments/IT/tasks/table/table";
 import { useUserContext } from "../../../layout/UserContext";
 import { ItTasks } from "../../../../helpers/db";
 import { SearchIcon } from "../../../icons/searchicon";
@@ -112,7 +112,7 @@ export const ITTasks = () => {
         </div>
 
         <div className="flex flex-row gap-3.5 flex-wrap">
-          <AddTask />
+          {/* <AddTask /> */}
           {/* <GenerateReport /> */}
         </div>
       </div>
@@ -125,7 +125,7 @@ export const ITTasks = () => {
             : "max-w-[95rem] mx-auto w-full"
         } transition-all duration-300`}
       >
-        <TableWrapper
+        <ITTableWrapper
           tasks={tasks}
           loading={isLoading}
           fullScreen={isFullScreen}

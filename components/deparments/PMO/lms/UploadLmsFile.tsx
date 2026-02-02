@@ -13,17 +13,17 @@ import {
 } from "@heroui/react";
 import { mutate } from "swr";
 
-interface UploadQmsFileProps {
+interface UploadLmsFileProps {
   isOpen: boolean;
   onClose: () => void;
   parentFolderId: number | null;
 }
 
-export const UploadQmsFile = ({
+export const UploadLmsFile = ({
   isOpen,
   onClose,
   parentFolderId,
-}: UploadQmsFileProps) => {
+}: UploadLmsFileProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [fileTitle, setFileTitle] = useState("");
@@ -54,7 +54,7 @@ export const UploadQmsFile = ({
         formData.append("folderId", String(parentFolderId));
       }
 
-      const res = await fetch("/api/files/qms", {
+      const res = await fetch("/api/files/lms", {
         method: "POST",
         body: formData,
       });
@@ -62,7 +62,7 @@ export const UploadQmsFile = ({
       const result = await res.json();
 
       if (result.success) {
-        await mutate("/api/files/qms");
+        await mutate("/api/files/lms");
 
         setFileTitle("");
         setFileDescription("");

@@ -35,7 +35,7 @@ export async function GET(req) {
         if (Array.isArray(attachments)) {
           files = attachments.map((name) => ({
             name,
-            path: `/uploads/IT Reporting/${encodeURIComponent(name)}`,
+            path: `/uploads/it report/${encodeURIComponent(name)}`,
           }));
         }
       } catch (err) {

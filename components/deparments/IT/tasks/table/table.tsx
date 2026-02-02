@@ -30,7 +30,7 @@ interface TableWrapperProps {
   endDate?: string;
 }
 
-export const TableWrapper: React.FC<TableWrapperProps> = ({
+export const ITTableWrapper: React.FC<TableWrapperProps> = ({
   tasks,
   loading,
   fullScreen,
@@ -106,17 +106,25 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
   const filteredTasks = useMemo(() => {
     if (!user?.name) return [];
-    const seeAllUsers = ["HAROLD DAVID"];
-    const userPersonnelFilter: Record<string, string[]> = {
-      "RAMON CHRISTOPHER CO": ["ivan", "hassan", "rhon", "charles joseph"],
-      "ERWIN DEL ROSARIO": ["aaron", "ashley", "eliezer"],
-    };
+
+    const seeAllUsers = [
+      "HAROLD DAVID",
+      "RAMON CHRISTOPHER CO",
+      "ERWIN DEL ROSARIO",
+    ];
+    /*
+  const userPersonnelFilter: Record<string, string[]> = {
+    "RAMON CHRISTOPHER CO": ["ivan", "hassan", "rhon", "charles joseph"],
+    "ERWIN DEL ROSARIO": ["aaron", "ashley", "eliezer"],
+  };
+  */
+
     const selfPersonnelMap: Record<string, string> = {
-      "Ivan Bradley Balo": "ivan",
-      "Hassan E. Ayonan": "hassan",
+      "IVAN BRADLEY BALO": "ivan",
+      "HASSAN E. AYONAN": "hassan",
       "RHON PACLEB": "rhon",
-      "Charles Joseph R. Cabrera": "charles joseph",
-      "Aaron Vincent A. Opinaldo": "aaron",
+      "CHARLES JOSEPH R. CABRERA": "charles joseph",
+      "AARON VINCENT A. OPINALDO": "aaron",
       "ASHLY ALVARO": "ashley",
       "ELIEZER MANUEL HERRERA": "eliezer",
     };
@@ -132,29 +140,39 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
     // 🔐 Apply visibility rules
     if (!canSeeAll) {
-      const allowedPersonnel = userPersonnelFilter[user.name];
+      /*
+    const allowedPersonnel = userPersonnelFilter[user.name];
 
-      if (allowedPersonnel) {
-        // Manager view
-        result = tasks.filter((t) =>
-          allowedPersonnel.some((p) => t.personnel?.toLowerCase().includes(p)),
-        );
-      } else {
-        // Individual contributor view
-        const selfKey = selfPersonnelMap[userNameUpper] || userNameLower;
+    if (allowedPersonnel) {
+      result = tasks.filter((t) =>
+        allowedPersonnel.some((p) =>
+          t.personnel?.toLowerCase().includes(p),
+        ),
+      );
+    } else {
+      const selfKey = selfPersonnelMap[userNameUpper] || userNameLower;
+      result = tasks.filter((t) =>
+        t.personnel?.toLowerCase().includes(selfKey),
+      );
+    }
+    */
+      // 👤 Default: user only sees their own tasks
+      const selfKey = selfPersonnelMap[userNameUpper] || userNameLower;
 
-        result = tasks.filter((t) =>
-          t.personnel?.toLowerCase().includes(selfKey),
-        );
-      }
+      result = tasks.filter((t) =>
+        t.personnel?.toLowerCase().includes(selfKey),
+      );
     }
 
     // 📅 Date filter
     if (startDate && endDate) {
       const start = new Date(startDate).getTime();
       const end = new Date(endDate).getTime();
+
       result = result.filter((t) => {
-        const taskDate = t.dateStart ? new Date(t.dateStart).getTime() : 0;
+        const taskDate = t.dateReceived
+          ? new Date(t.dateReceived).getTime()
+          : 0;
         return taskDate >= start && taskDate <= end;
       });
     }
@@ -164,7 +182,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       const query = searchValue.toLowerCase();
       result = result.filter(
         (t) =>
-          t.project?.toLowerCase().includes(query) ||
+          t.clientName?.toLowerCase().includes(query) ||
           t.projectDesc?.toLowerCase().includes(query),
       );
     }
@@ -201,8 +219,8 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       const bPriority = statusPriority[b.status] ?? 999;
       if (aPriority !== bPriority) return aPriority - bPriority;
 
-      const aDate = a.dateStart ? new Date(a.dateStart).getTime() : 0;
-      const bDate = b.dateEnd ? new Date(b.dateEnd).getTime() : 0;
+      const aDate = a.dateReceived ? new Date(a.dateReceived).getTime() : 0;
+      const bDate = b.dateReceived ? new Date(b.dateReceived).getTime() : 0;
       return bDate - aDate;
     });
   }, [filteredTasks, statusPriority]);

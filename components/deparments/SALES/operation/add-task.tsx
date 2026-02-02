@@ -42,6 +42,7 @@ export const AddTask = () => {
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [isCustom, setIsCustom] = useState(false);
+  const [requestDepartment, setRequestDepartment] = useState("");
 
   const username = user?.email;
   const password = user?.acu_password;
@@ -86,9 +87,30 @@ export const AddTask = () => {
     setFiles(validFiles);
   };
 
+  const getSecondEndpoint = (department: string) => {
+    if (department === "DT") {
+      return "/api/department/ITDT/DT/tasks/create";
+    }
+
+    if (
+      department === "PROG" ||
+      department === "MMC" ||
+      department === "TECHNICAL"
+    ) {
+      return "/api/department/ITDT/IT/tasks/create";
+    }
+
+    return null;
+  };
+
   const handleAddTask = async (onClose: () => void) => {
     setLoading(true);
     try {
+      if (!requestDepartment) {
+        alert("Request Department is required");
+        return;
+      }
+
       const dateReceivedStr = formatDatetoStr(dateReceived);
       const name = user?.name || "Unknown User";
 
@@ -96,32 +118,60 @@ export const AddTask = () => {
       formData.append("clientName", clientName);
       formData.append("projectDesc", projectDesc);
       formData.append("salesPersonnel", salesPersonnel);
-      if (dateReceived) {
-        formData.append("dateReceived", dateReceivedStr || "null");
-      }
+      formData.append("dateReceived", dateReceivedStr || "null");
+      formData.append("requestDepartment", requestDepartment);
       formData.append("status", status);
       formData.append("username", username || "");
       formData.append("password", password || "");
       formData.append("name", name);
 
-      // ✅ Append multiple files
       files.forEach((file) => {
         formData.append("files", file);
       });
 
-      const res = await fetch("/api/department/ITDT/DT/tasks/create", {
-        method: "POST",
-        body: formData,
-      });
+      // 1️⃣ Insert into sales_management first
+      const salesRes = await fetch(
+        "/api/department/SALES/sales_management/create",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
 
-      if (!res.ok) throw new Error("Failed to create task");
+      if (!salesRes.ok)
+        throw new Error("Failed to create task in sales management");
 
-      await mutate("/api/department/ITDT/DT/tasks");
+      const { salesId } = await salesRes.json(); // salesId is the parent ID
+
+      // 2️⃣ Dynamically map request department to its API
+      const departmentMap: Record<string, string> = {
+        DT: "/api/department/ITDT/DT/tasks/create",
+        PROG: "/api/department/ITDT/IT/tasks/create",
+        MMC: "/api/department/ITDT/IT/tasks/create",
+        TECHNICAL: "/api/department/ITDT/IT/tasks/create",
+      };
+
+      const secondEndpoint = departmentMap[requestDepartment];
+
+      if (secondEndpoint) {
+        formData.append("salesId", salesId.toString()); // send parent FK to department
+
+        const deptRes = await fetch(secondEndpoint, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!deptRes.ok)
+          throw new Error("Failed to send task to request department");
+      }
+
+      await mutate("/api/department/SALES/sales_management");
 
       // Reset form
       setClientName("");
       setProjectDesc("");
       setSalesPersonnel("");
+      setRequestDepartment("");
       setDateReceived(null);
       setFiles([]);
       onClose();
@@ -245,6 +295,20 @@ export const AddTask = () => {
                   onChange={setDateReceived}
                   isRequired
                 />
+                <Select
+                  isRequired
+                  label="Request Department"
+                  variant="bordered"
+                  selectedKeys={[requestDepartment]}
+                  onSelectionChange={(keys) =>
+                    setRequestDepartment(Array.from(keys)[0] as string)
+                  }
+                >
+                  <SelectItem key="DT">Design Team</SelectItem>
+                  <SelectItem key="PROG">Programmer</SelectItem>
+                  <SelectItem key="MMC">MMC</SelectItem>
+                  <SelectItem key="TECHNICAL">IT Technical</SelectItem>
+                </Select>
                 <Input
                   isReadOnly
                   label="Status"

@@ -8,7 +8,7 @@ export async function GET(req) {
     if (!user || !user.department) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -18,35 +18,31 @@ export async function GET(req) {
     if (!taskId) {
       return NextResponse.json(
         { success: false, error: "taskId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const [row] = await executeQuery(
-      `SELECT attachment_name FROM design_activity WHERE id = ?`,
-      [taskId]
+      `SELECT profiting_file FROM sales_management WHERE id = ?`,
+      [taskId],
     );
 
     let files = [];
 
-    if (row && row.attachment_name) {
+    if (row?.profiting_file) {
       try {
-        // attachment_name is stored as comma-separated string: "file1.pdf, file2.pdf"
-        const fileNames = row.attachment_name
-          .split(",")
-          .map((f) => f.trim())
-          .filter((f) => f.length > 0);
+        const parsed =
+          typeof row.profiting_file === "string"
+            ? JSON.parse(row.profiting_file)
+            : row.profiting_file;
 
-        // Convert to file objects with proper paths
-        files = fileNames.map((fileName) => {
-          const safeName = fileName.replace(/,/g, "-");
-          return {
-            name: fileName,
-            path: `/uploads/ocular report/${encodeURIComponent(safeName)}`,
-          };
-        });
+        files = parsed.map((file) => ({
+          name: file.name,
+          path: `/uploads/profitting/${encodeURIComponent(file.name)}`,
+          revision: file.revision ?? 0,
+        }));
       } catch (err) {
-        console.error("Failed to parse attachment_name:", err);
+        console.error("Failed to parse profiting_file:", err);
       }
     }
 
@@ -55,8 +51,7 @@ export async function GET(req) {
     console.error(err);
     return NextResponse.json(
       { success: false, error: "Failed to fetch files" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

@@ -47,7 +47,7 @@ export const SidebarWrapper = () => {
       refreshInterval: 120000,
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
-    }
+    },
   );
 
   const accessForTask =
@@ -189,11 +189,13 @@ export const SidebarWrapper = () => {
                   ]}
                 />
               ) : null}
-              <SidebarItem
-                isActive={pathname === "/qms"}
-                title="QMS Files"
+              <CollapseItems
                 icon={<ReportsIcon />}
-                href="/qms"
+                title="Files"
+                items={[
+                  { label: "QMS Files", href: "/qms" },
+                  { label: "LMS Files", href: "/lms" },
+                ]}
               />
             </SidebarMenu>
           </div>

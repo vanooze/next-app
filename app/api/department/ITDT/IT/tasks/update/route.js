@@ -13,16 +13,7 @@ export async function POST(req) {
     }
     const body = await req.json();
 
-    const {
-      id,
-      project,
-      projectDesc,
-      tasks,
-      personnel,
-      dateStart,
-      dateEnd,
-      status,
-    } = body;
+    const { id, personnel, date, status } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -33,26 +24,13 @@ export async function POST(req) {
 
     const query = `
       UPDATE it_activity SET
-        project = ?,
-        project_desc = ?,
-        tasks = ?,
         personnel = ?,
-        date_start = ?,
-        date_end = ?,
+        date= ?,
         status = ?
       WHERE id = ?
     `;
 
-    const result = await executeQuery(query, [
-      project,
-      projectDesc,
-      tasks,
-      personnel,
-      dateStart,
-      dateEnd,
-      status,
-      id,
-    ]);
+    const result = await executeQuery(query, [personnel, date, status, id]);
 
     return NextResponse.json({
       success: true,

@@ -8,58 +8,65 @@ export async function POST(req) {
     if (!user || !user.department) {
       return NextResponse.json(
         { success: false, error: "Unauthorized access" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     const body = await req.json();
-    const { taskId, action } = body; // action: "decline" or "accept"
+    const { taskId, action } = body; // taskId === sales_management.id
 
     if (!taskId || !action) {
       return NextResponse.json(
         { success: false, error: "taskId and action are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    if (action !== "decline" && action !== "accept") {
+    if (!["decline", "accept"].includes(action)) {
       return NextResponse.json(
         { success: false, error: "action must be 'decline' or 'accept'" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Get the proj_id from sales_management to update design_activity
+    // ✅ Ensure sales record exists
     const [salesRecord] = await executeQuery(
-      `SELECT proj_id FROM sales_management WHERE id = ?`,
-      [taskId]
+      `SELECT id FROM sales_management WHERE id = ?`,
+      [taskId],
     );
 
-    if (!salesRecord || !salesRecord.proj_id) {
+    if (!salesRecord) {
       return NextResponse.json(
-        { success: false, error: "Task not found or missing proj_id" },
-        { status: 404 }
+        { success: false, error: "Sales task not found" },
+        { status: 404 },
       );
     }
 
-    const projId = salesRecord.proj_id;
-
     if (action === "decline") {
-      // Update design_activity status to "Finished to Decline"
-      await executeQuery(`UPDATE design_activity SET status = ? WHERE id = ?`, [
-        "Declined",
-        projId,
-      ]);
-
+      // 🔁 Update DESIGN using sales_id (NEW PARENTING LOGIC)
       await executeQuery(
-        `UPDATE sales_management SET status = ? WHERE id = ?`,
-        ["Declined", taskId]
+        `UPDATE design_activity 
+         SET status = ? 
+         WHERE sales_id = ?`,
+        ["Declined", taskId],
       );
-    } else if (action === "accept") {
-      // Update sales_management status to "accepted"
+
+      // 🔁 Update SALES
       await executeQuery(
-        `UPDATE sales_management SET status = ? WHERE id = ?`,
-        ["Accepted", taskId]
+        `UPDATE sales_management 
+         SET status = ?, sir_mjh = ?,
+         WHERE id = ?`,
+        ["Declined", "", taskId],
+      );
+    }
+
+    if (action === "accept") {
+      // Only sales status changes on accept
+      await executeQuery(
+        `UPDATE sales_management 
+         SET status = ? 
+         WHERE id = ?`,
+        ["Accepted", taskId],
       );
     }
 
@@ -70,11 +77,8 @@ export async function POST(req) {
   } catch (err) {
     console.error("Error processing file action:", err);
     return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to process action",
-      },
-      { status: 500 }
+      { success: false, error: "Failed to process action" },
+      { status: 500 },
     );
   }
 }

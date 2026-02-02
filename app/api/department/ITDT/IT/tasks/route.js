@@ -16,13 +16,14 @@ export async function GET(req) {
     );
     const tasks = rows.map((r) => ({
       id: r.id,
-      project: r.project,
-      projectDesc: r.project_desc,
-      tasks: r.tasks,
+      clientName: r.client_name,
+      projectDesc: r.proj_desc,
+      dateReceived: r.date_received,
+      salesPersonnel: r.sales_personnel,
       personnel: r.personnel,
-      dateStart: r.date_start,
-      dateEnd: r.date_end,
+      date: r.date,
       attachmentName: r.attachment_name,
+      salesId: r.sales_id,
       status: r.status,
     }));
     return Response.json(tasks);

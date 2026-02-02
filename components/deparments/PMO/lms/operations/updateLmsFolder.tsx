@@ -27,7 +27,7 @@ interface Props {
   users: { key: string; label: string }[];
 }
 
-export const UpdateQmsFolder = ({ isOpen, onClose, folder, users }: Props) => {
+export const UpdateLmsFolder = ({ isOpen, onClose, folder, users }: Props) => {
   const [name, setName] = useState("");
   const [accessUsers, setAccessUsers] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
@@ -54,7 +54,7 @@ export const UpdateQmsFolder = ({ isOpen, onClose, folder, users }: Props) => {
 
     setIsSaving(true);
     try {
-      const res = await fetch("/api/files/qms/folder/update", {
+      const res = await fetch("/api/files/lms/folder/update", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -67,7 +67,7 @@ export const UpdateQmsFolder = ({ isOpen, onClose, folder, users }: Props) => {
       const result = await res.json();
       if (!result.success) throw new Error(result.error);
 
-      await mutate("/api/files/qms");
+      await mutate("/api/files/lms");
       onClose();
     } catch (err) {
       console.error(err);

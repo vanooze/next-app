@@ -44,37 +44,37 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
   };
 
   const [id, setId] = useState<number>();
-  const [project, setProject] = useState("");
+  const [clientName, setClientName] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
-  const [tasks, setTasks] = useState("");
+  const [dateReceived, setDateReceived] = useState<CalendarDate | null>(null);
+  const [salesPersonnel, setSalesPersonnel] = useState("");
   const [personnel, setPersonnel] = useState("");
-  const [startDate, setStartDate] = useState<CalendarDate | null>(null);
-  const [endDate, setEndDate] = useState<CalendarDate | null>(null);
+  const [date, setDate] = useState<CalendarDate | null>(null);
   const [status, setStatus] = useState("");
 
   useEffect(() => {
-    if (endDate) {
+    if (date) {
       setStatus("Finished");
     }
-  }, [endDate]);
+  }, [date]);
 
   useEffect(() => {
     if (!task) return;
 
     setId(task.id);
-    setProject(task.project ?? "");
+    setClientName(task.clientName ?? "");
     setProjectDesc(task.projectDesc ?? "");
-    setTasks(task.tasks ?? "");
-    setPersonnel(task.personnel ?? "");
-    setStartDate(
-      typeof task.dateStart === "string"
-        ? safeParseDate(task.dateStart)
-        : (task.dateStart ?? null),
+    setDateReceived(
+      typeof task.dateReceived === "string"
+        ? safeParseDate(task.dateReceived)
+        : (task.dateReceived ?? null),
     );
-    setEndDate(
-      typeof task.dateEnd === "string"
-        ? safeParseDate(task.dateEnd)
-        : (task.dateEnd ?? null),
+
+    setPersonnel(task.personnel ?? "");
+    setDate(
+      typeof task.date === "string"
+        ? safeParseDate(task.date)
+        : (task.date ?? null),
     );
     setStatus(task.status ?? "");
   }, [task]);
@@ -82,19 +82,15 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
   /* ✅ AUTO SET END DATE WHEN FINISHED */
   useEffect(() => {
     if (status === "Finished") {
-      setEndDate(today(getLocalTimeZone()));
+      setDate(today(getLocalTimeZone()));
     }
   }, [status]);
 
   const handleUpdateTask = async (onClose: () => void) => {
     const payload = {
       id,
-      project,
-      projectDesc,
-      tasks,
       personnel,
-      dateStart: formatDatetoStr(startDate),
-      dateEnd: formatDatetoStr(endDate),
+      date: formatDatetoStr(date),
       status,
     };
 
@@ -129,10 +125,11 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
 
             <ModalBody className="grid grid-cols-2 gap-4">
               <Input
-                label="Project"
+                label="Client Name"
                 variant="bordered"
-                value={project}
-                onValueChange={setProject}
+                value={clientName}
+                onValueChange={setClientName}
+                disabled
               />
               <Input
                 label="Project Description"
@@ -140,11 +137,11 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
                 value={projectDesc}
                 onValueChange={setProjectDesc}
               />
-              <Input
-                label="Tasks"
+              <DatePicker
+                label="date Received"
                 variant="bordered"
-                value={tasks}
-                onValueChange={setTasks}
+                value={dateReceived}
+                onChange={setDateReceived}
               />
               <Input
                 label="Personnel"
@@ -154,17 +151,10 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
               />
 
               <DatePicker
-                label="Date Start"
+                label="Date"
                 variant="bordered"
-                value={startDate}
-                onChange={setStartDate}
-              />
-
-              <DatePicker
-                label="Date End"
-                variant="bordered"
-                value={endDate}
-                onChange={setEndDate}
+                value={date}
+                onChange={setDate}
               />
 
               <Select
@@ -174,7 +164,7 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
                 variant="bordered"
                 items={selectStatus}
                 selectedKeys={status ? new Set([status]) : new Set()}
-                isDisabled={!!endDate}
+                isDisabled={!!date}
                 onSelectionChange={(keys) => {
                   const selectedKey = Array.from(keys)[0] as string;
                   setStatus(selectedKey);

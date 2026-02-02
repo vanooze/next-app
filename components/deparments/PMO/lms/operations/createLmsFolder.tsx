@@ -27,7 +27,7 @@ interface Props {
   parentFolderId: number | null;
 }
 
-export const CreateQmsFolder = ({ isOpen, onClose, parentFolderId }: Props) => {
+export const CreateLmsFolder = ({ isOpen, onClose, parentFolderId }: Props) => {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [accessUsers, setAccessUsers] = useState<Set<string>>(new Set());
@@ -38,7 +38,7 @@ export const CreateQmsFolder = ({ isOpen, onClose, parentFolderId }: Props) => {
 
     setLoading(true);
 
-    const res = await fetch("/api/files/qms/folder/create", {
+    const res = await fetch("/api/files/lms/folder/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -53,7 +53,7 @@ export const CreateQmsFolder = ({ isOpen, onClose, parentFolderId }: Props) => {
     if (res.ok) {
       setName("");
       setAccessUsers(new Set());
-      await mutate("/api/files/qms");
+      await mutate("/api/files/lms");
       onClose();
     } else {
       alert("Failed to create folder");

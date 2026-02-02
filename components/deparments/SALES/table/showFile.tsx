@@ -55,20 +55,17 @@ export const FilesModal: React.FC<FilesModalProps> = ({
       setLoading(true);
       try {
         const res = await fetch(
-          `/api/department/ITDT/DT/tasks/files?taskId=${taskId}`
+          `/api/department/SALES/sales_management/files?taskId=${taskId}`,
         );
         const data = await res.json();
 
         if (data.success) {
-          if (Array.isArray(data.revisions)) {
-            setRevisions(data.revisions);
-          } else {
-            setRevisions([]);
-          }
           if (Array.isArray(data.files)) {
             setFiles(data.files);
+            setRevisions(buildRevisions(data.files));
           } else {
             setFiles([]);
+            setRevisions([]);
           }
         } else {
           setFiles([]);
@@ -86,10 +83,28 @@ export const FilesModal: React.FC<FilesModalProps> = ({
     fetchFiles();
   }, [isOpen, taskId]);
 
+  const buildRevisions = (files: FileObj[]): RevisionGroup[] => {
+    const map = new Map<number, FileObj[]>();
+
+    files.forEach((file) => {
+      const rev = file.revision ?? 0;
+      if (!map.has(rev)) map.set(rev, []);
+      map.get(rev)!.push(file);
+    });
+
+    return Array.from(map.entries())
+      .sort((a, b) => b[0] - a[0])
+      .map(([revision, files]) => ({
+        revision,
+        files,
+        label: revision === 0 ? "Initial Submission" : `Revision ${revision}`,
+      }));
+  };
+
   const handleDownload = (file: FileObj) => {
     const a = document.createElement("a");
     a.href = `/api/download?folder=${encodeURIComponent(
-      folder
+      folder,
     )}&file=${encodeURIComponent(file.name)}`;
     a.download = file.name;
     document.body.appendChild(a);
@@ -108,7 +123,7 @@ export const FilesModal: React.FC<FilesModalProps> = ({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ taskId, action }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -116,7 +131,7 @@ export const FilesModal: React.FC<FilesModalProps> = ({
       if (data.success) {
         // Refresh files after action
         const filesRes = await fetch(
-          `/api/department/ITDT/DT/tasks/files?taskId=${taskId}`
+          `/api/department/ITDT/DT/tasks/files?taskId=${taskId}`,
         );
         const filesData = await filesRes.json();
 

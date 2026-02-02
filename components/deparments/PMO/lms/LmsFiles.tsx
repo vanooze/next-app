@@ -5,10 +5,10 @@ import { Button, Card, CardBody, CardHeader, Spinner } from "@heroui/react";
 import { useUserContext } from "@/components/layout/UserContext";
 import { PlusIcon } from "@/components/icons/table/add-icon";
 import { DeleteIcon } from "@/components/icons/table/delete-icon";
-import { CreateQmsFolder } from "./operations/createQmsFolder";
-import { DeleteConfirmModal } from "./operations/deleteQmsFolder";
-import { UpdateQmsFolder } from "./operations/updateQmsFolder";
-import { UploadQmsFile } from "./UploadQmsFile";
+import { CreateLmsFolder } from "./operations/createLmsFolder";
+import { DeleteConfirmModal } from "./operations/deleteLmsFolder";
+import { UpdateLmsFolder } from "./operations/updateLmsFolder";
+import { UploadLmsFile } from "./UploadLmsFile";
 import useSWR, { mutate } from "swr";
 import { fetcher } from "@/app/lib/fetcher";
 import { EditIcon } from "@/components/icons/table/edit-icon";
@@ -27,7 +27,7 @@ interface Folder {
   access: string | null;
 }
 
-interface QmsFile {
+interface LmsFile {
   id: number;
   file_title: string;
   file_description: string | null;
@@ -38,7 +38,7 @@ interface QmsFile {
 }
 
 // ----------------- COMPONENT -----------------
-export const QmsFiles = () => {
+export const LmsFiles = () => {
   const { user } = useUserContext();
   const [currentFolderId, setCurrentFolderId] = useState<number | null>(null);
   const [folderStack, setFolderStack] = useState<Folder[]>([]);
@@ -55,13 +55,13 @@ export const QmsFiles = () => {
 
   const { data, error, isLoading } = useSWR<{
     folders: Folder[];
-    files: QmsFile[];
-  }>("/api/files/qms", fetcher);
+    files: LmsFile[];
+  }>("/api/files/lms", fetcher);
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Spinner label="Loading QMS files..." />
+        <Spinner label="Loading LMS files..." />
       </div>
     );
   }
@@ -69,7 +69,7 @@ export const QmsFiles = () => {
   if (error || !data) {
     return (
       <div className="flex justify-center items-center h-64">
-        <p className="text-red-500">Failed to load QMS files</p>
+        <p className="text-red-500">Failed to load LMS files</p>
       </div>
     );
   }
@@ -123,13 +123,13 @@ export const QmsFiles = () => {
 
     setDeletingId(fileId);
     try {
-      const res = await fetch(`/api/files/qms/delete?id=${fileId}`, {
+      const res = await fetch(`/api/files/lms/delete?id=${fileId}`, {
         method: "DELETE",
       });
 
       const result = await res.json();
       if (result.success) {
-        await mutate("/api/files/qms");
+        await mutate("/api/files/lms");
         alert("File deleted successfully");
       } else {
         alert(result.error || "Failed to delete file");
@@ -305,12 +305,12 @@ export const QmsFiles = () => {
       )}
 
       {/* ---------- MODALS ---------- */}
-      <UploadQmsFile
+      <UploadLmsFile
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         parentFolderId={currentFolderId}
       />
-      <CreateQmsFolder
+      <CreateLmsFolder
         isOpen={isCreateFolderOpen}
         onClose={() => setIsCreateFolderOpen(false)}
         parentFolderId={currentFolderId} // only top-level
@@ -325,12 +325,12 @@ export const QmsFiles = () => {
         onDelete={async (id: number) => {
           setDeletingId(id);
           try {
-            const res = await fetch(`/api/files/qms/folder/delete?id=${id}`, {
+            const res = await fetch(`/api/files/lms/folder/delete?id=${id}`, {
               method: "DELETE",
             });
             const result = await res.json();
             if (result.success) {
-              await mutate("/api/department/PMO/qms");
+              await mutate("/api/department/PMO/lms");
               alert("Folder deleted successfully");
             } else {
               alert(result.error || "Failed to delete folder");
@@ -345,7 +345,7 @@ export const QmsFiles = () => {
         }}
       />
 
-      <UpdateQmsFolder
+      <UpdateLmsFolder
         isOpen={!!folderToEdit}
         onClose={() => setFolderToEdit(null)}
         folder={folderToEdit}

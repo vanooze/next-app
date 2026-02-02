@@ -98,9 +98,9 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       Declined: 0,
       "For Proposal": 1,
       Priority: 2,
-      OnHold: 3,
-      Overdue: 4,
-      Pending: 5,
+      Overdue: 3,
+      Pending: 4,
+      OnHold: 5,
       Finished: 6,
     }),
     [],
@@ -174,7 +174,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       result = result.filter((t) => filterStatuses.includes(t.status));
     } else if (!showAllStatuses && filterStatuses.length === 0) {
       result = result.filter((t) =>
-        ["Pending", "Overdue", "Declined"].includes(t.status),
+        ["Pending", "Overdue", "OnHold", "Declined"].includes(t.status),
       );
     }
 
@@ -247,7 +247,6 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
             }}
           >
             <Checkbox value="Priority">Priority</Checkbox>
-            <Checkbox value="OnHold">On Hold</Checkbox>
             <Checkbox value="Declined">Declined</Checkbox>
             <Checkbox value="For Proposal">For Proposal</Checkbox>
             <Checkbox value="Finished">Finished</Checkbox>
@@ -341,7 +340,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       <UploadProfitingModal
         isOpen={isUploadOpen}
         onClose={handleCloseUpload}
-        taskId={selectedTask?.id ?? 0}
+        salesId={selectedTask?.salesId ?? 0}
       />
 
       <EditTask

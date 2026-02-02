@@ -28,10 +28,12 @@ export const RenderCell = ({
   const [isFilesModalOpen, setIsFilesModalOpen] = useState(false);
 
   // Use attachmentName directly as an array
-  const attachments: string[] = Array.isArray(ItTasks.attachmentName)
-    ? ItTasks.attachmentName
-    : ItTasks.attachmentName
-      ? JSON.parse(ItTasks.attachmentName)
+  const attachments =
+    typeof ItTasks.attachmentName === "string"
+      ? ItTasks.attachmentName
+          .split(",")
+          .map((f) => f.trim())
+          .filter((f) => f.length > 0)
       : [];
 
   const canUpload =
@@ -68,11 +70,11 @@ export const RenderCell = ({
         </Chip>
       );
 
-    case "project":
+    case "clientName":
     case "projectDesc":
-    case "tasks":
+    case "dateReceived":
       return <span>{displayValue(cellValue)}</span>;
-    case "personnel":
+    case "salesPersonnel":
       return attachments.length > 0 ? (
         <>
           <a
@@ -90,17 +92,15 @@ export const RenderCell = ({
             isOpen={isFilesModalOpen}
             onClose={() => setIsFilesModalOpen(false)}
             attachments={attachments}
-            folder="IT Reporting"
+            folder="it report"
           />
         </>
       ) : (
         <span>{displayValue(cellValue)}</span>
       );
-
-    case "dateStart":
-    case "dateEnd":
+    case "personnel":
+    case "date":
       return <span>{displayValue(cellValue)}</span>;
-
     case "actions":
       return (
         <div className="flex items-center gap-4">

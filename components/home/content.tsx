@@ -18,6 +18,7 @@ import { SalesTableWrapper } from "../deparments/SALES/table/table";
 import { useITTasks } from "../hooks/useITTasks";
 
 import { PMOTasks, dtTask, SalesManagement } from "@/helpers/db";
+import { ITTableWrapper } from "../deparments/IT/tasks/table/table";
 
 const ColumnChart = dynamic(
   () => import("../charts/column").then((mod) => mod.Column),
@@ -129,6 +130,10 @@ export const Content = () => {
             fullScreen={false}
           />
         );
+      if (type === "IT")
+        return (
+          <ITTableWrapper tasks={tasks} loading={loading} fullScreen={false} />
+        );
       return <DesignTable tasks={tasks} loading={loading} fullScreen={false} />;
     };
 
@@ -211,9 +216,9 @@ export const Content = () => {
     return renderDepartment("DESIGN", designTasks, designLoading);
 
   if (
-    department?.includes("PROGRAMMER") ||
-    department?.includes("MMC") ||
-    department === "TECHNICAL"
+    user?.designation.includes("PROGRAMMER") ||
+    user?.designation.includes("MMC") ||
+    user?.designation === "TECHNICAL"
   ) {
     return renderDepartment("IT", ITTasks, ITLoading);
   }

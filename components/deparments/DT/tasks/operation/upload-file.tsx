@@ -17,14 +17,14 @@ import { mutate } from "swr";
 interface UploadProfitingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  taskId: number;
+  salesId: number;
   folder?: string; // optional folder name, default "profitting"
 }
 
 export const UploadProfitingModal: React.FC<UploadProfitingModalProps> = ({
   isOpen,
   onClose,
-  taskId,
+  salesId,
   folder = "profitting",
 }) => {
   const targetRef = useRef<HTMLDivElement | null>(null);
@@ -66,14 +66,14 @@ export const UploadProfitingModal: React.FC<UploadProfitingModalProps> = ({
   };
 
   const handleUploadFile = async () => {
-    if (!files.length || !taskId) return;
+    if (!files.length || !salesId) return;
 
     setUploading(true);
     setError("");
 
     try {
       const formData = new FormData();
-      formData.append("taskId", String(taskId));
+      formData.append("salesId", String(salesId));
       files.forEach((f) => formData.append("files", f));
 
       const res = await fetch("/api/department/ITDT/DT/tasks/upload", {
@@ -88,7 +88,7 @@ export const UploadProfitingModal: React.FC<UploadProfitingModalProps> = ({
       }
 
       // Refresh task files
-      await mutate(`/api/department/ITDT/DT/tasks/files?taskId=${taskId}`);
+      await mutate(`/api/department/ITDT/DT/tasks/`);
 
       // Clear selected files
       setFiles([]);

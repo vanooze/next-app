@@ -12,7 +12,7 @@ export async function GET(req) {
     //   );
     // }
     const rows = await executeQuery(
-      "SELECT * FROM design_activity WHERE deleted = 0"
+      "SELECT * FROM design_activity WHERE deleted = 0",
     );
     const tasks = rows.map((r) => ({
       id: r.id,
@@ -27,6 +27,7 @@ export async function GET(req) {
       sirME: r.sir_me,
       sirMJH: r.sir_mjh,
       attachmentName: r.attachment_name,
+      salesId: r.sales_id,
       status: r.status,
     }));
     return Response.json(tasks);

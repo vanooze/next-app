@@ -19,6 +19,9 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
   const cellValue = Tasks[columnKey as keyof Projects];
   const { user } = useUserContext();
   const router = useRouter();
+  const [localStatus, setLocalStatus] = React.useState(
+    (Tasks.status as string) || ""
+  );
 
   const userHasAccess = (() => {
     if (!user) return false;
@@ -74,8 +77,6 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
       const isToggleable =
         canToggleStatus &&
         (cellValue === "Active" || cellValue === "For Payment");
-
-      const [localStatus, setLocalStatus] = React.useState(cellValue as string);
 
       const nextStatus = localStatus === "Active" ? "For Payment" : "Active";
 

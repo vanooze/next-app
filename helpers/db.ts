@@ -12,6 +12,7 @@ export interface dtTask {
   sBoqDate: string | null;
   sirME: string | null;
   sirMJH: string | null;
+  salesId: number;
   status: string;
 }
 
@@ -45,24 +46,24 @@ export interface BoqItem {
 // ------------------------- IT MONITORING -------------------------
 export interface ItTasks {
   id: number;
-  project: string;
+  clientName: string;
   projectDesc: string;
-  tasks: string;
+  dateReceived: string | null;
+  salesPersonnel: string;
   personnel: string;
-  dateStart: string | null;
-  dateEnd: string | null;
+  date: string | null;
   attachmentName: string | null;
   status: string;
 }
 
 export const ItColumns = [
   { name: "Status", uid: "status" },
-  { name: "Project", uid: "project" },
+  { name: "Client Name", uid: "clientName" },
   { name: "Project Description", uid: "projectDesc" },
-  { name: "Tasks", uid: "tasks" },
+  { name: "Date Received", uid: "dateReceived" },
+  { name: "Sales Personnel", uid: "salesPersonnel" },
   { name: "Personnel", uid: "personnel" },
-  { name: "Date Start", uid: "dateStart" },
-  { name: "Date End", uid: "dateEnd" },
+  { name: "Date", uid: "date" },
   { name: "Actions", uid: "actions" },
 ];
 // ------------------------- PROJECT MONITORING -------------------------

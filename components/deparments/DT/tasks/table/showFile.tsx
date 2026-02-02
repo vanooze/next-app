@@ -47,7 +47,7 @@ export const FilesModal = ({
       setLoading(true);
       try {
         const res = await fetch(
-          `/api/department/SALES/sales_management/files?taskId=${taskId}`
+          `/api/department/ITDT/DT/tasks/files?taskId=${taskId}`,
         );
         const data = await res.json();
 
@@ -92,7 +92,7 @@ export const FilesModal = ({
 
       // Build API URL
       const url = `/api/download?folder=${encodeURIComponent(
-        folderName
+        folderName,
       )}&file=${encodeURIComponent(fileName)}`;
       const a = document.createElement("a");
       a.href = url;
@@ -105,7 +105,7 @@ export const FilesModal = ({
 
     // Case 3: fallback (no path info)
     const url = `/api/download?folder=${encodeURIComponent(
-      folder
+      folder,
     )}&file=${encodeURIComponent(file.name)}`;
     const a = document.createElement("a");
     a.href = url;

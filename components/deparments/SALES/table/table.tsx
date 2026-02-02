@@ -115,6 +115,7 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
       "Ida Ma. Catherine C. Madamba": "IDA",
       "Earl Jan E. Acierda": "EARL JAN",
       "Evelyn Pequiras": "EVE",
+      "Francine Kisha Guatlo": "KISHA",
     };
 
     const userName = user.name.toLowerCase().trim();
