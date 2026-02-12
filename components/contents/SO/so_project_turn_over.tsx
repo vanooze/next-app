@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Textarea,
   Button,
@@ -15,6 +15,7 @@ import useSWR from "swr";
 import { DropZone, DropItem, FileTrigger } from "react-aria-components";
 import { Projects } from "@/helpers/acumatica";
 import { useUserContext } from "@/components/layout/UserContext";
+import { PROJECT_TURN_OVER_CAN_UPLOAD_DESIGNATION } from "@/helpers/restriction";
 
 interface ProjectTurnOverProps {
   project: Projects | null;
@@ -33,6 +34,8 @@ export default function ProjectTurnOver({ project }: ProjectTurnOverProps) {
   const [PODetails, setPODetails] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [fileError, setFileError] = useState("");
 
   useEffect(() => {
     if (project) {
@@ -41,11 +44,10 @@ export default function ProjectTurnOver({ project }: ProjectTurnOverProps) {
   }, [project]);
 
   const canUpload =
-    user?.designation.includes("SALES") ||
-    user?.designation.includes("PMO TL") ||
-    user?.designation?.includes("DOCUMENT CONTROLLER") ||
-    user?.designation?.includes("TECHNICAL SUPERVISOR") ||
-    user?.designation.includes("DESIGN");
+    user?.designation &&
+    PROJECT_TURN_OVER_CAN_UPLOAD_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/so/project_turn_over?id=${projectId}`
@@ -92,7 +94,7 @@ export default function ProjectTurnOver({ project }: ProjectTurnOverProps) {
           {
             method: "POST",
             body: formData,
-          }
+          },
         );
 
         const result = await res.json();

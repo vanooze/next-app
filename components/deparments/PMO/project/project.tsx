@@ -19,13 +19,6 @@ export const Project = () => {
   const [debouncedFilterValue, setDebouncedFilterValue] = useState(filterValue);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
-  const isManager =
-    user?.designation?.includes("PMO TL") ||
-    user?.designation?.includes("DOCUMENT CONTROLLER") ||
-    user?.designation?.includes("TECHNICAL MANAGER") ||
-    user?.name === "Kaye Kimberly L. Manuel" ||
-    user?.restriction === "9";
-
   const {
     data: tasks = [],
     error,

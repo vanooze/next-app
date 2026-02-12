@@ -19,10 +19,12 @@ import {
   selectFiltiredPmo,
   selectPurchasing,
   selectSales,
+  selectTMIG,
 } from "@/helpers/data";
 import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { Projects } from "@/helpers/acumatica";
+import { PROJECT_ASSIGN_ACCESS_DESIGNATION } from "@/helpers/restriction";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -36,6 +38,7 @@ const allowedDesignations = new Set([
   "TECHNICAL ASSISTANT MANAGER",
   "TECHNICAL ADMIN CONSULTANT",
   "TECHNICAL MANAGER",
+  "DAVAO SALES MANAGER",
 ]);
 
 export default function ProjectLayout({
@@ -55,7 +58,7 @@ export default function ProjectLayout({
     isLoading,
   } = useSWR<Projects>(
     projectId ? `/api/department/PMO/project?id=${projectId}` : null,
-    fetcher
+    fetcher,
   );
 
   const [accessUsers, setAccessUsers] = useState<Set<string>>(new Set());
@@ -63,17 +66,15 @@ export default function ProjectLayout({
   const originalAccessUsers = useRef<Set<string>>(new Set());
 
   const canAssign =
-    user?.name === "Kaye Kimberly L. Manuel" ||
-    allowedDesignations.has(user?.designation ?? "") ||
-    user?.restriction === "9";
-
-  useEffect(() => {
+    user?.designation &&
+    PROJECT_ASSIGN_ACCESS_DESIGNATION.includes(user.designation);
+  -useEffect(() => {
     if (!project?.access) return;
     const list = new Set(
       project.access
         .split(",")
         .map((n) => n.trim())
-        .filter(Boolean)
+        .filter(Boolean),
     );
     setAccessUsers(list);
     originalAccessUsers.current = new Set(list);
@@ -192,7 +193,7 @@ export default function ProjectLayout({
                 setAccessUsers(keys as Set<string>);
               } else {
                 setAccessUsers(
-                  new Set(selectFiltiredPmo.map((item) => item.key))
+                  new Set(selectFiltiredPmo.map((item) => item.key)),
                 );
               }
             }}
@@ -201,6 +202,7 @@ export default function ProjectLayout({
               { title: "PMO", data: selectFiltiredPmo },
               { title: "Sales", data: selectSales },
               { title: "Design", data: selectFiliteredDesign },
+              { title: "TMIG", data: selectTMIG },
               { title: "Purchasing", data: selectPurchasing },
             ].map(({ title, data }) => (
               <SelectSection
@@ -243,10 +245,7 @@ export default function ProjectLayout({
         onSelectionChange={handleTabChange}
       >
         {tabs.map((tab) => (
-          <Tab
-            key={tab.key}
-            title={tab.title}
-          />
+          <Tab key={tab.key} title={tab.title} />
         ))}
       </Tabs>
 

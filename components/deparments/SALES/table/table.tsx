@@ -18,6 +18,11 @@ import { RenderCell } from "./render-cell";
 import { EditTask } from "../operation/update";
 import { useUserContext } from "@/components/layout/UserContext";
 import { DeleteTask } from "../operation/delete-task";
+import {
+  SALE_SEE_ALL_USERS_DESIGNATION,
+  SALE_NAME_MAPPINGS,
+  SALE_DAVAO_SEE_USERS_DESIGNATION,
+} from "@/helpers/restriction";
 
 interface TableWrapperProps {
   tasks: SalesManagement[];
@@ -93,60 +98,91 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
     [],
   );
 
+  const normalize = (v?: string) => v?.toLowerCase().trim() || "";
+
+  const getMappedName = (name?: string, designation?: string) => {
+    if (!name) return "";
+
+    const branch = designation?.toUpperCase().includes("DAVAO")
+      ? "DAVAO"
+      : "MAIN";
+
+    const branchMap =
+      typeof SALE_NAME_MAPPINGS[branch] === "object"
+        ? SALE_NAME_MAPPINGS[branch]
+        : {};
+
+    return normalize(branchMap[name] || name);
+  };
+
+  const isDavaoTask = (salesPersonnel?: string) => {
+    const normalizedSales = normalize(salesPersonnel);
+
+    const davaoMap =
+      typeof SALE_NAME_MAPPINGS.DAVAO === "object"
+        ? SALE_NAME_MAPPINGS.DAVAO
+        : {};
+
+    return Object.values(davaoMap).some((alias) =>
+      normalizedSales.includes(alias.toLowerCase()),
+    );
+  };
+
   // ✅ Filter by user + status
   const filteredTasks = useMemo(() => {
     if (!user?.name) return [];
 
-    const seeAllUsers = [
-      "HAROLD DAVID",
-      "LANI KIMBER CAMPOS",
-      "MARIA LEA BERMUDEZ",
-      "MARVIN JIMENEZ",
-      "DESIREE SALIVIO",
-      "RAMIELYN MALAYA",
-      "Cellano Cyril Nicolo D. Javan",
-      "Ronaldo J. Francisco",
-    ];
+    const safeTasks = Array.isArray(tasks) ? tasks : [];
+    const designation = user.designation?.toUpperCase() || "";
 
-    const nameMappings: Record<string, string> = {
-      "Jhoannah Rose-Mil L. Sicat ": "JHOAN",
-      "Genevel Garcia": "GEN",
-      "KENNETH BAUTISTA": "KENNETH",
-      "Ida Ma. Catherine C. Madamba": "IDA",
-      "Earl Jan E. Acierda": "EARL JAN",
-      "Evelyn Pequiras": "EVE",
-      "Francine Kisha Guatlo": "KISHA",
-    };
+    const mappedName = getMappedName(user.name, user.designation);
 
-    const userName = user.name.toLowerCase().trim();
-    const mappedName = nameMappings[user.name] || user.name;
-    const userFiltered = seeAllUsers.some((u) => u.toLowerCase() === userName)
-      ? tasks
-      : tasks.filter((task) => {
-          const sales = task.salesPersonnel?.toLowerCase().trim() || "";
-          return (
-            sales.includes(mappedName.toLowerCase()) ||
-            mappedName.toLowerCase().includes(sales)
-          );
-        });
+    /** 🌍 Global see-all */
+    const canSeeAll = SALE_SEE_ALL_USERS_DESIGNATION.some((role) =>
+      designation.includes(role),
+    );
 
-    let result = userFiltered;
+    /** 🏝 Davao manager see-all (branch-only) */
+    const davaoCanSeeAll =
+      !canSeeAll &&
+      SALE_DAVAO_SEE_USERS_DESIGNATION.some((role) =>
+        designation.includes(role),
+      );
 
+    /**
+     * 1️⃣ Visibility filtering
+     */
+    let result = safeTasks.filter((task) => {
+      const sales = normalize(task.salesPersonnel);
+
+      // Global manager → everything
+      if (canSeeAll) return true;
+
+      // Davao manager → only davao tasks
+      if (davaoCanSeeAll) return isDavaoTask(task.salesPersonnel);
+
+      // Normal user → only own tasks
+      return sales.includes(mappedName) || mappedName.includes(sales);
+    });
+
+    /**
+     * 2️⃣ Search override (skip status filtering)
+     */
     if (searchValue?.trim()) {
       return result;
     }
 
-    if (showAllStatuses) {
-      result = result;
-    } else if (filterStatuses.length > 0) {
-      result = result.filter((t) => filterStatuses.includes(t.status));
-    } else if (showOnlyOngoing) {
-      result = result.filter(
-        (t) =>
-          t.status === "On Going" ||
-          t.status === "Accepted" ||
-          t.status === "Declined",
-      );
+    /**
+     * 3️⃣ Status filtering
+     */
+    if (!showAllStatuses) {
+      if (filterStatuses.length > 0) {
+        result = result.filter((t) => filterStatuses.includes(t.status));
+      } else if (showOnlyOngoing) {
+        result = result.filter((t) =>
+          ["On Going", "Accepted", "Declined"].includes(t.status),
+        );
+      }
     }
 
     return result;
@@ -203,8 +239,8 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
           onChange={(value) => {
             const newValues = value as string[];
             setFilterStatuses(newValues);
-            setShowAllStatuses(false); // disable show all
-            setShowOnlyOngoing(newValues.length === 0); // if none checked → back to On Going
+            setShowAllStatuses(false);
+            setShowOnlyOngoing(newValues.length === 0);
           }}
         >
           <Checkbox value="Awarded">Awarded</Checkbox>
@@ -231,7 +267,6 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
         </Checkbox>
       </div>
 
-      {/* ✅ Table */}
       {loading ? (
         <div className="w-full flex justify-center items-center min-h-[200px]">
           <Spinner
@@ -297,7 +332,6 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
         </Table>
       )}
 
-      {/* ✅ Edit Modal */}
       <EditTask
         isOpen={isEditOpen}
         onClose={handleCloseEdit}

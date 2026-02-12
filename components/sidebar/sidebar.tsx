@@ -17,24 +17,23 @@ import { usePathname } from "next/navigation";
 import { useUserContext } from "../layout/UserContext";
 import { BalanceIcon } from "../icons/sidebar/balance-icon";
 import { ChatIcon } from "../icons/sidebar/chat-icon";
+import {
+  SIDEBAR_ACCESS_FOR_TASK_DESIGNATION,
+  SIDEBAR_ACCESS_FOR_INVENTORY_DESIGNATION,
+  SIDEBAR_ACCESS_FOR_PROJECT_DESIGNATION,
+  SIDEBAR_ACCESS_FOR_SALES_DESIGNATION,
+} from "@/helpers/restriction";
 
 export const SidebarWrapper = () => {
   const { user } = useUserContext();
   const pathname = usePathname();
   const { collapsed, setCollapsed } = useSidebarContext();
 
-  const SUPERADMIN = user?.restriction === "9";
-
   const accessForProject =
-    user?.department.includes("SALES") ||
-    user?.department.includes("Design") ||
-    user?.department.includes("PURCHASING") ||
-    user?.department.includes("IT/DT Manager") ||
-    user?.department.includes("PMO") ||
-    user?.designation_status.includes("TECHNICAL MANAGER") ||
-    user?.designation_status.includes("TECHNICAL SUPERVISOR") ||
-    user?.designation_status.includes("TECHNICAL ASSISTANT MANAGER") ||
-    SUPERADMIN;
+    user?.designation &&
+    SIDEBAR_ACCESS_FOR_PROJECT_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   const {
     data: ongoingProjects = [],
@@ -51,21 +50,22 @@ export const SidebarWrapper = () => {
   );
 
   const accessForTask =
-    user?.department?.includes("PMO") ||
-    user?.department?.includes("DT") ||
-    user?.position?.includes("SALES") ||
-    user?.name === "DESIREE SALIVIO" ||
-    SUPERADMIN;
+    user?.designation &&
+    SIDEBAR_ACCESS_FOR_TASK_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   const accessForSales =
-    user?.position?.includes("SALES") ||
-    SUPERADMIN ||
-    user?.name === "DESIREE SALIVIO";
+    user?.designation &&
+    SIDEBAR_ACCESS_FOR_SALES_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   const accessForInventory =
-    user?.department.includes("ACCOUNTING&INVENTORY") ||
-    user?.department.includes("PURCHASING") ||
-    SUPERADMIN;
+    user?.designation &&
+    SIDEBAR_ACCESS_FOR_INVENTORY_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   useEffect(() => {
     if (projectsError) {

@@ -16,6 +16,7 @@ import {
   initialData,
 } from "@/helpers/db";
 import { useUserContext } from "@/components/layout/UserContext";
+import { RISK_MANAGMENT_CAN_UPLOAD_DESIGNATION } from "@/helpers/restriction";
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function RiskTable({
@@ -25,9 +26,10 @@ export default function RiskTable({
 }) {
   const { user } = useUserContext();
   const canAssign =
-    user?.designation?.includes("PMO TL") ||
-    user?.designation?.includes("DOCUMENT CONTROLLER") ||
-    user?.name === "Kaye Kimberly L. Manuel";
+    user?.designation &&
+    RISK_MANAGMENT_CAN_UPLOAD_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   const {
     data: dbRisks,
@@ -39,7 +41,7 @@ export default function RiskTable({
       ? `/api/department/PMO/project_tasks/projectkickoff/risk_management?id=${projectId}`
       : null,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false },
   );
 
   const [saving, setSaving] = useState(false);
@@ -57,12 +59,14 @@ export default function RiskTable({
   const updateField = <K extends keyof RiskRow>(
     id: number,
     field: K,
-    value: RiskRow[K]
+    value: RiskRow[K],
   ) => {
     if (!canAssign) return;
 
     const updated: RiskRow[] = risks.map((row) =>
-      row.id === id ? { ...row, [field]: value, status: "Open" as Status } : row
+      row.id === id
+        ? { ...row, [field]: value, status: "Open" as Status }
+        : row,
     );
 
     mutateRisks(updated, false);
@@ -81,7 +85,7 @@ export default function RiskTable({
             projectId,
             risks: risks.map((r) => ({ ...r, status: "Open" })), // always Open
           }),
-        }
+        },
       );
 
       if (!res.ok) throw new Error("Failed to save risks");
@@ -98,14 +102,14 @@ export default function RiskTable({
     (sum, row) =>
       sum +
       (riskLevelScores[row.likelihood as keyof typeof riskLevelScores] || 0),
-    0
+    0,
   );
 
   const totalSScore = risks.reduce(
     (sum, row) =>
       sum +
       (riskLevelScores[row.severity as keyof typeof riskLevelScores] || 0),
-    0
+    0,
   );
 
   if (isLoading) return <p>Loading risks...</p>;

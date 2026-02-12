@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Select,
   SelectItem,
@@ -18,6 +18,7 @@ import { DropZone, DropItem, FileTrigger } from "react-aria-components";
 import { Projects } from "@/helpers/acumatica";
 import { useUserContext } from "@/components/layout/UserContext";
 import { selectPostReviewFileType } from "@/helpers/data";
+import { NCCAPA_CAN_UPLOAD_DESIGNATION } from "@/helpers/restriction";
 
 interface ValueEngProps {
   project: Projects | null;
@@ -37,6 +38,8 @@ export default function NcCapa({ project }: ValueEngProps) {
   const [type, setType] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [fileError, setFileError] = useState("");
 
   useEffect(() => {
     if (project) {
@@ -90,7 +93,7 @@ export default function NcCapa({ project }: ValueEngProps) {
           {
             method: "POST",
             body: formData,
-          }
+          },
         );
 
         const result = await res.json();
@@ -110,8 +113,10 @@ export default function NcCapa({ project }: ValueEngProps) {
   };
 
   const canUpload =
-    user?.department.includes("DESIGN") ||
-    user?.designation.includes("DOCUMENT CONTROLLER");
+    user?.designation &&
+    NCCAPA_CAN_UPLOAD_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   return (
     <div className="flex w-full flex-col md:flex-nowrap gap-4">
@@ -142,27 +147,69 @@ export default function NcCapa({ project }: ValueEngProps) {
             QA-QC / NC / CAPA Attachment
           </h1>
           <div className="border border-dashed rounded max-w-lg">
-            <DropZone
-              onDrop={handleDrop}
-              className="p-6 border border-gray-300 rounded text-center"
-            >
-              <p className="text-sm text-gray-600">Drag & drop files here</p>
-              <FileTrigger
-                allowsMultiple
-                acceptedFileTypes={[
-                  "image/png",
-                  "image/jpeg",
-                  "application/pdf",
-                  "text/csv",
-                ]}
-                onSelect={(files) => {
-                  if (files) {
-                    setFiles((prev) => [...prev, ...Array.from(files)]);
-                  }
-                }}
-              ></FileTrigger>
-            </DropZone>
+            <div className="p-6 border border-gray-300 rounded text-center flex flex-col items-center gap-2">
+              <p className="text-sm text-gray-600 mb-2">
+                Upload one or multiple files.
+              </p>
 
+              <input
+                type="file"
+                ref={fileInputRef}
+                multiple
+                accept=".pdf, .doc, .docx, .xls, .xlsx, .rar, image/png, image/jpeg, text/csv"
+                className="hidden"
+                onChange={(e) => {
+                  const selectedFiles = Array.from(e.target.files || []);
+                  const allowedTypes = [
+                    "application/pdf",
+                    "application/msword",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "application/x-rar-compressed",
+                    "image/png",
+                    "image/jpeg",
+                    "text/csv",
+                  ];
+
+                  const validFiles = selectedFiles.filter((f) =>
+                    allowedTypes.includes(f.type),
+                  );
+                  if (validFiles.length !== selectedFiles.length) {
+                    setFileError(
+                      "Some files were skipped. Only PDF, DOCX, XLSX, Images, CSV, and RAR allowed.",
+                    );
+                  } else {
+                    setFileError("");
+                  }
+
+                  setFiles((prev) => [...prev, ...validFiles]);
+                }}
+              />
+
+              {/* Button to open file selector */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+              >
+                Select Files
+              </button>
+
+              {/* Display error if any */}
+              {fileError && (
+                <p className="text-danger text-xs mt-1">{fileError}</p>
+              )}
+
+              {/* Optional: Show selected file names */}
+              {files.length > 0 && (
+                <div className="mt-2 text-sm text-gray-700">
+                  {files.map((f, i) => (
+                    <div key={i}>{f.name}</div>
+                  ))}
+                </div>
+              )}
+            </div>
             {files.length > 0 && (
               <div className="mt-4 space-y-2">
                 <p className="font-semibold text-sm">Files to Upload:</p>

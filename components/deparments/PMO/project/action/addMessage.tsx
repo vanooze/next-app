@@ -28,7 +28,7 @@ export const NotesPage = ({ project }: MessageProps) => {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/department/PMO/messageBoard?projectId=${projectId}`
+        `/api/department/PMO/messageBoard?projectId=${projectId}`,
       );
       const data = await res.json();
       setMessages(Array.isArray(data) ? data : []);
@@ -61,8 +61,8 @@ export const NotesPage = ({ project }: MessageProps) => {
 
   const userHasAccess =
     user?.designation?.includes("DOCUMENT CONTROLLER") ||
-    user?.department?.includes("PMO") ||
-    user?.name === "Kaye Kimberly L. Manuel";
+    user?.designation?.includes("TECHNICAL COORDINATOR") ||
+    user?.designation?.includes("PMO");
 
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-black">

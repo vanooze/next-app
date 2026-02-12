@@ -18,6 +18,7 @@ import {
   selectTechnical,
   selectTMIG,
 } from "@/helpers/data";
+import { MANPOWER_CAN_UPLOAD_DESIGNATION } from "@/helpers/restriction";
 
 interface ManPowerProps {
   project: Projects | null;
@@ -43,10 +44,10 @@ export default function ManPower({ project }: ManPowerProps) {
   }, [project]);
 
   const canAssign =
-    user?.designation?.includes("PMO TL") ||
-    user?.restriction === "9" ||
-    user?.designation?.includes("DOCUMENT CONTROLLER") ||
-    user?.designation?.includes("TMIG SUPERVISOR");
+    user?.designation &&
+    MANPOWER_CAN_UPLOAD_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   const headingClasses =
     "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
@@ -66,11 +67,11 @@ export default function ManPower({ project }: ManPowerProps) {
     if (manPower.length > 0) {
       const firstEntry = manPower[0];
       setPersonInCharge(
-        new Set((firstEntry.pic || "").split(", ").filter(Boolean))
+        new Set((firstEntry.pic || "").split(", ").filter(Boolean)),
       );
       setPmoOfficers(firstEntry.pmo || "");
       setTechnicals(
-        new Set((firstEntry.technical || "").split(", ").filter(Boolean))
+        new Set((firstEntry.technical || "").split(", ").filter(Boolean)),
       );
       setFreelances(firstEntry.freelance || "");
     }
@@ -95,7 +96,7 @@ export default function ManPower({ project }: ManPowerProps) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       if (!res.ok) throw new Error("Failed to Allocate Man Power");
@@ -128,7 +129,7 @@ export default function ManPower({ project }: ManPowerProps) {
                 setPersonInCharge(
                   keys === "all"
                     ? new Set(selectPmo.map((item) => item.key))
-                    : (keys as Set<string>)
+                    : (keys as Set<string>),
                 );
               }}
             >
@@ -180,7 +181,7 @@ export default function ManPower({ project }: ManPowerProps) {
                 setTechnicals(
                   keys === "all"
                     ? new Set(selectTMIG.map((item) => item.key))
-                    : (keys as Set<string>)
+                    : (keys as Set<string>),
                 );
               }}
             >

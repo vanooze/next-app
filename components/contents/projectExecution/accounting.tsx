@@ -5,6 +5,7 @@ import { Card, CardHeader, CardBody, CardFooter, Button } from "@heroui/react";
 import { Textarea, Checkbox } from "@heroui/react";
 import { Projects } from "@/helpers/acumatica";
 import { useUserContext } from "@/components/layout/UserContext";
+import { ACCOUNTING_CAN_UPLOAD_DESIGNATION } from "@/helpers/restriction";
 
 // 🔹 Map section titles to DB fields
 const sectionMap: Record<string, { noteField: string; checkField: string }> = {
@@ -30,10 +31,14 @@ interface SectionData {
 export default function Accounting({ project }: AccountingProps) {
   const { user } = useUserContext();
 
-  const canEdit = user?.designation?.includes("DOCUMENT CONTROLLER");
+  const canEdit =
+    user?.designation &&
+    ACCOUNTING_CAN_UPLOAD_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   const [data, setData] = useState<SectionData[]>(
-    sections.map((title) => ({ title, checked: false, note: "" }))
+    sections.map((title) => ({ title, checked: false, note: "" })),
   );
   const [loading, setLoading] = useState(true);
 
@@ -43,7 +48,7 @@ export default function Accounting({ project }: AccountingProps) {
         if (!project?.projectId) return;
 
         const res = await fetch(
-          `/api/department/PMO/project_tasks/projectexecution/accounting/?projectId=${project.projectId}`
+          `/api/department/PMO/project_tasks/projectexecution/accounting/?projectId=${project.projectId}`,
         );
 
         if (!res.ok) throw new Error("Failed to fetch project accounting data");
@@ -75,7 +80,7 @@ export default function Accounting({ project }: AccountingProps) {
   const updateBackend = async (
     title: string,
     field: "checked" | "note",
-    value: any
+    value: any,
   ) => {
     if (!project?.projectId || !canEdit) return;
 
@@ -88,8 +93,8 @@ export default function Accounting({ project }: AccountingProps) {
             ? 1
             : 0
           : data.find((d) => d.title === title)?.checked
-          ? 1
-          : 0,
+            ? 1
+            : 0,
       note:
         field === "note"
           ? value?.trim() || null
@@ -103,7 +108,7 @@ export default function Accounting({ project }: AccountingProps) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       if (!res.ok) {

@@ -20,6 +20,10 @@ import { DeleteTask } from "../operation/delete-task";
 import { useUserContext } from "@/components/layout/UserContext";
 import { GenerateReport } from "../generateReport";
 import { UploadItReporting } from "../operation/upload-file";
+import {
+  IT_SEE_ALL_USERS_DESIGNATION,
+  IT_NAME_MAPPINGS,
+} from "@/helpers/restriction";
 
 interface TableWrapperProps {
   tasks: ItTasks[];
@@ -107,11 +111,11 @@ export const ITTableWrapper: React.FC<TableWrapperProps> = ({
   const filteredTasks = useMemo(() => {
     if (!user?.name) return [];
 
-    const seeAllUsers = [
-      "HAROLD DAVID",
-      "RAMON CHRISTOPHER CO",
-      "ERWIN DEL ROSARIO",
-    ];
+    const seeAllUsers =
+      user?.designation &&
+      IT_SEE_ALL_USERS_DESIGNATION.some((role) =>
+        user.designation.toUpperCase().includes(role),
+      );
     /*
   const userPersonnelFilter: Record<string, string[]> = {
     "RAMON CHRISTOPHER CO": ["ivan", "hassan", "rhon", "charles joseph"],
@@ -119,27 +123,15 @@ export const ITTableWrapper: React.FC<TableWrapperProps> = ({
   };
   */
 
-    const selfPersonnelMap: Record<string, string> = {
-      "IVAN BRADLEY BALO": "ivan",
-      "HASSAN E. AYONAN": "hassan",
-      "RHON PACLEB": "rhon",
-      "CHARLES JOSEPH R. CABRERA": "charles joseph",
-      "AARON VINCENT A. OPINALDO": "aaron",
-      "ASHLY ALVARO": "ashley",
-      "ELIEZER MANUEL HERRERA": "eliezer",
-    };
+    const selfPersonnelMap = IT_NAME_MAPPINGS[user.name] || user.name;
 
     const userNameLower = user.name.toLowerCase();
     const userNameUpper = user.name.toUpperCase();
 
-    const canSeeAll = seeAllUsers.some(
-      (u) => u.toLowerCase() === userNameLower,
-    );
-
     let result = tasks;
 
     // 🔐 Apply visibility rules
-    if (!canSeeAll) {
+    if (!seeAllUsers) {
       /*
     const allowedPersonnel = userPersonnelFilter[user.name];
 
@@ -157,7 +149,7 @@ export const ITTableWrapper: React.FC<TableWrapperProps> = ({
     }
     */
       // 👤 Default: user only sees their own tasks
-      const selfKey = selfPersonnelMap[userNameUpper] || userNameLower;
+      const selfKey = selfPersonnelMap || userNameLower;
 
       result = tasks.filter((t) =>
         t.personnel?.toLowerCase().includes(selfKey),
@@ -210,7 +202,7 @@ export const ITTableWrapper: React.FC<TableWrapperProps> = ({
   const canGenerate =
     user?.designation.includes("PROGRAMMER") ||
     user?.designation.includes("MMC") ||
-    user?.designation === "TECHNICAL";
+    user?.designation.includes("IT TECHNICAL");
 
   const sortedTasks = useMemo(() => {
     if (!filteredTasks.length) return [];

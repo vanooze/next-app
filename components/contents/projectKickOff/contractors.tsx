@@ -29,6 +29,7 @@ import { Projects } from "@/helpers/acumatica";
 import { formatDatetoStr } from "@/helpers/formatDate";
 import useSWR from "swr";
 import { useUserContext } from "@/components/layout/UserContext";
+import { CONTRACTORS_CAN_GENERATE_LINK_DESIGNATION } from "@/helpers/restriction";
 
 interface ContractorsProp {
   project: Projects | null;
@@ -66,6 +67,12 @@ export default function Contractors({ project }: ContractorsProp) {
 
   const { data: uploadedFiles = [], mutate } = useSWR(key, fetcher);
 
+  const canGenerateLink =
+    user?.designation &&
+    CONTRACTORS_CAN_GENERATE_LINK_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
+
   useEffect(() => {
     if (project) setProjectId(project.projectId);
 
@@ -80,12 +87,12 @@ export default function Contractors({ project }: ContractorsProp) {
       setStartDate(
         typeof latest.startDate === "string"
           ? safeParseDate(latest.startDate)
-          : latest.startDate ?? null
+          : (latest.startDate ?? null),
       );
       setEndDate(
         typeof latest.endDate === "string"
           ? safeParseDate(latest.endDate)
-          : latest.endDate ?? null
+          : (latest.endDate ?? null),
       );
     }
   }, [project, uploadedFiles]);
@@ -106,7 +113,7 @@ export default function Contractors({ project }: ContractorsProp) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      }
+      },
     );
 
     if (res.ok) {
@@ -124,9 +131,11 @@ export default function Contractors({ project }: ContractorsProp) {
 
   return (
     <>
-      <Button onPress={onOpen} color="primary" endContent={<PlusIcon />}>
-        Generate Link
-      </Button>
+      {canGenerateLink && (
+        <Button onPress={onOpen} color="primary" endContent={<PlusIcon />}>
+          Generate Link
+        </Button>
+      )}
 
       {generatedLink && (
         <p className="mt-2 text-sm text-blue-600 underline break-words">

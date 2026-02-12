@@ -18,10 +18,11 @@ import { DatePicker } from "@heroui/date-picker";
 import { CalendarDate } from "@internationalized/date";
 import { mutate } from "swr";
 import { formatDatetoStr } from "@/helpers/formatDate";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PlusIcon } from "@/components/icons/table/add-icon";
 import { useUserContext } from "@/components/layout/UserContext";
 import Image from "next/image";
+import { SALES_PERSONNEL_MAP } from "@/helpers/restriction";
 
 export const AddTask = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -57,6 +58,20 @@ export const AddTask = () => {
       setSalesPersonnel(selected);
     }
   };
+
+  useEffect(() => {
+    if (!user?.name || !isOpen) return;
+
+    const mappedKey = SALES_PERSONNEL_MAP[user.name];
+
+    if (mappedKey) {
+      setIsCustom(false);
+      setSalesPersonnel(mappedKey);
+    } else {
+      setIsCustom(true);
+      setSalesPersonnel(user.name);
+    }
+  }, [user?.name, isOpen]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
@@ -105,6 +120,18 @@ export const AddTask = () => {
 
   const handleAddTask = async (onClose: () => void) => {
     setLoading(true);
+
+    const allRequiredEmpty =
+      !clientName.trim() &&
+      !projectDesc.trim() &&
+      !salesPersonnel.trim() &&
+      !requestDepartment.trim() &&
+      !dateReceived;
+
+    if (allRequiredEmpty) {
+      alert("Cannot submit: all required fields are empty.");
+      return;
+    }
     try {
       if (!requestDepartment) {
         alert("Request Department is required");
@@ -250,10 +277,8 @@ export const AddTask = () => {
                         Cellano Cyril D. Javan
                       </SelectItem>
                       <SelectItem key="KISHA">Francine Kisha Guatlo</SelectItem>
+                      <SelectItem key="ZEL">Mark Edzel Castillo</SelectItem>
                       <SelectItem key="RONALD">Ronaldo Francisco</SelectItem>
-                    </SelectSection>
-                    <SelectSection title="Marketing">
-                      <SelectItem key="EVE">Evelyn Pequiras</SelectItem>
                     </SelectSection>
                     <SelectSection title="Technical">
                       <SelectItem key="ERWIN">Erwin Del Rosario</SelectItem>
@@ -264,10 +289,12 @@ export const AddTask = () => {
                     <SelectSection title="Davao Team">
                       <SelectItem key="JOEMAR">Joemar Banichina</SelectItem>
                       <SelectItem key="RAM">Ramielyn Malaya</SelectItem>
-                      <SelectItem key="RITZ">Ritzgerald Lopez</SelectItem>
+                      <SelectItem key="ERSON">Erson Lastimado</SelectItem>
+                      <SelectItem key="JAYLORD">Jaylord Catalan</SelectItem>
                       <SelectItem key="EARL JAN">
                         Earl Jan E. Acierda
                       </SelectItem>
+                      <SelectItem key="MYLEEN">Myleen Ligue</SelectItem>
                     </SelectSection>
                     <SelectItem
                       key="OTHER"
@@ -304,10 +331,9 @@ export const AddTask = () => {
                     setRequestDepartment(Array.from(keys)[0] as string)
                   }
                 >
-                  <SelectItem key="DT">Design Team</SelectItem>
-                  <SelectItem key="PROG">Programmer</SelectItem>
-                  <SelectItem key="MMC">MMC</SelectItem>
-                  <SelectItem key="TECHNICAL">IT Technical</SelectItem>
+                  <SelectItem key="DT">LED - Design Team</SelectItem>
+                  <SelectItem key="PROG">Programmer / MMC</SelectItem>
+                  <SelectItem key="TECHNICAL">Digital Signage - IT</SelectItem>
                 </Select>
                 <Input
                   isReadOnly

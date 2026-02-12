@@ -20,6 +20,11 @@ import { DeleteTask } from "../operation/delete-task";
 import { useUserContext } from "@/components/layout/UserContext";
 import { UploadProfitingModal } from "../operation/upload-file";
 import { GenerateReport } from "../generateReport";
+import {
+  DESIGN_SEE_ALL_USERS_DESIGNATION,
+  DESIGN_NAME_MAPPINGS,
+  DESIGN_DAVAO_SEE_ALL_USERS,
+} from "@/helpers/restriction";
 
 interface TableWrapperProps {
   tasks: dtTask[];
@@ -106,86 +111,110 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     [],
   );
 
-  // ✅ Filter tasks by user and status (skip filtering when search is active)
+  const normalize = (v?: string) => v?.toLowerCase().trim() || "";
+
+  const getMappedName = (name?: string, designation?: string) => {
+    if (!name) return "";
+
+    const branch = designation?.toUpperCase().includes("DAVAO")
+      ? "DAVAO"
+      : "MAIN";
+
+    const branchMap =
+      typeof DESIGN_NAME_MAPPINGS[branch] === "object"
+        ? DESIGN_NAME_MAPPINGS[branch]
+        : {};
+
+    return normalize(branchMap[name] || name);
+  };
+
+  const isDavaoTask = (salesPersonnel?: string) => {
+    const normalizedSales = normalize(salesPersonnel);
+
+    const davaoMap =
+      typeof DESIGN_NAME_MAPPINGS.DAVAO === "object"
+        ? DESIGN_NAME_MAPPINGS.DAVAO
+        : {};
+
+    return Object.values(davaoMap).some((alias) =>
+      normalizedSales.includes(alias.toLowerCase()),
+    );
+  };
+
   const filteredTasks = useMemo(() => {
     if (!user?.name) return [];
 
-    const seeAllUsers = [
-      "HAROLD DAVID",
-      "LANI KIMBER CAMPOS",
-      "MARIA LEA BERMUDEZ",
-      "MARVIN JIMENEZ",
-      "DESIREE SALIVIO",
-      "Jan Ronnell V. Camero",
-      "Marcial A. Gigante III",
-      "Jilian Mark H. Ardinel",
-      "John Eden Ross V. Cola",
-      "BILLY JOEL TOPACIO",
-      "MARVINNE ESTACIO",
-      "ERWIN DEL ROSARIO",
-    ];
+    const safeTasks = Array.isArray(tasks) ? tasks : [];
 
-    const nameMappings: Record<string, string> = {
-      "Jhoannah Rose-Mil L. Sicat ": "JHOAN",
-      "Genevel Garcia": "GEN",
-      "KENNETH BAUTISTA": "KENNETH",
-      "Ida Ma. Catherine C. Madamba": "IDA",
-      "Cellano Cyril Nicolo D. Javan": "CYRIL",
-      "Evelyn Pequiras": "EVE",
-      "Ronaldo J. Francisco": "RONALD",
-    };
+    /** ---------- helpers ---------- */
+    const normalize = (v?: string) => v?.toLowerCase().trim() || "";
 
-    const mappedName = nameMappings[user.name] || user.name;
-    const canSeeAll = seeAllUsers.some(
-      (u) => u.toLowerCase() === user.name.toLowerCase(),
+    const designation = normalize(user.designation);
+    const mappedName = getMappedName(user.name, user.designation);
+
+    /** ---------- permission layers ---------- */
+
+    // 🌍 Global see-all
+    const canSeeAll = DESIGN_SEE_ALL_USERS_DESIGNATION.some((role) =>
+      designation.includes(role.toLowerCase()),
     );
 
-    let result = canSeeAll
-      ? tasks
-      : tasks.filter((t) =>
-          t.salesPersonnel?.toLowerCase().includes(mappedName.toLowerCase()),
-        );
+    // 🏝 Davao branch see-all
+    const davaoCanSeeAll =
+      !canSeeAll &&
+      DESIGN_DAVAO_SEE_ALL_USERS.some((role) =>
+        designation.includes(role.toLowerCase()),
+      );
 
-    if (startDate && endDate) {
-      const start = new Date(startDate).getTime();
-      const end = new Date(endDate).getTime();
-      result = result.filter((t) => {
-        const taskDate = t.dateReceived
-          ? new Date(t.dateReceived).getTime()
-          : 0;
-        return taskDate >= start && taskDate <= end;
-      });
-    }
+    /** ---------- 1️⃣ visibility filtering ---------- */
+    let result = safeTasks.filter((task) => {
+      const sales = normalize(task.salesPersonnel);
 
-    // ✅ Search filter
-    if (searchValue?.trim()) {
-      const query = searchValue.toLowerCase();
+      // Global → everything
+      if (canSeeAll) return true;
+
+      // Davao manager → only davao tasks
+      if (davaoCanSeeAll) return isDavaoTask(task.salesPersonnel);
+
+      // Normal user → own tasks only
+      return sales.includes(mappedName);
+    });
+
+    /** ---------- 2️⃣ search filtering ---------- */
+    if (searchValue.trim()) {
+      const query = normalize(searchValue);
+
       result = result.filter(
         (t) =>
-          t.clientName?.toLowerCase().includes(query) ||
-          t.salesPersonnel?.toLowerCase().includes(query) ||
-          t.structuralBoq?.toLowerCase().includes(query) ||
-          t.systemDiagram?.toLowerCase().includes(query),
+          normalize(t.clientName).includes(query) ||
+          normalize(t.salesPersonnel).includes(query) ||
+          normalize(t.structuralBoq).includes(query) ||
+          normalize(t.systemDiagram).includes(query),
       );
     }
 
-    // ✅ Status filter
-    if (!showAllStatuses && filterStatuses.length > 0) {
-      result = result.filter((t) => filterStatuses.includes(t.status));
-    } else if (!showAllStatuses && filterStatuses.length === 0) {
-      result = result.filter((t) =>
-        ["Pending", "Overdue", "OnHold", "Declined"].includes(t.status),
-      );
+    /** ---------- 3️⃣ status filtering ---------- */
+    if (!showAllStatuses) {
+      if (filterStatuses.length > 0) {
+        result = result.filter((t) => filterStatuses.includes(t.status));
+      } else {
+        // default ongoing-type statuses
+        result = result.filter((t) =>
+          ["Pending", "Overdue", "OnHold", "Declined"].includes(t.status),
+        );
+      }
     }
 
-    // ✅ Date filter
+    /** ---------- 4️⃣ date filtering ---------- */
     if (startDate && endDate) {
       const start = new Date(startDate).getTime();
       const end = new Date(endDate).getTime();
+
       result = result.filter((t) => {
         const taskDate = t.dateReceived
           ? new Date(t.dateReceived).getTime()
           : 0;
+
         return taskDate >= start && taskDate <= end;
       });
     }

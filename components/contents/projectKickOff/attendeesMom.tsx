@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Select,
   SelectItem,
@@ -19,6 +19,7 @@ import { DropZone, DropItem, FileTrigger } from "react-aria-components";
 import { selectSales, selectPmo } from "@/helpers/data";
 import { Projects } from "@/helpers/acumatica";
 import { useUserContext } from "@/components/layout/UserContext";
+import { MOM_CAN_UPLOAD_DESIGNATION } from "@/helpers/restriction";
 
 interface AttendeesMOMProps {
   project: Projects | null;
@@ -38,6 +39,8 @@ export default function AttendeesMom({ project }: AttendeesMOMProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [isPOLoading, setIsPOLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [fileError, setFileError] = useState("");
   const headingClasses =
     "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small";
   useEffect(() => {
@@ -52,14 +55,14 @@ export default function AttendeesMom({ project }: AttendeesMOMProps) {
       setIsPOLoading(true);
       try {
         const res = await fetch(
-          `/api/department/PMO/project_tasks/projectkickoff/attendees_mom/personnel/get?projectId=${projectId}`
+          `/api/department/PMO/project_tasks/projectkickoff/attendees_mom/personnel/get?projectId=${projectId}`,
         );
         const data = await res.json();
         if (data.assignedPersonnel) {
           setassignedPersonnel(data.assignedPersonnel);
         }
       } catch (err) {
-        console.error("Failed to fetch assigned TOR", err);
+        console.error("Failed to fetch assigned MOM", err);
       } finally {
         setIsPOLoading(false);
       }
@@ -69,8 +72,10 @@ export default function AttendeesMom({ project }: AttendeesMOMProps) {
   }, [projectId]);
 
   const canUpload =
-    user?.designation.includes("PMO") ||
-    user?.designation?.includes("DOCUMENT CONTROLLER");
+    user?.designation &&
+    MOM_CAN_UPLOAD_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/projectkickoff/attendees_mom?id=${projectId}`
@@ -117,7 +122,7 @@ export default function AttendeesMom({ project }: AttendeesMOMProps) {
           {
             method: "POST",
             body: formData,
-          }
+          },
         );
 
         const result = await res.json();
@@ -155,26 +160,67 @@ export default function AttendeesMom({ project }: AttendeesMOMProps) {
           {/* PO Attachment */}
           <h1 className="text-lg font-semibold">Attendees & MOM Attachment</h1>
           <div className="border border-dashed rounded max-w-lg">
-            <DropZone
-              onDrop={handleDrop}
-              className="p-6 border border-gray-300 rounded text-center"
-            >
-              <p className="text-sm text-gray-600">Drag & drop files here</p>
-              <FileTrigger
-                allowsMultiple
-                acceptedFileTypes={[
-                  "image/png",
-                  "image/jpeg",
-                  "application/pdf",
-                  "text/csv",
-                ]}
-                onSelect={(files) => {
-                  if (files) {
-                    setFiles((prev) => [...prev, ...Array.from(files)]);
+            <div className="p-6 border border-gray-300 rounded text-center flex flex-col items-center gap-2">
+              <p className="text-sm text-gray-600 mb-2">
+                Upload one or multiple files.
+              </p>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                multiple
+                accept=".pdf, .doc, .docx, .xls, .xlsx, .rar, image/png, image/jpeg, text/csv"
+                className="hidden"
+                onChange={(e) => {
+                  const selectedFiles = Array.from(e.target.files || []);
+                  const allowedTypes = [
+                    "application/pdf",
+                    "application/msword",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "application/x-rar-compressed",
+                    "image/png",
+                    "image/jpeg",
+                    "text/csv",
+                  ];
+
+                  const validFiles = selectedFiles.filter((f) =>
+                    allowedTypes.includes(f.type),
+                  );
+                  if (validFiles.length !== selectedFiles.length) {
+                    setFileError(
+                      "Some files were skipped. Only PDF, DOCX, XLSX, Images, CSV, and RAR allowed.",
+                    );
+                  } else {
+                    setFileError("");
                   }
+
+                  setFiles((prev) => [...prev, ...validFiles]);
                 }}
-              ></FileTrigger>
-            </DropZone>
+              />
+
+              {/* Button to open file selector */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+              >
+                Select Files
+              </button>
+              {fileError && (
+                <p className="text-danger text-xs mt-1">{fileError}</p>
+              )}
+
+              {/* Optional: Show selected file names */}
+              {files.length > 0 && (
+                <div className="mt-2 text-sm text-gray-700">
+                  {files.map((f, i) => (
+                    <div key={i}>{f.name}</div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {files.length > 0 && (
               <div className="mt-4 space-y-2">

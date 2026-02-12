@@ -51,7 +51,7 @@ function PreProjectKickOff({ project }: PreProjectKickOffProps) {
         <Tab key="Budget" title="Budget">
           <Budget project={project} />
         </Tab>
-        <Tab key="GanntChart" title="Gannt Chart">
+        <Tab key="GanttChart" title="Gantt Chart">
           <Chart project={project} />
         </Tab>
         {/* <Tab key="See All" title="See All">

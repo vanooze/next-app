@@ -46,36 +46,36 @@ export const selectPOStatus = [
 
 export const selectTMIG = [
   {
-    key: `CHRISTOPHER JAPITANA`,
-    label: `CHRISTOPHER JAPITANA`,
+    key: `Marvinne Estacio`,
+    label: `Marvinne Estacio`,
   },
   {
-    key: `RICHARD FABROS`,
-    label: `RICHARD FABROS`,
+    key: `Christopher Japitana`,
+    label: `Christopher Japitana`,
   },
   {
-    key: `RICKSON CALAGUAS`,
-    label: `RICKSON CALAGUAS`,
+    key: `Mark Anthony Bumaat`,
+    label: `Mark Anthony Bumaat`,
   },
   {
-    key: `FERDINAND SANTIAGO`,
-    label: `FERDINAND SANTIAGO`,
+    key: `Angelito Punay`,
+    label: `Angelito Punay`,
   },
   {
-    key: `MARK ANTHONY BUMAAT`,
-    label: `MARK ANTHONY BUMAAT`,
+    key: `Vhal Joshua Tintero`,
+    label: `Vhal Joshua Tintero`,
   },
   {
-    key: `LAWRENCE DUCUT`,
-    label: `LAWRENCE DUCUT`,
+    key: `Lawrence Ducut`,
+    label: `Lawrence Ducut`,
   },
   {
-    key: `ANGELITO PUNAY`,
-    label: `ANGELITO PUNAY`,
+    key: `John Q. Marfil`,
+    label: `John Q. Marfil`,
   },
   {
-    key: `Regie B. Carig`,
-    label: `Regie B. Carig`,
+    key: `Jomar A. David`,
+    label: `Jomar A. David`,
   },
   {
     key: `Vhal Joshua Tintero`,
@@ -105,8 +105,8 @@ export const selectTMIG = [
 
 export const selectSales = [
   {
-    key: `KENNETH BAUTISTA`,
-    label: `KENNETH BAUTISTA`,
+    key: `Kenneth Bautista`,
+    label: `Kenneth Bautista`,
   },
   {
     key: `Rian Cruz`,
@@ -121,23 +121,23 @@ export const selectSales = [
     label: `Jhoannah Rose-Mil L. Sicat`,
   },
   {
-    key: `Alliah Pearl Robles`,
-    label: `Alliah Pearl Robles`,
-  },
-  {
     key: `Ida Ma. Catherine C. Madamba`,
     label: `Ida Ma. Catherine C. Madamba`,
+  },
+  {
+    key: `Francine Kisha Guatlo`,
+    label: `Francine Kisha Guatlo`,
+  },
+  {
+    key: `Cellano Cyril Nicolo D. Javan`,
+    label: `Cellano Cyril Nicolo D. Javan`,
   },
 ];
 
 export const selectDesign = [
   {
-    key: `MARVINNE ESTACIO`,
-    label: `MARVINNE ESTACIO`,
-  },
-  {
-    key: `BILLY JOEL TOPACIO`,
-    label: `BILLY JOEL TOPACIO`,
+    key: `Billy Joel Topacio`,
+    label: `Billy Joel Topacio`,
   },
   {
     key: `Jan Ronnell V. Camero`,
@@ -155,27 +155,6 @@ export const selectDesign = [
     key: `John Eden Ross V. Cola`,
     label: `John Eden Ross V. Cola`,
   },
-];
-
-export const selectProgrammer = [
-  { key: `RAMON CHRISTOPHER CO`, label: `RAMON CHRISTOPHER CO` },
-  { key: `Hassan E. Ayonan`, label: `Hassan E. Ayonan` },
-  { key: `Ivan Bradley Balo`, label: `Ivan Bradley Balo` },
-];
-
-export const selectTechnical = [
-  { key: `HAROLD DAVID`, label: `HAROLD DAVID` },
-  { key: `ERWIN DEL ROSARIO`, label: `ERWIN DEL ROSARIO` },
-  { key: `ELIEZER MANUEL HERRERA`, label: `ELIEZER MANUEL HERRERA` },
-  { key: `ASHLY ALVARO`, label: `ASHLY ALVARO` },
-  { key: `Aaron Vincent A. Opinaldo`, label: `Aaron Vincent A. Opinaldo` },
-];
-
-export const selectFiliteredTechnical = [
-  { key: `ERWIN DEL ROSARIO`, label: `ERWIN DEL ROSARIO` },
-  { key: `ELIEZER MANUEL HERRERA`, label: `ELIEZER MANUEL HERRERA` },
-  { key: `ASHLY ALVARO`, label: `ASHLY ALVARO` },
-  { key: `Aaron Vincent A. Opinaldo`, label: `Aaron Vincent A. Opinaldo` },
 ];
 
 export const selectFiliteredDesign = [
@@ -196,9 +175,30 @@ export const selectFiliteredDesign = [
     label: `John Eden Ross V. Cola`,
   },
   {
-    key: `BILLY JOEL TOPACIO`,
-    label: `BILLY JOEL TOPACIO`,
+    key: `Billy Joel Topacio`,
+    label: `Billy Joel Topacio`,
   },
+];
+
+export const selectProgrammer = [
+  { key: `Ramon Christopher Co`, label: `Ramon Christopher Co` },
+  { key: `Hassan E. Ayonan`, label: `Hassan E. Ayonan` },
+  { key: `Ivan Bradley Balo`, label: `Ivan Bradley Balo` },
+];
+
+export const selectTechnical = [
+  { key: `Harold David`, label: `Harold David` },
+  { key: `Erwin Del Rosario`, label: `Erwin Del Rosario` },
+  { key: `Eliezer Manuel Herrera`, label: `Eliezer Manuel Herrera` },
+  { key: `Ashly Alvaro`, label: `Ashly Alvaro` },
+  { key: `Aaron Vincent A. Opinaldo`, label: `Aaron Vincent A. Opinaldo` },
+];
+
+export const selectFiliteredTechnical = [
+  { key: `ERWIN DEL ROSARIO`, label: `Erwin Del Rosario` },
+  { key: `ELIEZER MANUEL HERRERA`, label: `Eliezer Manuel Herrera` },
+  { key: `ASHLY ALVARO`, label: `Ashly Alvaro` },
+  { key: `Aaron Vincent A. Opinaldo`, label: `Aaron Vincent A. Opinaldo` },
 ];
 
 export const selectPmo = [
@@ -207,8 +207,16 @@ export const selectPmo = [
     label: `Ryan Joseph DL. Raymundo`,
   },
   {
-    key: `NORIEL VILLAR`,
-    label: `NORIEL VILLAR`,
+    key: `Kaye Kimberly L. Manuel`,
+    label: `Kaye Kimberly L. Manuel`,
+  },
+  {
+    key: `Natasha Feliesh Y. Villafranca`,
+    label: `Natasha Feliesh Y. Villafranca`,
+  },
+  {
+    key: `Noriel Villar`,
+    label: `Noriel Villar`,
   },
 ];
 
@@ -229,12 +237,8 @@ export const selectFiltiredPmo = [
 
 export const selectPurchasing = [
   {
-    key: `Eva B. Badon`,
-    label: `Eva B. Badon`,
-  },
-  {
-    key: `Hereld Jean Jivi Aguyaoy`,
-    label: `Hereld Jean Jivi Aguyaoy`,
+    key: `Ninja Marie Dela Cruz`,
+    label: `Ninja Marie Dela Cruz`,
   },
   {
     key: `Angel May E. Granada`,
@@ -289,4 +293,25 @@ export const selectSupervisors = [
     key: `325041`,
     label: `Francine Kisha Guatlo`,
   },
+];
+
+export const Davao = [
+  {
+    key: `Joemar Bachinicha`,
+    label: `Joemar Bachinicha`,
+  },
+  {
+    key: `Jaylord Catalan`,
+    label: `Jaylord Catalan`,
+  },
+  {
+    key: `Ramielyn Malaya`,
+    label: `Ramielyn Malaya`,
+  },
+  {
+    key: `Myleen Ligue`,
+    label: `Myleen Ligue`,
+  },
+  { key: `Erson Lastimado`, label: `Erson Lastimado` },
+  { key: `Kier Gorpedo`, label: `Kier Gorpedo` },
 ];

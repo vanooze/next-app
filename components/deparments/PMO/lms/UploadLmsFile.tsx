@@ -85,7 +85,7 @@ export const UploadLmsFile = ({
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose} size="xl">
       <ModalContent>
-        <ModalHeader>Upload QMS File</ModalHeader>
+        <ModalHeader>Upload LMS File</ModalHeader>
 
         <ModalBody className="flex flex-col gap-4">
           <Input

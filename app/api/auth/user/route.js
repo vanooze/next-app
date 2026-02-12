@@ -17,9 +17,10 @@ export async function GET() {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    const rows = await executeQuery("SELECT * FROM users WHERE user_id = ?", [
-      decoded.userId,
-    ]);
+    const rows = await executeQuery(
+      "SELECT * FROM users_clean WHERE user_id = ?",
+      [decoded.userId],
+    );
 
     if (rows.length === 0) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -32,7 +33,7 @@ export async function GET() {
     console.error("Auth error:", err);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

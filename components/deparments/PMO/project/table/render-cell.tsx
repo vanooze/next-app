@@ -20,25 +20,17 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
   const { user } = useUserContext();
   const router = useRouter();
   const [localStatus, setLocalStatus] = React.useState(
-    (Tasks.status as string) || ""
+    (Tasks.status as string) || "",
   );
 
   const userHasAccess = (() => {
     if (!user) return false;
 
     const isManager =
-      user.designation?.includes("PMO TL") ||
-      user.designation?.includes("DOCUMENT CONTROLLER") ||
-      user.designation?.includes("TECHNICAL ASSISTANT MANAGER") ||
-      user.designation?.includes("IT SUPERVISOR") ||
-      user.designation?.includes("TMIG SUPERVISOR") ||
-      user.designation?.includes("TECHNICAL SUPERVISOR") ||
-      user.designation?.includes("DESIGN SUPERVISOR") ||
-      user.designation?.includes("TECHNICAL ADMIN CONSULTANT") ||
-      user.designation?.includes("TECHNICAL MANAGER") ||
-      user?.designation?.includes("PMO") ||
-      user?.name === "DESIREE SALIVIO" ||
-      user.restriction === "9";
+      user.position === "EXECUTIVE" ||
+      user.position === "MANAGER" ||
+      user.position === "PMO" ||
+      user.designation?.includes("SALES ASSISTANT");
 
     const accessList = Tasks.access
       ? Tasks.access.split(",").map((name) => name.trim())
@@ -51,9 +43,9 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
     user?.designation?.includes("DOCUMENT CONTROLLER") ||
     user?.designation?.includes("PMO");
 
-  const userDocumentController = user?.designation?.includes(
-    "DOCUMENT CONTROLLER",
-  );
+  const userDocumentController =
+    user?.designation?.includes("DOCUMENT CONTROLLER") ||
+    user?.designation?.includes("TECHNICAL COORDINATOR");
 
   // ✅ Centralized color map for statuses
   const statusColorMap: Record<

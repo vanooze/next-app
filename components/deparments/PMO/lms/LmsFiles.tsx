@@ -142,18 +142,20 @@ export const LmsFiles = () => {
     }
   };
 
-  const handleDownload = (fileName: string, fileTitle: string) => {
-    const url = `/api/download?folder=qms&file=${encodeURIComponent(fileName)}`;
+  const handleDownload = (fileName: string, folderId?: number) => {
+    const url = `/files/lms/download?file=${encodeURIComponent(fileName)}${
+      folderId ? `&folderId=${folderId}` : ""
+    }`;
     const link = document.createElement("a");
     link.href = url;
-    link.download = fileTitle || fileName;
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     link.remove();
   };
 
   // ----------------- BREADCRUMB TITLE -----------------
-  const currentFolderName = folderStack.at(-1)?.name ?? "QMS Files";
+  const currentFolderName = folderStack.at(-1)?.name ?? "LMS Files";
 
   return (
     <div className="p-6">
@@ -280,7 +282,10 @@ export const LmsFiles = () => {
                     variant="flat"
                     className="flex-1"
                     onPress={() =>
-                      handleDownload(file.file_name, file.file_title)
+                      handleDownload(
+                        file.file_name,
+                        file.folder_id ?? undefined,
+                      )
                     }
                   >
                     Download

@@ -78,20 +78,10 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
       const hasAccessByName = accessList.includes(user.name);
       const hasAccessByRole =
-        user.designation?.includes("PMO TL") ||
-        user.designation?.includes("DOCUMENT CONTROLLER") ||
-        user.designation?.includes("TECHNICAL ASSISTANT MANAGER") ||
-        user.designation?.includes("IT SUPERVISOR") ||
-        user.designation?.includes("TMIG SUPERVISOR") ||
-        user.designation?.includes("TECHNICAL SUPERVISOR") ||
-        user.designation?.includes("TECHNICAL ADMIN CONSULTANT") ||
-        user.designation?.includes("DESIGN SUPERVISOR") ||
-        user.designation?.includes("TECHNICAL MANAGER") ||
-        user.department?.includes("TMIG") ||
-        user.department?.includes("DESIGN") ||
-        user.department?.includes("PMO") ||
-        user?.name === "DESIREE SALIVIO" ||
-        user.restriction === "9";
+        user.position === "EXECUTIVE" ||
+        user.position === "MANAGER" ||
+        user.position === "PMO" ||
+        user.designation?.includes("SALES ASSISTANT");
 
       return hasAccessByName || hasAccessByRole;
     });

@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { Projects } from "@/helpers/acumatica";
 import { Spinner, Checkbox, Button, Input, Divider } from "@heroui/react";
 import { useUserContext } from "@/components/layout/UserContext";
+import { MANPOWER_DELEGATION_CAN_ASSIGN_DESIGNATION } from "@/helpers/restriction";
 
 interface ManPowerProps {
   project: Projects | null;
@@ -30,13 +31,10 @@ export default function ManPower({ project }: ManPowerProps) {
   }, [project]);
 
   const canAssign =
-    user?.designation?.includes("PMO TL") ||
-    user?.designation?.includes("TECHNICAL ASSISTANT MANAGER") ||
-    user?.designation?.includes("IT SUPERVISOR") ||
-    user?.designation?.includes("TMIG SUPERVISOR") ||
-    user?.designation?.includes("TECHNICAL SUPERVISOR") ||
-    user?.designation?.includes("DOCUMENT CONTROLLER") ||
-    user?.designation?.includes("DESIGN SUPERVISOR");
+    user?.designation &&
+    MANPOWER_DELEGATION_CAN_ASSIGN_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   const key =
     projectId && dateAssigned
@@ -64,7 +62,7 @@ export default function ManPower({ project }: ManPowerProps) {
     formatted.pic.length,
     formatted.pmo.length,
     formatted.technical.length,
-    formatted.freelance.length
+    formatted.freelance.length,
   );
 
   const handleCheckChange = (key: string, checked: boolean) => {
@@ -96,7 +94,7 @@ export default function ManPower({ project }: ManPowerProps) {
     });
 
     const hasSelections = Object.values(selectedNames).some(
-      (arr) => arr.length > 0
+      (arr) => arr.length > 0,
     );
     if (!hasSelections) {
       alert("Please select at least one person.");
@@ -118,7 +116,7 @@ export default function ManPower({ project }: ManPowerProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      }
+      },
     );
 
     if (res.ok) {
@@ -140,7 +138,7 @@ export default function ManPower({ project }: ManPowerProps) {
       const res = await fetch(url);
       const json = await res.json();
       return json.success ? json.data : [];
-    }
+    },
   );
 
   useEffect(() => {

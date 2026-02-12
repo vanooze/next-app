@@ -8,6 +8,8 @@ import { normalizeToYYYYMMDD } from "@/helpers/formatDate";
 import { useUserContext } from "@/components/layout/UserContext";
 import { UploadIcon } from "@/components/icons/upload-icon";
 import { FilesModal } from "./showFile";
+import { ProjectDescNoteModal } from "../operation/add-note";
+import { DESIGN_CAN_DELETE, DESIGN_CAN_UPLOAD } from "@/helpers/restriction";
 
 interface Props {
   dtTasks: dtTask;
@@ -27,17 +29,14 @@ export const RenderCell = ({
   const { user } = useUserContext();
   const cellValue = dtTasks[columnKey as keyof dtTask];
   const [isFilesModalOpen, setIsFilesModalOpen] = useState(false);
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<dtTask | null>(null);
 
   const canUpload =
-    user?.name === "HAROLD DAVID" || user?.name === "MARVIN JIMENEZ";
-  const canEdit =
-    user?.designation === "DESIGN SUPERVISOR" ||
-    user?.designation === "DESIGN" ||
-    user?.name === "ERWIN DEL ROSARIO";
+    user?.designation && DESIGN_CAN_UPLOAD.includes(user?.designation);
+  const canEdit = user?.designation.includes("DESIGN");
   const canDelete =
-    user?.designation === "DESIGN SUPERVISOR" ||
-    user?.name === "BILLY JOEL TOPACIO" ||
-    user?.designation.includes("IT SUPERVISOR");
+    user?.designation && DESIGN_CAN_DELETE.includes(user?.designation);
 
   const attachmentField = dtTasks.attachmentName;
 
@@ -71,16 +70,16 @@ export const RenderCell = ({
             cellValue === "Finished"
               ? "bg-success-100 text-success-700"
               : cellValue === "Overdue"
-              ? "bg-danger-100 text-danger-700"
-              : cellValue === "Declined"
-              ? "bg-danger-100 text-danger-700"
-              : cellValue === "Priority"
-              ? "bg-purple-100 text-purple-700"
-              : cellValue === "OnHold"
-              ? "bg-cyan-100 text-cyan-700"
-              : cellValue === "For Proposal"
-              ? "bg-cyan-100 text-cyan-700"
-              : "bg-yellow-100 text-yellow-700"
+                ? "bg-danger-100 text-danger-700"
+                : cellValue === "Declined"
+                  ? "bg-danger-100 text-danger-700"
+                  : cellValue === "Priority"
+                    ? "bg-purple-100 text-purple-700"
+                    : cellValue === "OnHold"
+                      ? "bg-cyan-100 text-cyan-700"
+                      : cellValue === "For Proposal"
+                        ? "bg-cyan-100 text-cyan-700"
+                        : "bg-yellow-100 text-yellow-700"
           }
         >
           <span className="capitalize text-xs">{cellValue}</span>
@@ -88,9 +87,30 @@ export const RenderCell = ({
       );
 
     case "clientName":
-    case "projectDesc":
       return <span>{displayValue(cellValue)}</span>;
+    case "projectDesc":
+      return (
+        <>
+          <Tooltip content="See notes" color="secondary">
+            <button
+              onClick={() => {
+                setSelectedTask(dtTasks);
+                setIsNoteModalOpen(true);
+              }}
+            >
+              {displayValue(cellValue)}
+            </button>
+          </Tooltip>
 
+          {selectedTask && (
+            <ProjectDescNoteModal
+              isOpen={isNoteModalOpen}
+              onClose={() => setIsNoteModalOpen(false)}
+              task={selectedTask}
+            />
+          )}
+        </>
+      );
     case "dateReceived":
     case "eBoqDate":
     case "sBoqDate":

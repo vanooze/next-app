@@ -215,11 +215,7 @@ export const Content = () => {
   if (department?.includes("DESIGN"))
     return renderDepartment("DESIGN", designTasks, designLoading);
 
-  if (
-    user?.designation.includes("PROGRAMMER") ||
-    user?.designation.includes("MMC") ||
-    user?.designation === "TECHNICAL"
-  ) {
+  if (user?.department?.includes("IT/DT")) {
     return renderDepartment("IT", ITTasks, ITLoading);
   }
 

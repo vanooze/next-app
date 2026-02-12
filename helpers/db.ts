@@ -5,15 +5,23 @@ export interface dtTask {
   projectDesc: string;
   salesPersonnel: string;
   dateReceived: string | null;
-  systemDiagram: string | null;
+  systemDiagram: string;
   eBoqDate: string | null;
-  structuralBoq: string | null;
+  structuralBoq: string;
   attachmentName: string | null;
   sBoqDate: string | null;
   sirME: string | null;
   sirMJH: string | null;
   salesId: number;
   status: string;
+}
+
+export interface dtNote {
+  id: number;
+  projId: number;
+  note: string;
+  created_by: string;
+  date: string | null;
 }
 
 export const dtColumns = [

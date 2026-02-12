@@ -111,7 +111,7 @@ export const Tasks = () => {
 
         <div className="flex flex-row gap-3.5 flex-wrap">
           {/*<AddTask />*/}
-          <GenerateReport />
+          {/* <GenerateReport /> */}
         </div>
       </div>
 

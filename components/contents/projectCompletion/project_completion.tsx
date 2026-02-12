@@ -46,7 +46,7 @@ function useProjectFiles(projectId?: string | null) {
       setLoading(true);
       try {
         const res = await fetch(
-          `/api/department/PMO/project_tasks/projectCompletion?id=${projectId}`
+          `/api/department/PMO/project_tasks/projectCompletion?id=${projectId}`,
         );
         if (!res.ok) throw new Error("Failed to load project completion data");
 
@@ -55,7 +55,7 @@ function useProjectFiles(projectId?: string | null) {
           Object.entries(data).map(([key, rows]) => [
             key,
             Array.isArray(rows) ? rows.filter((r) => r.attachmentName) : [],
-          ])
+          ]),
         );
         setFiles(filtered);
       } catch (err) {
@@ -113,7 +113,7 @@ function SummaryTab({
                   files={files[item.key]}
                   projectId={projectId}
                 />
-              )
+              ),
             )}
           </tbody>
         </table>
@@ -143,8 +143,8 @@ function CheckboxRow({
           ? files!.map((f, i) => (
               <Link
                 key={i}
-                href={`/uploads/${projectId}/${encodeURIComponent(
-                  f.attachmentName
+                href={`/uploads/${projectId}/completion/${encodeURIComponent(
+                  f.attachmentName,
                 )}`}
                 target="_blank"
                 color="primary"

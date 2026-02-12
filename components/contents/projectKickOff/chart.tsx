@@ -16,6 +16,7 @@ import {
 import { PlusIcon } from "@/components/icons/table/add-icon";
 import { DeleteIcon } from "@/components/icons/table/delete-icon";
 import { useUserContext } from "@/components/layout/UserContext";
+import { CHART_KICK_OFF_CAN_UPLOAD_DESIGNATION } from "@/helpers/restriction";
 
 interface ChartProps {
   project: Projects | null;
@@ -51,8 +52,10 @@ export default function Chart({ project }: ChartProps) {
   const { user } = useUserContext();
 
   const canModifyChart =
-    user?.department.includes("PMO") ||
-    user?.designation?.includes("DOCUMENT CONTROLLER");
+    user?.designation &&
+    CHART_KICK_OFF_CAN_UPLOAD_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   const openModal = () => {
     if (projects.length > 0) {
@@ -86,7 +89,7 @@ export default function Chart({ project }: ChartProps) {
     const fetchData = async () => {
       if (!project?.projectId) return;
       const res = await fetch(
-        `/api/department/PMO/project_tasks/projectkickoff/chart?projectId=${project.projectId}`
+        `/api/department/PMO/project_tasks/projectkickoff/chart?projectId=${project.projectId}`,
       );
       const data = await res.json();
       setProjects(data);
@@ -105,17 +108,17 @@ export default function Chart({ project }: ChartProps) {
     groupIndex: number,
     taskIndex: number,
     field: TaskField,
-    value: string
+    value: string,
   ) => {
     const updated = [...groups];
     const task = updated[groupIndex].tasks[taskIndex];
     const newTask = { ...task, [field]: value };
 
     const start = new Date(
-      field === "start_date" ? value : newTask.start_date
+      field === "start_date" ? value : newTask.start_date,
     ).getTime();
     const end = new Date(
-      field === "end_date" ? value : newTask.end_date
+      field === "end_date" ? value : newTask.end_date,
     ).getTime();
 
     if (start && end && start >= end) {
@@ -174,12 +177,12 @@ export default function Chart({ project }: ChartProps) {
 
     const start = validTasks.reduce(
       (min, t) => (new Date(t.start_date) < new Date(min) ? t.start_date : min),
-      validTasks[0].start_date
+      validTasks[0].start_date,
     );
 
     const end = validTasks.reduce(
       (max, t) => (new Date(t.end_date) > new Date(max) ? t.end_date : max),
-      validTasks[0].end_date
+      validTasks[0].end_date,
     );
 
     return { start, end };
@@ -223,12 +226,12 @@ export default function Chart({ project }: ChartProps) {
           projectId: project.projectId,
           data: payload,
         }),
-      }
+      },
     );
 
     onClose();
     const res = await fetch(
-      `/api/department/PMO/project_tasks/projectkickoff/chart?projectId=${project.projectId}`
+      `/api/department/PMO/project_tasks/projectkickoff/chart?projectId=${project.projectId}`,
     );
     const data = await res.json();
     setProjects(data);
@@ -289,7 +292,7 @@ export default function Chart({ project }: ChartProps) {
                             groupIndex,
                             taskIndex,
                             "title",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="col-span-4"
@@ -302,7 +305,7 @@ export default function Chart({ project }: ChartProps) {
                             groupIndex,
                             taskIndex,
                             "start_date",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="col-span-3"
@@ -315,7 +318,7 @@ export default function Chart({ project }: ChartProps) {
                             groupIndex,
                             taskIndex,
                             "end_date",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="col-span-3"

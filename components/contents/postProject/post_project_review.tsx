@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Input, Button, Listbox, ListboxItem } from "@heroui/react";
 import { Projects } from "@/helpers/acumatica";
 import { useUserContext } from "@/components/layout/UserContext";
+import { POST_PROJ_REVIEW_CAN_UPLOAD_DESIGNATION } from "@/helpers/restriction";
 
 interface PostProjectProps {
   project: Projects | null;
@@ -21,13 +22,17 @@ export default function PostProjectReview({ project }: PostProjectProps) {
     }
   }, [project]);
 
-  const canEdit = user?.designation.includes("DOCUMENT CONTROLLER");
+  const canEdit =
+    user?.designation &&
+    POST_PROJ_REVIEW_CAN_UPLOAD_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   const fetchReviews = React.useCallback(async () => {
     if (!projectId) return;
     setLoading(true);
     const res = await fetch(
-      `/api/department/PMO/project_tasks/postProject/post_project_review?projectId=${projectId}`
+      `/api/department/PMO/project_tasks/postProject/post_project_review?projectId=${projectId}`,
     );
     const data = await res.json();
     setReviews(data);
@@ -51,7 +56,7 @@ export default function PostProjectReview({ project }: PostProjectProps) {
           projectId,
           list: inputValue,
         }),
-      }
+      },
     );
 
     setInputValue("");

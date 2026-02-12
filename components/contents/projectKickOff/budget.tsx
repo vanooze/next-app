@@ -17,6 +17,7 @@ import {
 import { Projects } from "@/helpers/acumatica";
 import { useUserContext } from "@/components/layout/UserContext";
 import { DeleteIcon } from "@/components/icons/table/delete-icon";
+import { BUDGET_KICK_OFF_CAN_UPLOAD_DESIGNATION } from "@/helpers/restriction";
 
 interface BudgetProps {
   project: Projects | null;
@@ -44,9 +45,10 @@ export default function Budget({ project }: BudgetProps) {
   }, [project]);
 
   const canAddBudget =
-    user?.designation?.includes("PMO") ||
-    user?.restriction === "9" ||
-    user?.designation?.includes("DOCUMENT CONTROLLER");
+    user?.designation &&
+    BUDGET_KICK_OFF_CAN_UPLOAD_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
   useEffect(() => {
     if (!project?.projectId) return;
 
@@ -54,7 +56,7 @@ export default function Budget({ project }: BudgetProps) {
       setIsLoading(true);
       try {
         const res = await fetch(
-          `/api/department/PMO/project_tasks/projectkickoff/budget?projectId=${project.projectId}`
+          `/api/department/PMO/project_tasks/projectkickoff/budget?projectId=${project.projectId}`,
         );
         if (!res.ok) throw new Error("Failed to fetch budget items");
         const data = await res.json();
@@ -90,7 +92,7 @@ export default function Budget({ project }: BudgetProps) {
               },
             ],
           }),
-        }
+        },
       );
 
       if (!res.ok) throw new Error("Failed to save item");
@@ -119,7 +121,7 @@ export default function Budget({ project }: BudgetProps) {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ itemId }),
-        }
+        },
       );
 
       if (!res.ok) throw new Error("Failed to delete");

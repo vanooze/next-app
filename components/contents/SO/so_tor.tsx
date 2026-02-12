@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Textarea,
   Button,
@@ -15,6 +15,7 @@ import useSWR from "swr";
 import { DropZone, DropItem, FileTrigger } from "react-aria-components";
 import { Projects } from "@/helpers/acumatica";
 import { useUserContext } from "@/components/layout/UserContext";
+import { TOR_CAN_UPLOAD_DESIGNATION } from "@/helpers/restriction";
 
 interface TorProps {
   project: Projects | null;
@@ -33,6 +34,8 @@ export default function TOR({ project }: TorProps) {
   const [PODetails, setPODetails] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [fileError, setFileError] = useState("");
   useEffect(() => {
     if (project) {
       setProjectId(project.projectId);
@@ -40,12 +43,10 @@ export default function TOR({ project }: TorProps) {
   }, [project]);
 
   const canUpload =
-    user?.designation.includes("SALES") ||
-    user?.designation.includes("PMO TL") ||
-    user?.restriction === "9" ||
-    user?.designation?.includes("DOCUMENT CONTROLLER") ||
-    user?.designation?.includes("TECHNICAL SUPERVISOR") ||
-    user?.designation.includes("DESIGN");
+    user?.designation &&
+    TOR_CAN_UPLOAD_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   const key = projectId
     ? `/api/department/PMO/project_tasks/so/tor?id=${projectId}`
@@ -92,7 +93,7 @@ export default function TOR({ project }: TorProps) {
           {
             method: "POST",
             body: formData,
-          }
+          },
         );
 
         const result = await res.json();

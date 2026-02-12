@@ -5,6 +5,7 @@ import { Button } from "@heroui/react";
 import { Projects } from "@/helpers/acumatica";
 import { BoqItem } from "@/helpers/db";
 import { useUserContext } from "@/components/layout/UserContext";
+import { PROCUREMENT_CAN_UPLOAD_DESIGNATION } from "@/helpers/restriction";
 
 interface GroupedItems {
   [category: string]: {
@@ -25,11 +26,10 @@ export default function Procurement({ project }: ContractorsProp) {
   const [fetching, setFetching] = useState(false); // for initial fetch
 
   const canAccess =
-    user?.department.includes("DESIGN") ||
-    user?.designation.includes("TECHNICAL ADMIN CONSULTANT") ||
-    user?.designation.includes("TECHNICAL MANAGER") ||
-    user?.designation.includes("TMIG SUPERVISOR") ||
-    user?.designation.includes("DOCUMENT CONTROLLER");
+    user?.designation &&
+    PROCUREMENT_CAN_UPLOAD_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   // Fetch data
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function Procurement({ project }: ContractorsProp) {
       setFetching(true);
       try {
         const res = await fetch(
-          `/api/department/PMO/project_tasks/projectkickoff/boq_items?projectId=${projectId}`
+          `/api/department/PMO/project_tasks/projectkickoff/boq_items?projectId=${projectId}`,
         );
         const data = await res.json();
         if (data.success) setItems(data.data);
@@ -69,12 +69,12 @@ export default function Procurement({ project }: ContractorsProp) {
       BoqItem,
       "id" | "category" | "subcategory" | "project_id"
     >,
-    value: string | number
+    value: string | number,
   ) => {
     setItems((prev) =>
       prev.map((item) =>
-        item.id === itemId ? { ...item, [field]: value } : item
-      )
+        item.id === itemId ? { ...item, [field]: value } : item,
+      ),
     );
   };
 
@@ -88,7 +88,7 @@ export default function Procurement({ project }: ContractorsProp) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        }
+        },
       );
       const data = await res.json();
       if (data.success) alert("Items saved successfully!");
@@ -160,7 +160,7 @@ export default function Procurement({ project }: ContractorsProp) {
                               handleChange(
                                 item.id,
                                 "description",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             disabled={!canAccess}
@@ -185,7 +185,7 @@ export default function Procurement({ project }: ContractorsProp) {
                               handleChange(
                                 item.id,
                                 "qty",
-                                Number(e.target.value)
+                                Number(e.target.value),
                               )
                             }
                             disabled={!canAccess}

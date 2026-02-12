@@ -14,6 +14,7 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { useUserContext } from "@/components/layout/UserContext";
+import { CHART_CAN_CREATE_DESIGNATION } from "@/helpers/restriction";
 
 interface ChartProps {
   project: Projects | null;
@@ -77,7 +78,7 @@ export default function Chart({ project }: ChartProps) {
     const fetchData = async () => {
       if (!project?.projectId) return;
       const res = await fetch(
-        `/api/department/PMO/project_tasks/projectexecution/gannt?projectId=${project.projectId}`
+        `/api/department/PMO/project_tasks/projectexecution/gannt?projectId=${project.projectId}`,
       );
       const data = await res.json();
       setProjects(data);
@@ -90,7 +91,7 @@ export default function Chart({ project }: ChartProps) {
     groupIndex: number,
     taskIndex: number,
     field: "actual_start_date" | "actual_end_date",
-    value: string
+    value: string,
   ) => {
     const updated = [...groups];
     const task = updated[groupIndex].tasks[taskIndex];
@@ -136,21 +137,22 @@ export default function Chart({ project }: ChartProps) {
           projectId: project.projectId,
           data: payload,
         }),
-      }
+      },
     );
 
     onClose();
     const res = await fetch(
-      `/api/department/PMO/project_tasks/projectexecution/gannt?projectId=${project.projectId}`
+      `/api/department/PMO/project_tasks/projectexecution/gannt?projectId=${project.projectId}`,
     );
     const data = await res.json();
     setProjects(data);
   };
 
   const canModifyChart =
-    user?.department.includes("PMO") ||
-    user?.designation?.includes("DOCUMENT CONTROLLER");
-
+    user?.designation &&
+    CHART_CAN_CREATE_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">Project Gantt Chart (ACTUAL)</h1>
@@ -207,7 +209,7 @@ export default function Chart({ project }: ChartProps) {
                             groupIndex,
                             taskIndex,
                             "actual_start_date",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="col-span-2"
@@ -221,7 +223,7 @@ export default function Chart({ project }: ChartProps) {
                             groupIndex,
                             taskIndex,
                             "actual_end_date",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="col-span-2"

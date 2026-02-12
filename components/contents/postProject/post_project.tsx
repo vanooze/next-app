@@ -9,6 +9,7 @@ import NcCapa from "./nccapa";
 import AwardingDocuments from "./awarding_docu";
 import OverallReport from "./overall_report";
 import { useUserContext } from "@/components/layout/UserContext";
+import { POST_PROJ_CAN_UPLOAD_DESIGNATION } from "@/helpers/restriction";
 
 interface PostProjectProprs {
   project: Projects | null;
@@ -18,13 +19,8 @@ function PostProject({ project }: PostProjectProprs) {
   const { user } = useUserContext();
 
   const ValueEngineeringAccess =
-    user?.designation.includes("TECHNICAL MANAGER") ||
-    user?.designation.includes("ACCOUNTING SUPERVISOR") ||
-    user?.designation.includes("IT SUPERVISOR") ||
-    user?.designation.includes("VICE PRESIDENT") ||
-    user?.designation.includes("PRESIDENT") ||
-    user?.designation?.includes("DOCUMENT CONTROLLER") ||
-    user?.designation.includes("TECHNICAL ASSISTANT MANAGER");
+    user?.designation &&
+    POST_PROJ_CAN_UPLOAD_DESIGNATION.includes(user?.designation);
 
   return (
     <div>
