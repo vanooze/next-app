@@ -2,6 +2,8 @@ import { executeQuery } from "@/app/lib/db";
 import { NextResponse } from "next/server";
 import { getUserFromToken } from "@/app/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req) {
   try {
     const user = await getUserFromToken(req);
@@ -23,6 +25,7 @@ export async function GET(req) {
       personnel: r.personnel,
       date: r.date,
       attachmentName: r.attachment_name,
+      fileName: r.file_name,
       salesId: r.sales_id,
       status: r.status,
     }));

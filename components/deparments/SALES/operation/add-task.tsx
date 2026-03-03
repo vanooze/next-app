@@ -122,11 +122,11 @@ export const AddTask = () => {
     setLoading(true);
 
     const allRequiredEmpty =
-      !clientName.trim() &&
-      !projectDesc.trim() &&
-      !salesPersonnel.trim() &&
-      !requestDepartment.trim() &&
-      !dateReceived;
+      (!clientName.trim() &&
+        !projectDesc.trim() &&
+        !salesPersonnel.trim() &&
+        !dateReceived) ||
+      (!requestDepartment.trim() && !dateReceived);
 
     if (allRequiredEmpty) {
       alert("Cannot submit: all required fields are empty.");

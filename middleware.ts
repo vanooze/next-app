@@ -69,5 +69,8 @@ export const config = {
     "/project",
     "/inventory",
     "/contract/:path*",
+    "/kra",
+    "/qms",
+    "/lms",
   ],
 };

@@ -29,6 +29,7 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
     const isManager =
       user.position === "EXECUTIVE" ||
       user.position === "MANAGER" ||
+      user.position === "SUPERVISOR" ||
       user.position === "PMO" ||
       user.designation?.includes("SALES ASSISTANT");
 

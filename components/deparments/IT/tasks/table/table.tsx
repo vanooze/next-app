@@ -111,49 +111,48 @@ export const ITTableWrapper: React.FC<TableWrapperProps> = ({
   const filteredTasks = useMemo(() => {
     if (!user?.name) return [];
 
-    const seeAllUsers =
-      user?.designation &&
+    const canSeeAll =
+      user.designation &&
       IT_SEE_ALL_USERS_DESIGNATION.some((role) =>
         user.designation.toUpperCase().includes(role),
       );
-    /*
-  const userPersonnelFilter: Record<string, string[]> = {
-    "RAMON CHRISTOPHER CO": ["ivan", "hassan", "rhon", "charles joseph"],
-    "ERWIN DEL ROSARIO": ["aaron", "ashley", "eliezer"],
-  };
-  */
 
-    const selfPersonnelMap = IT_NAME_MAPPINGS[user.name] || user.name;
+    let result = [...tasks];
 
-    const userNameLower = user.name.toLowerCase();
-    const userNameUpper = user.name.toUpperCase();
+    // 🔐 Visibility rule — match by mapped personnel code
+    if (!canSeeAll) {
+      const normalize = (v?: string) => v?.toLowerCase().trim() || "";
 
-    let result = tasks;
+      const designation = user.designation?.toUpperCase() || "";
 
-    // 🔐 Apply visibility rules
-    if (!seeAllUsers) {
-      /*
-    const allowedPersonnel = userPersonnelFilter[user.name];
+      const isITUser =
+        designation.includes("IT") ||
+        designation.includes("PROGRAMMER") ||
+        designation.includes("MMC");
 
-    if (allowedPersonnel) {
-      result = tasks.filter((t) =>
-        allowedPersonnel.some((p) =>
-          t.personnel?.toLowerCase().includes(p),
-        ),
-      );
-    } else {
-      const selfKey = selfPersonnelMap[userNameUpper] || userNameLower;
-      result = tasks.filter((t) =>
-        t.personnel?.toLowerCase().includes(selfKey),
-      );
-    }
-    */
-      // 👤 Default: user only sees their own tasks
-      const selfKey = selfPersonnelMap || userNameLower;
+      const isSalesOrDesignUser =
+        designation.includes("SALES") || designation.includes("DESIGN");
 
-      result = tasks.filter((t) =>
-        t.personnel?.toLowerCase().includes(selfKey),
-      );
+      const mappedAlias =
+        Object.entries(IT_NAME_MAPPINGS).find(
+          ([key]) => normalize(key) === normalize(user.name),
+        )?.[1] || user.name;
+
+      result = result.filter((task) => {
+        const personnel = normalize(task.personnel);
+        const sales = normalize(task.salesPersonnel);
+        const alias = normalize(mappedAlias);
+
+        if (isITUser) {
+          return personnel === alias;
+        }
+
+        if (isSalesOrDesignUser) {
+          return sales === alias;
+        }
+
+        return false;
+      });
     }
 
     // 📅 Date filter
@@ -161,37 +160,41 @@ export const ITTableWrapper: React.FC<TableWrapperProps> = ({
       const start = new Date(startDate).getTime();
       const end = new Date(endDate).getTime();
 
-      result = result.filter((t) => {
-        const taskDate = t.dateReceived
-          ? new Date(t.dateReceived).getTime()
+      result = result.filter((task) => {
+        const taskDate = task.dateReceived
+          ? new Date(task.dateReceived).getTime()
           : 0;
         return taskDate >= start && taskDate <= end;
       });
     }
 
     // 🔍 Search filter
-    if (searchValue?.trim()) {
+    if (searchValue.trim()) {
       const query = searchValue.toLowerCase();
+
       result = result.filter(
-        (t) =>
-          t.clientName?.toLowerCase().includes(query) ||
-          t.projectDesc?.toLowerCase().includes(query),
+        (task) =>
+          task.clientName?.toLowerCase().includes(query) ||
+          task.projectDesc?.toLowerCase().includes(query),
       );
     }
 
     // 🚦 Status filter
-    if (!showAllStatuses && filterStatuses.length > 0) {
-      result = result.filter((t) => filterStatuses.includes(t.status));
-    } else if (!showAllStatuses && filterStatuses.length === 0) {
-      result = result.filter((t) =>
-        ["Pending", "Overdue", "Declined"].includes(t.status),
-      );
+    if (!showAllStatuses) {
+      if (filterStatuses.length > 0) {
+        result = result.filter((task) => filterStatuses.includes(task.status));
+      } else {
+        result = result.filter((task) =>
+          ["Pending", "Priority", "Overdue", "Declined"].includes(task.status),
+        );
+      }
     }
 
     return result;
   }, [
     tasks,
-    user,
+    user?.name,
+    user?.designation,
     searchValue,
     filterStatuses,
     showAllStatuses,
@@ -205,17 +208,26 @@ export const ITTableWrapper: React.FC<TableWrapperProps> = ({
     user?.designation.includes("IT TECHNICAL");
 
   const sortedTasks = useMemo(() => {
-    if (!filteredTasks.length) return [];
+    const statusPriority: Record<string, number> = {
+      Priority: 1,
+      OnHold: 2,
+      Overdue: 3,
+      Pending: 4,
+      Finished: 5,
+    };
+
     return [...filteredTasks].sort((a, b) => {
       const aPriority = statusPriority[a.status] ?? 999;
       const bPriority = statusPriority[b.status] ?? 999;
+
       if (aPriority !== bPriority) return aPriority - bPriority;
 
       const aDate = a.dateReceived ? new Date(a.dateReceived).getTime() : 0;
       const bDate = b.dateReceived ? new Date(b.dateReceived).getTime() : 0;
+
       return bDate - aDate;
     });
-  }, [filteredTasks, statusPriority]);
+  }, [filteredTasks]);
 
   const pages = Math.ceil(sortedTasks.length / rowsPerPage);
   const items = useMemo(() => {

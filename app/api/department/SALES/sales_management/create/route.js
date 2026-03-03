@@ -22,6 +22,7 @@ export async function POST(req) {
     const projectDesc = formData.get("projectDesc");
     const dateReceived = formData.get("dateReceived");
     const salesPersonnel = formData.get("salesPersonnel");
+    const requestDepartment = formData.get("requestDepartment");
     const status = formData.get("status");
     const username = formData.get("username");
     const password = formData.get("password");
@@ -128,24 +129,51 @@ export async function POST(req) {
       );
     }
 
-    const customerID = createData?.CustomerID?.value || null;
+    const customerID = createData?.CustomerID?.value?.trim();
+
+    if (
+      !createResponse.ok ||
+      !customerID ||
+      customerID === "" ||
+      customerID === null
+    ) {
+      console.error("❌ Acumatica customer creation failed:", createData);
+
+      await connection.rollback();
+      await fetch(logoutUrl, { method: "POST", headers: { Cookie: cookies } });
+
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            createData?.message ||
+            "Customer creation failed. Database was not updated.",
+        },
+        { status: 400 },
+      );
+    }
 
     const savedFiles = [];
 
     // Store files as comma-separated string in attachment_name
     const attachmentName = savedFiles.length > 0 ? savedFiles.join(", ") : null;
 
+    if (!customerID) {
+      throw new Error("Critical: Attempted DB insert without customerID");
+    }
+
     // Insert into DB
     const [insertResult] = await connection.query(
       `
       INSERT INTO sales_management 
-      (client_name, client_id, proj_desc, date_received, sales_personnel, status, created_by, profiting_file)
-      VALUES (?, ?, ?, ?, ?, 'On Going', ?, ?)
+      (client_name, client_id, proj_desc, department, date_received, sales_personnel, status, created_by, profiting_file)
+      VALUES (?, ?, ?, ?, ?, ?, 'On Going', ?, ?)
       `,
       [
         clientName,
         customerID,
         projectDesc,
+        requestDepartment,
         dateReceived,
         salesPersonnel,
         name,

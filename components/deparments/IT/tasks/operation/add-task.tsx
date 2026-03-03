@@ -35,10 +35,9 @@ export const AddTask = () => {
 
   const [project, setProject] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
-  const [tasks, setTasks] = useState("");
   const [personnel, setPersonnel] = useState<string>("");
-  const [dateStart, setDateStart] = useState<CalendarDate | null>(null);
-  const [dateEnd, setDateEnd] = useState<CalendarDate | null>(null);
+  const [requestBy, setRequestBy] = useState<string>("");
+  const [date, setDate] = useState<CalendarDate | null>(null);
   const [status, setStatus] = useState<string>("Pending");
 
   const [loading, setLoading] = useState(false);
@@ -48,30 +47,18 @@ export const AddTask = () => {
     setPersonnel(selectedKey);
   };
 
-  useEffect(() => {
-    if (dateEnd) {
-      setStatus("Finished");
-    } else {
-      setStatus("Pending");
-    }
-  }, [dateEnd]);
-
   const handleAddTask = async (onClose: () => void) => {
     setLoading(true);
     try {
-      const dateStartStr = formatDatetoStr(dateStart);
-      const dateEndStr = formatDatetoStr(dateEnd);
+      const dateStr = formatDatetoStr(date);
       const name = user?.name || "Unknown User";
       const formData = new FormData();
-      formData.append("project", project);
+      formData.append("clientName", project);
       formData.append("projectDesc", projectDesc);
-      formData.append("tasks", tasks);
       formData.append("personnel", personnel);
-      if (dateStart) {
-        formData.append("dateStart", dateStartStr || "null");
-      }
-      if (dateEnd) {
-        formData.append("dateEnd", dateEndStr || "null");
+      formData.append("salesPersonnel", requestBy);
+      if (date) {
+        formData.append("dateReceived", dateStr || "null");
       }
       formData.append("status", status);
       formData.append("name", name);
@@ -87,8 +74,8 @@ export const AddTask = () => {
       setProject("");
       setProjectDesc("");
       setPersonnel("");
-      setDateStart(null);
-      setDateEnd(null);
+      setRequestBy("");
+      setDate(null);
       onClose();
     } catch (err) {
       console.error("Error creating task:", err);
@@ -100,7 +87,7 @@ export const AddTask = () => {
   return (
     <div>
       <Button onPress={onOpen} color="primary" endContent={<PlusIcon />}>
-        Add Project
+        Add Task
       </Button>
 
       <Modal
@@ -123,7 +110,7 @@ export const AddTask = () => {
               <ModalBody className="grid grid-cols-2 gap-4">
                 <Input
                   isRequired
-                  label="Project"
+                  label="Client Name"
                   variant="bordered"
                   value={project}
                   onValueChange={setProject}
@@ -137,10 +124,10 @@ export const AddTask = () => {
                 />
                 <Input
                   isRequired
-                  label="Tasks"
+                  label="Request By"
                   variant="bordered"
-                  value={tasks}
-                  onValueChange={setTasks}
+                  value={requestBy}
+                  onValueChange={setRequestBy}
                 />
                 <Select
                   isRequired
@@ -154,38 +141,36 @@ export const AddTask = () => {
                   }}
                 >
                   <SelectSection title="Programmer">
-                    <SelectItem key="IVAN">Ivan Balo</SelectItem>
-                    <SelectItem key="HASSAN">Hassan Ayonan</SelectItem>
+                    <SelectItem key="MON">Ramon Christopher Co</SelectItem>
+                    <SelectItem key="IVAN">Ivan Bradley Balo</SelectItem>
+                    <SelectItem key="HASSAN">Hassan E. Ayonan</SelectItem>
                   </SelectSection>
 
                   <SelectSection title="Technical">
+                    <SelectItem key="ERWIN">Erwin Del Rosario</SelectItem>
                     <SelectItem key="ASH">Ashly Alavaro</SelectItem>
                     <SelectItem key="ELI">Eliezer Manuel Herrera</SelectItem>
-                    <SelectItem key="AARON">Aaron Opinaldo</SelectItem>
+                    <SelectItem key="AARON">
+                      Aaron Vincent A. Opinaldo
+                    </SelectItem>
                   </SelectSection>
 
                   <SelectSection title="MMC">
-                    <SelectItem key="CJ">Charles Joseph Cabrera</SelectItem>
+                    <SelectItem key="CJ">Charles Joseph R. Cabrera</SelectItem>
                     <SelectItem key="RHON">Rhon Pacleb</SelectItem>
+                    <SelectItem key="JOHNNY">John Carlo F. Suarez</SelectItem>
                   </SelectSection>
                 </Select>
                 <DatePicker
                   label="Date Start"
                   variant="bordered"
-                  value={dateStart}
-                  onChange={setDateStart}
-                />
-                <DatePicker
-                  label="Date End"
-                  variant="bordered"
-                  value={dateEnd}
-                  onChange={setDateEnd}
+                  value={date}
+                  onChange={setDate}
                 />
                 <Select
                   isRequired
                   label="Status"
                   variant="bordered"
-                  isDisabled={!!dateEnd}
                   items={selectStatus}
                   selectedKeys={new Set([status])}
                   onSelectionChange={(keys) => {

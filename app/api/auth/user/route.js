@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { verifyToken } from "@/app/lib/jwt";
 import { executeQuery } from "@/app/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const token = cookies().get("token")?.value;

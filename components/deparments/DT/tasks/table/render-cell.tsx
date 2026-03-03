@@ -33,10 +33,16 @@ export const RenderCell = ({
   const [selectedTask, setSelectedTask] = useState<dtTask | null>(null);
 
   const canUpload =
-    user?.designation && DESIGN_CAN_UPLOAD.includes(user?.designation);
+    user?.designation &&
+    DESIGN_CAN_UPLOAD.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
   const canEdit = user?.designation.includes("DESIGN");
   const canDelete =
-    user?.designation && DESIGN_CAN_DELETE.includes(user?.designation);
+    user?.designation &&
+    DESIGN_CAN_DELETE.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    );
 
   const attachmentField = dtTasks.attachmentName;
 

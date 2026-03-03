@@ -2,6 +2,8 @@ import { executeQuery } from "@/app/lib/db";
 import { NextResponse } from "next/server";
 import { getUserFromToken } from "@/app/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req) {
   try {
     const user = await getUserFromToken(req);

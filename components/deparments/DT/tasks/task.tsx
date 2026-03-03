@@ -1,5 +1,13 @@
 "use client";
-import { Button, Input, Tooltip } from "@heroui/react";
+import {
+  Button,
+  Input,
+  Tooltip,
+  Modal,
+  ModalBody,
+  ModalHeader,
+  ModalContent,
+} from "@heroui/react";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import useSWR from "swr";
@@ -11,14 +19,17 @@ import { useUserContext } from "../../../layout/UserContext";
 import { dtTask } from "../../../../helpers/db";
 import { AddTask } from "./operation/add-task";
 import { GenerateReport } from "./generateReport";
+import { RequestMMC } from "./operation/request";
 import { SearchIcon } from "../../../icons/searchicon";
 import { EyeIcon } from "../../../icons/table/eye-icon";
+import { ITTasks } from "@/components/deparments/IT/tasks/task";
 
 export const Tasks = () => {
   const { user } = useUserContext();
   const [filterValue, setFilterValue] = useState("");
   const [debouncedFilterValue, setDebouncedFilterValue] = useState(filterValue);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isITModalOpen, setIsITModalOpen] = useState(false);
 
   // ✅ New date range states
   const [startDate, setStartDate] = useState("");
@@ -111,7 +122,15 @@ export const Tasks = () => {
 
         <div className="flex flex-row gap-3.5 flex-wrap">
           {/*<AddTask />*/}
+          {canGenerate && <RequestMMC />}
           {/* <GenerateReport /> */}
+          <Button
+            color="secondary"
+            variant="flat"
+            onPress={() => setIsITModalOpen(true)}
+          >
+            View MMC Details
+          </Button>
         </div>
       </div>
 
@@ -132,6 +151,20 @@ export const Tasks = () => {
           endDate={endDate}
         />
       </div>
+
+      <Modal
+        size="5xl"
+        isOpen={isITModalOpen}
+        onClose={() => setIsITModalOpen(false)}
+        scrollBehavior="inside"
+      >
+        <ModalContent>
+          <ModalHeader>MMC Task Details</ModalHeader>
+          <ModalBody>
+            <ITTasks />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </div>
   );
 };

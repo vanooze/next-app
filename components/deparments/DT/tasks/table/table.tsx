@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { dtColumns, dtTask } from "../../../../../helpers/db";
 import { RenderCell } from "./render-cell";
 import { EditTask } from "../operation/edit-task";
@@ -113,33 +113,39 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
 
   const normalize = (v?: string) => v?.toLowerCase().trim() || "";
 
-  const getMappedName = (name?: string, designation?: string) => {
-    if (!name) return "";
+  const getMappedName = useCallback(
+    (name?: string, designation?: string) => {
+      if (!name) return "";
 
-    const branch = designation?.toUpperCase().includes("DAVAO")
-      ? "DAVAO"
-      : "MAIN";
+      const branch = designation?.toUpperCase().includes("DAVAO")
+        ? "DAVAO"
+        : "MAIN";
 
-    const branchMap =
-      typeof DESIGN_NAME_MAPPINGS[branch] === "object"
-        ? DESIGN_NAME_MAPPINGS[branch]
-        : {};
+      const branchMap =
+        typeof DESIGN_NAME_MAPPINGS[branch] === "object"
+          ? DESIGN_NAME_MAPPINGS[branch]
+          : {};
 
-    return normalize(branchMap[name] || name);
-  };
+      return normalize(branchMap[name] || name);
+    },
+    [],
+  );
 
-  const isDavaoTask = (salesPersonnel?: string) => {
-    const normalizedSales = normalize(salesPersonnel);
+  const isDavaoTask = useCallback(
+    (salesPersonnel?: string) => {
+      const normalizedSales = normalize(salesPersonnel);
 
-    const davaoMap =
-      typeof DESIGN_NAME_MAPPINGS.DAVAO === "object"
-        ? DESIGN_NAME_MAPPINGS.DAVAO
-        : {};
+      const davaoMap =
+        typeof DESIGN_NAME_MAPPINGS.DAVAO === "object"
+          ? DESIGN_NAME_MAPPINGS.DAVAO
+          : {};
 
-    return Object.values(davaoMap).some((alias) =>
-      normalizedSales.includes(alias.toLowerCase()),
-    );
-  };
+      return Object.values(davaoMap).some((alias) =>
+        normalizedSales.includes(alias.toLowerCase()),
+      );
+    },
+    [],
+  );
 
   const filteredTasks = useMemo(() => {
     if (!user?.name) return [];
@@ -228,6 +234,8 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     showAllStatuses,
     startDate,
     endDate,
+    getMappedName,
+    isDavaoTask,
   ]);
 
   const canGenerate = user?.department === "DESIGN";

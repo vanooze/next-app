@@ -34,7 +34,7 @@ const fetcher = async (url: string) => {
 export default function AttendeesMom({ project }: AttendeesMOMProps) {
   const { user } = useUserContext();
   const [projectId, setProjectId] = useState<string | null>("");
-  const [assignedPersonnel, setassignedPersonnel] = useState("");
+  const [assignedPersonnel, setassignedPersonnel] = useState(user?.name || "");
   const [PODetails, setPODetails] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [isPOLoading, setIsPOLoading] = useState(true);
@@ -281,12 +281,6 @@ export default function AttendeesMom({ project }: AttendeesMOMProps) {
             "image/gif",
           ].includes(file.attachmentType);
           const previewUrl = `/uploads/${file.projectId}/kickoff/${file.attachmentName}`;
-
-          const isExcel =
-            file.attachmentName?.toLowerCase().endsWith(".xlsx") ||
-            file.attachmentName?.toLowerCase().endsWith(".xls");
-
-          if (isExcel) return null;
 
           return (
             <Card

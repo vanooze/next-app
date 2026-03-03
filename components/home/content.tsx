@@ -15,10 +15,17 @@ import { useDesignTasks } from "../hooks/useDesignTasks";
 import { TableWrapper as DesignTable } from "../deparments/DT/tasks/table/table";
 import { PMOTableWrapper } from "../deparments/PMO/tasks/table/table";
 import { SalesTableWrapper } from "../deparments/SALES/table/table";
+import { ITTableWrapper } from "../deparments/IT/tasks/table/table";
+import { MarketingTableWrapper } from "../deparments/MARKETING/tasks/table/table";
 import { useITTasks } from "../hooks/useITTasks";
 
-import { PMOTasks, dtTask, SalesManagement } from "@/helpers/db";
-import { ITTableWrapper } from "../deparments/IT/tasks/table/table";
+import {
+  PMOTasks,
+  dtTask,
+  SalesManagement,
+  MarketingTasks,
+} from "@/helpers/db";
+import { useMarketingTasks } from "../hooks/useMarketingTasks";
 
 const ColumnChart = dynamic(
   () => import("../charts/column").then((mod) => mod.Column),
@@ -38,6 +45,11 @@ const ITColumnChart = dynamic(
   { ssr: false },
 );
 
+const MarketingColumnChart = dynamic(
+  () => import("../charts/marketingcolumn").then((mod) => mod.MarketingColumn),
+  { ssr: false },
+);
+
 export const Content = () => {
   const { user } = useUserContext();
   const department = user?.designation;
@@ -47,6 +59,8 @@ export const Content = () => {
   const { tasks: pmoTasks, loading: pmoLoading } = usePMOTasks();
   const { tasks: salesTasks, loading: salesLoading } = useSalesManagement();
   const { tasks: ITTasks, loading: ITLoading } = useITTasks();
+  const { tasks: marketingTasks, loading: marketingLoading } =
+    useMarketingTasks();
 
   const chartRef = useRef<HTMLDivElement>(null);
   const [chartHeight, setChartHeight] = useState<number>(0);
@@ -66,7 +80,10 @@ export const Content = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const getStats = (tasks: any[], type: "PMO" | "SALES" | "DESIGN" | "IT") => {
+  const getStats = (
+    tasks: any[],
+    type: "PMO" | "SALES" | "DESIGN" | "IT" | "MARKETING",
+  ) => {
     const onPendingTasks = tasks.filter((task) => {
       if (type === "SALES") return task.status === "On Going";
       return task.status === "Pending";
@@ -103,7 +120,7 @@ export const Content = () => {
   };
 
   const renderDepartment = (
-    type: "PMO" | "SALES" | "DESIGN" | "IT",
+    type: "PMO" | "SALES" | "DESIGN" | "IT" | "MARKETING",
     tasks: any[],
     loading: boolean,
   ) => {
@@ -114,6 +131,7 @@ export const Content = () => {
       if (type === "PMO") return <PMOColumnChart tasks={tasks} />;
       if (type === "SALES") return <SalesColumnChart tasks={tasks} />;
       if (type === "IT") return <ITColumnChart tasks={tasks} />;
+      if (type === "MARKETING") return <MarketingColumnChart tasks={tasks} />;
       return <ColumnChart tasks={tasks} />;
     };
 
@@ -133,6 +151,14 @@ export const Content = () => {
       if (type === "IT")
         return (
           <ITTableWrapper tasks={tasks} loading={loading} fullScreen={false} />
+        );
+      if (type === "MARKETING")
+        return (
+          <MarketingTableWrapper
+            tasks={tasks}
+            loading={loading}
+            fullScreen={false}
+          />
         );
       return <DesignTable tasks={tasks} loading={loading} fullScreen={false} />;
     };
@@ -217,6 +243,10 @@ export const Content = () => {
 
   if (user?.department?.includes("IT/DT")) {
     return renderDepartment("IT", ITTasks, ITLoading);
+  }
+
+  if (user?.department?.includes("MARKETING")) {
+    return renderDepartment("MARKETING", marketingTasks, marketingLoading);
   }
 
   return (

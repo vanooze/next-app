@@ -268,12 +268,6 @@ export default function BOQ({ project }: BOQProps) {
           ].includes(file.attachmentType);
           const previewUrl = `/uploads/${file.projectId}/kickoff/${file.attachmentName}`;
 
-          const isExcel =
-            file.attachmentName?.toLowerCase().endsWith(".xlsx") ||
-            file.attachmentName?.toLowerCase().endsWith(".xls");
-
-          if (isExcel) return null;
-
           return (
             <Card
               key={idx}

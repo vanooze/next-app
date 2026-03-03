@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { executeQuery } from "@/app/lib/db";
 import { getUserFromToken } from "@/app/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req) {
   try {
     const user = await getUserFromToken(req);
@@ -23,7 +25,7 @@ export async function GET(req) {
     }
 
     const [row] = await executeQuery(
-      `SELECT attachment_name FROM it_activity WHERE id = ?`,
+      `SELECT attachment_name, file_name FROM it_activity WHERE id = ?`,
       [taskId],
     );
 
@@ -35,7 +37,7 @@ export async function GET(req) {
         if (Array.isArray(attachments)) {
           files = attachments.map((name) => ({
             name,
-            path: `/uploads/it report/${encodeURIComponent(name)}`,
+            path: `/uploads/IT%20Reporting/${encodeURIComponent(name)}`,
           }));
         }
       } catch (err) {

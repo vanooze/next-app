@@ -11,9 +11,11 @@ export const SIDEBAR_ACCESS_FOR_PROJECT_DESIGNATION = [
   "PURCHASING",
   "PMO",
   "TECHNICAL",
+  "INVENTORY",
   "IT/DT MANAGER",
   "DOCUMENT CONTROLLER",
   "DAVAO MANAGER",
+  "ACCOUNTING SUPERVISOR",
 ];
 
 export const SIDEBAR_ACCESS_FOR_TASK_DESIGNATION = [
@@ -28,6 +30,7 @@ export const SIDEBAR_ACCESS_FOR_TASK_DESIGNATION = [
   "PROGRAMMER",
   "MMC",
   "DAVAO",
+  "MARKETING",
 ];
 
 export const SIDEBAR_ACCESS_FOR_SALES_DESIGNATION = [
@@ -59,14 +62,11 @@ export const DESIGN_TASKS_ACCESS_DESIGNATION = [
   "DAVAO",
 ];
 
-export const ITDT_TASKS_ACCESS_DESIGNATION = [
-  "PROGRAMMER",
-  "IT TECHNICAL",
-  "IT SUPERVISOR",
-  "MMC",
-];
+export const ITDT_TASKS_ACCESS_DESIGNATION = ["PROGRAMMER", "IT", "MMC"];
 
 export const PMO_TASKS_ACCESS_DESIGNATION = ["PMO"];
+
+export const MARKETING_TASKS_ACCESS_DESIGNATION = ["MARKETING"];
 //-------------------------- SALES DEPARTMENT RESTRICTION --------------------------
 
 export const SALE_SEE_ALL_USERS_DESIGNATION = [
@@ -94,6 +94,7 @@ export const SALE_NAME_MAPPINGS: Record<string, Record<string, string>> = {
     "Francine Kisha Guatlo": "KISHA",
     "Cellano Cyril Nicolo D. Javan": "CYRIL",
     "Ronaldo J. Francisco": "RONALD",
+    "Mark Edzel Castillo": "ZEL",
   },
   DAVAO: {
     "Joemar Banichina": "JOEMAR",
@@ -120,7 +121,7 @@ export const SALES_PERSONNEL_MAP: Record<string, string> = {
   "Erwin Talavera": "ERWIN T.",
   "Cellano Cyril D. Javan": "CYRIL",
   "Francine Kisha Guatlo": "KISHA",
-  "Mark Edzel Castillo": "EDZEL",
+  "Mark Edzel Castillo": "ZEL",
   "Ronaldo Francisco": "RONALD",
   "Erwin Del Rosario": "ERWIN",
   "Lawrence Ducut": "ENCHONG",
@@ -132,6 +133,20 @@ export const SALES_PERSONNEL_MAP: Record<string, string> = {
   "Jaylord Catalan": "JAYLORD",
   "Earl Jan E. Acierda": "EARL JAN",
   "Myleen Ligue": "MYLEEN",
+};
+
+// -------------------------- MARKETING DEPARTMENT RESTRICTION --------------------------
+
+export const MARKETING_SEE_ALL_USERS_DESIGNATION = [
+  "PRESIDENT",
+  "VICE PRESIDENT",
+  "TECHNICAL MANAGER", // MJ
+  "MARKETING",
+];
+
+export const MARKETING_NAME_MAP: Record<string, string> = {
+  "Alliah Pearl Robles": "ALI",
+  "Mary Shania M. Camunias": "SHANIA",
 };
 
 // -------------------------- DESIGN DEPARTMENT RESTRICTION --------------------------
@@ -157,6 +172,7 @@ export const DESIGN_NAME_MAPPINGS: Record<string, Record<string, string>> = {
     "Francine Kisha Guatlo": "KISHA",
     "Cellano Cyril Nicolo D. Javan": "CYRIL",
     "Ronaldo J. Francisco": "RONALD",
+    "Mark Edzel Castillo": "ZEL",
   },
   DAVAO: {
     "Joemar Banichina": "JOEMAR",
@@ -165,6 +181,7 @@ export const DESIGN_NAME_MAPPINGS: Record<string, Record<string, string>> = {
     "Jaylord Catalan": "JAYLORD",
   },
 } as const;
+
 export const DESIGN_CAN_UPLOAD = [
   "TECHNICAL MANAGER", // MJ
   "IT/DT MANAGER", // Harold
@@ -191,13 +208,40 @@ export const IT_SEE_ALL_USERS_DESIGNATION = [
 ];
 
 export const IT_NAME_MAPPINGS: Record<string, string> = {
-  "IVAN BRADLEY BALO": "ivan",
-  "HASSAN E. AYONAN": "hassan",
-  "RHON PACLEB": "rhon",
-  "CHARLES JOSEPH R. CABRERA": "charles joseph",
-  "AARON VINCENT A. OPINALDO": "aaron",
-  "ASHLY ALVARO": "ashley",
-  "ELIEZER MANUEL HERRERA": "eliezer",
+  "Ramon Christopher Co": "MON",
+  "Ivan Bradley Balo": "IVAN",
+  "Hassan E. Ayonan": "HASSAN",
+  "Rhon Pacleb": "RHON",
+  "Charles Joseph R. Cabrera": "CJ",
+  "John Carlo F. Suarez": "JOHNNY",
+  "Aaron Vincent A. Opinaldo": "AARON",
+  "Ashly Alvaro": "ASH",
+  "Eliezzer Manuel Herrera": "ELI",
+  "Erwin Del Rosario": "ERWIN",
+  //SALES
+  "Jhoannah Rose-Mil L. Sicat ": "JHOAN",
+  "Genevel Garcia": "GEN",
+  "KENNETH BAUTISTA": "KENNETH",
+  "Ida Ma. Catherine C. Madamba": "IDA",
+  "Earl Jan E. Acierda": "EARL JAN",
+  "Evelyn Pequiras": "EVE",
+  "Francine Kisha Guatlo": "KISHA",
+  "Cellano Cyril Nicolo D. Javan": "CYRIL",
+  "Ronaldo J. Francisco": "RONALD",
+  "Mark Edzel Castillo": "ZEL",
+  "Joemar Banichina": "JOEMAR",
+  "Ramielyn Malaya": "RAM",
+  "Erson Lastimado": "ERSON",
+  "Jaylord Catalan": "JAYLORD",
+  //DESIGN
+  "John Eden Ross V. Cola": "JER",
+  "Jilian Mark H. Ardinel": "JIL",
+  "Jan Ronnell V. Camero": "JAN",
+  "Marcial A. Gigante III": "MARCIAL",
+  "Billy Joel Topacio": "BILLY",
+  //MARKETING
+  "Alliah Pearl Robles": "ALI",
+  "Mary Shania M. Camunias": "SHANIA",
 };
 
 // --------------------------  PROJECT MONITORING RESTRICTION --------------------------
@@ -216,6 +260,7 @@ export const PROJECT_ASSIGN_ACCESS_DESIGNATION = [
   "TMIG SUPERVISOR",
   "TECHNICAL SUPERVISOR",
   "TECHNICAL ADMIN CONSULTANT",
+  "DESIGN SUPERVISOR",
   // OTHERS
   "PMO",
   "DOCUMENT CONTROLLER",
@@ -488,7 +533,7 @@ export const WARRANTY_CAN_UPLOAD_DESIGNATION = [
   "TECHNICAL COORDINATOR",
 ];
 
-// -------------------------- POST PROOJECT RESTRICTION --------------------------
+// -------------------------- POST PROJECT RESTRICTION --------------------------
 
 export const AWARDING_DOCU_CAN_UPLOAD_DESIGNATION = [
   "PMO",

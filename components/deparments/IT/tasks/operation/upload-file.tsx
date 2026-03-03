@@ -45,6 +45,7 @@ export const UploadItReporting: React.FC<UploadItReportingProps> = ({
       "application/msword",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/vnd.ms-excel",
+      "application/zip",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "application/x-rar-compressed",
       "application/octet-stream",
@@ -76,7 +77,7 @@ export const UploadItReporting: React.FC<UploadItReportingProps> = ({
       formData.append("taskId", String(taskId));
       files.forEach((f) => formData.append("files", f));
 
-      const res = await fetch("/api/department/ITDT/IT/tasks/upload", {
+      const res = await fetch("/api/department/ITDT/IT/tasks/personnelUpload", {
         method: "POST",
         body: formData,
       });
@@ -123,7 +124,7 @@ export const UploadItReporting: React.FC<UploadItReportingProps> = ({
 
                 <Input
                   type="file"
-                  accept=".pdf, .doc, .docx, .xls, .xlsx, .rar, image/*"
+                  accept=".pdf, .doc, .docx, .xls, .xlsx, .rar, .zip, image/*"
                   onChange={handleFileChange}
                   className="text-sm"
                   multiple

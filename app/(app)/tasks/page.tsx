@@ -8,8 +8,10 @@ import { ITTasks } from "@/components/deparments/IT/tasks/task";
 import {
   DESIGN_TASKS_ACCESS_DESIGNATION,
   ITDT_TASKS_ACCESS_DESIGNATION,
+  MARKETING_TASKS_ACCESS_DESIGNATION,
   PMO_TASKS_ACCESS_DESIGNATION,
 } from "@/helpers/restriction";
+import { MarketingTask } from "@/components/deparments/MARKETING/tasks/task";
 
 const TaskPage = () => {
   const { user } = useUserContext();
@@ -40,6 +42,14 @@ const TaskPage = () => {
     )
   ) {
     return <ITTasks />;
+  }
+  if (
+    user.designation &&
+    MARKETING_TASKS_ACCESS_DESIGNATION.some((role) =>
+      user.designation.toUpperCase().includes(role),
+    )
+  ) {
+    return <MarketingTask />;
   }
 };
 

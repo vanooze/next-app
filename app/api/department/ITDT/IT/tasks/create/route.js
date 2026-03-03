@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUserFromToken } from "@/app/lib/auth";
 import { getConnection } from "@/app/lib/db";
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 
 export async function POST(req) {
@@ -9,6 +9,7 @@ export async function POST(req) {
 
   try {
     const user = await getUserFromToken(req);
+
     if (!user || !user.department) {
       return NextResponse.json(
         { success: false, error: "Unauthorized access" },
@@ -17,53 +18,98 @@ export async function POST(req) {
     }
 
     const formData = await req.formData();
+
     const salesId = formData.get("salesId");
     const clientName = formData.get("clientName");
     const projectDesc = formData.get("projectDesc");
     const dateReceived = formData.get("dateReceived");
     const salesPersonnel = formData.get("salesPersonnel");
+    const personnel = formData.get("personnel");
+    const date = formData.get("date");
     const status = formData.get("status");
     const name = formData.get("name");
-    const files = formData.getAll("files"); // ✅ multiple files
+    const files = formData.getAll("files");
+
+    // ===============================
+    // FILE UPLOAD CONFIG
+    // ===============================
+    /*
+const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+*/
+    const ALLOWED_TYPES = [
+      "image/jpeg",
+      "image/png",
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
 
     const savedFiles = [];
-    const dirPath = path.join(process.cwd(), "public", "uploads", "it report");
-    if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+    const dirPath = path.join(
+      process.cwd(),
+      "public",
+      "uploads",
+      "IT Reporting",
+    );
+    await fs.mkdir(dirPath, { recursive: true });
 
-    // ✅ Loop through all uploaded files
     for (const file of files) {
       if (!(file instanceof Blob) || file.size === 0) continue;
 
+      /*
+      if (file.size > MAX_SIZE) {
+        throw new Error("File exceeds 10MB limit");
+      }
+      */
+
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        throw new Error("Invalid file type uploaded");
+      }
+
       const buffer = Buffer.from(await file.arrayBuffer());
+
       const ext = path.extname(file.name);
-      const base = path.basename(file.name, ext);
+      const base = path.basename(file.name, ext).replace(/[^a-zA-Z0-9-_]/g, ""); // sanitize filename
+
       const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+
       let filename = `${base}-${todayStr}${ext}`;
       let version = 1;
-      while (fs.existsSync(path.join(dirPath, filename))) {
-        filename = `${base}-${todayStr}-v${version}${ext}`;
-        version++;
+
+      while (true) {
+        try {
+          await fs.access(path.join(dirPath, filename));
+          filename = `${base}-${todayStr}-v${version}${ext}`;
+          version++;
+        } catch {
+          break;
+        }
       }
-      fs.writeFileSync(path.join(dirPath, filename), buffer);
+
+      await fs.writeFile(path.join(dirPath, filename), buffer);
       savedFiles.push(filename);
     }
 
-    // Store files as comma-separated string in attachment_name
-    const attachmentName = savedFiles.length > 0 ? savedFiles.join(", ") : null;
+    const attachmentName = savedFiles.length ? savedFiles.join(", ") : null;
 
-    // Insert into DB
+    // ===============================
+    // DB TRANSACTION
+    // ===============================
+    await connection.beginTransaction();
+
     const [insertResult] = await connection.query(
       `
       INSERT INTO it_activity 
-      (client_name, proj_desc, date_received, sales_personnel, status, created_by, attachment_name,sales_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      (client_name, proj_desc, date_received, sales_personnel, personnel, status, date, created_by, attachment_name, sales_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         clientName,
         projectDesc,
         dateReceived,
         salesPersonnel,
+        personnel,
         status,
+        date,
         name,
         attachmentName,
         salesId,
@@ -71,6 +117,7 @@ export async function POST(req) {
     );
 
     await connection.commit();
+
     return NextResponse.json({
       success: true,
       message: "Task created successfully and files uploaded",
@@ -78,8 +125,10 @@ export async function POST(req) {
       files: savedFiles,
     });
   } catch (err) {
-    console.error("🔥 Error creating Tasks:", err);
+    console.error("🔥 Error creating task:", err);
+
     if (connection) await connection.rollback();
+
     return NextResponse.json(
       { success: false, error: err.message || "Internal server error" },
       { status: 500 },

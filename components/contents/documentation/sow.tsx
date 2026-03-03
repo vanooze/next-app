@@ -59,17 +59,6 @@ export default function PrePorjectAgreement({ project }: SOWProps) {
     mutate,
   } = useSWR(key, fetcher);
 
-  const handleDrop = async (e: { items: DropItem[] }) => {
-    const newFiles: File[] = [];
-    for (const item of e.items) {
-      if (item.kind === "file") {
-        const file = await item.getFile();
-        newFiles.push(file);
-      }
-    }
-    setFiles((prev) => [...prev, ...newFiles]);
-  };
-
   const submitForm = async () => {
     if (!projectId) return alert("No project selected");
     if (files.length === 0) return alert("Please upload at least one file.");

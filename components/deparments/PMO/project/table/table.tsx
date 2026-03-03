@@ -80,6 +80,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
       const hasAccessByRole =
         user.position === "EXECUTIVE" ||
         user.position === "MANAGER" ||
+        user.position === "SUPERVISOR" ||
         user.position === "PMO" ||
         user.designation?.includes("SALES ASSISTANT");
 
@@ -107,7 +108,9 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
     if (filterStatuses.length > 0) {
       result = result.filter((t) => filterStatuses.includes(t.status ?? ""));
     } else if (showOnlyPlanning) {
-      result = result.filter((t) => t.status === "In Planning");
+      result = result.filter(
+        (t) => t.status === "In Planning" || t.status === "Active",
+      );
     }
 
     return result;

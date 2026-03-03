@@ -3,13 +3,13 @@ import Chart from "react-apexcharts";
 import { ItTasks } from "@/helpers/db";
 
 const pmoMap: Record<string, string> = {
-  "Ivan Bradley Balo": "Ivan",
-  "Hassan E. Ayonan": "Hassan",
-  "RHON PACLEB": "Rhon",
-  "Charles Joseph R. Cabrera": "Charles Joseph",
-  "Aaron Vincent A. Opinaldo": "Aaron",
-  "ASHLY ALVARO": "Ashley",
-  "ELIEZER MANUEL HERRERA": "Eliezer",
+  IVAN: "Ivan",
+  HASSAN: "Hassan",
+  RHON: "RHON",
+  CJ: "CJ",
+  AARON: "AARON",
+  ASHLY: "ASHLY",
+  ELI: "ELI",
 };
 
 const colorMap: Record<string, string> = {
@@ -64,7 +64,7 @@ export const ITColumn: React.FC<ColumnProps> = ({ tasks }) => {
       categories,
     },
     title: {
-      text: "Task Status by PMO Personnel",
+      text: "Task Status by IT/MMC Personnel",
       align: "left",
     },
     legend: {

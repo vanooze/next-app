@@ -44,6 +44,10 @@ export const selectPOStatus = [
   { key: "ON HOLD", label: "ON HOLD" },
 ];
 
+export const selectInvetory = [
+  { key: `Ma. Anilda Daganato`, label: `Ma. Anilda Daganato` },
+];
+
 export const selectTMIG = [
   {
     key: `Marvinne Estacio`,

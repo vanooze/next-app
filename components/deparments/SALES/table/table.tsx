@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@heroui/react";
 import type { SortDescriptor } from "@react-types/shared";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { SalesManagementColumns, SalesManagement } from "@/helpers/db";
 import { RenderCell } from "./render-cell";
 import { EditTask } from "../operation/update";
@@ -100,33 +100,39 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
 
   const normalize = (v?: string) => v?.toLowerCase().trim() || "";
 
-  const getMappedName = (name?: string, designation?: string) => {
-    if (!name) return "";
+  const getMappedName = useCallback(
+    (name?: string, designation?: string) => {
+      if (!name) return "";
 
-    const branch = designation?.toUpperCase().includes("DAVAO")
-      ? "DAVAO"
-      : "MAIN";
+      const branch = designation?.toUpperCase().includes("DAVAO")
+        ? "DAVAO"
+        : "MAIN";
 
-    const branchMap =
-      typeof SALE_NAME_MAPPINGS[branch] === "object"
-        ? SALE_NAME_MAPPINGS[branch]
-        : {};
+      const branchMap =
+        typeof SALE_NAME_MAPPINGS[branch] === "object"
+          ? SALE_NAME_MAPPINGS[branch]
+          : {};
 
-    return normalize(branchMap[name] || name);
-  };
+      return normalize(branchMap[name] || name);
+    },
+    [],
+  );
 
-  const isDavaoTask = (salesPersonnel?: string) => {
-    const normalizedSales = normalize(salesPersonnel);
+  const isDavaoTask = useCallback(
+    (salesPersonnel?: string) => {
+      const normalizedSales = normalize(salesPersonnel);
 
-    const davaoMap =
-      typeof SALE_NAME_MAPPINGS.DAVAO === "object"
-        ? SALE_NAME_MAPPINGS.DAVAO
-        : {};
+      const davaoMap =
+        typeof SALE_NAME_MAPPINGS.DAVAO === "object"
+          ? SALE_NAME_MAPPINGS.DAVAO
+          : {};
 
-    return Object.values(davaoMap).some((alias) =>
-      normalizedSales.includes(alias.toLowerCase()),
-    );
-  };
+      return Object.values(davaoMap).some((alias) =>
+        normalizedSales.includes(alias.toLowerCase()),
+      );
+    },
+    [],
+  );
 
   // ✅ Filter by user + status
   const filteredTasks = useMemo(() => {
@@ -193,6 +199,8 @@ export const SalesTableWrapper: React.FC<TableWrapperProps> = ({
     showAllStatuses,
     showOnlyOngoing,
     searchValue,
+    getMappedName,
+    isDavaoTask,
   ]);
 
   // ✅ Sort

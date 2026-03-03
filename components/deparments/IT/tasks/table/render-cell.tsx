@@ -7,6 +7,7 @@ import { displayValue } from "@/helpers/displayValue";
 import { useUserContext } from "@/components/layout/UserContext";
 import { UploadIcon } from "@/components/icons/upload-icon";
 import { FilesModal } from "./ShowFile";
+import { PersonnelFilesModal } from "./showPersonnelFile";
 
 interface Props {
   ItTasks: ItTasks;
@@ -26,15 +27,37 @@ export const RenderCell = ({
   const { user } = useUserContext();
   const cellValue = ItTasks[columnKey as keyof ItTasks];
   const [isFilesModalOpen, setIsFilesModalOpen] = useState(false);
+  const [isPersonnelFilesModalOpen, setIsPersonnelFilesModalOpen] =
+    useState(false);
 
   // Use attachmentName directly as an array
-  const attachments =
-    typeof ItTasks.attachmentName === "string"
-      ? ItTasks.attachmentName
+  let attachments: string[] = [];
+
+  if (typeof ItTasks.attachmentName === "string") {
+    const raw = ItTasks.attachmentName.trim();
+
+    try {
+      if (raw.startsWith("[")) {
+        attachments = JSON.parse(raw);
+      } else {
+        attachments = raw
           .split(",")
           .map((f) => f.trim())
-          .filter((f) => f.length > 0)
-      : [];
+          .filter((f) => f.length > 0);
+      }
+    } catch {
+      attachments = [];
+    }
+  }
+
+  let personnelAttachments: string[] = [];
+
+  try {
+    personnelAttachments =
+      typeof ItTasks.fileName === "string" ? JSON.parse(ItTasks.fileName) : [];
+  } catch {
+    personnelAttachments = [];
+  }
 
   const canUpload =
     user?.designation.includes("PROGRAMMER") ||
@@ -92,13 +115,36 @@ export const RenderCell = ({
             isOpen={isFilesModalOpen}
             onClose={() => setIsFilesModalOpen(false)}
             attachments={attachments}
-            folder="it report"
+            folder="IT Reporting"
           />
         </>
       ) : (
         <span>{displayValue(cellValue)}</span>
       );
     case "personnel":
+      return personnelAttachments.length > 0 ? (
+        <>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              setIsPersonnelFilesModalOpen(true);
+            }}
+            className="text-blue-500 hover:underline font-medium"
+          >
+            {displayValue(cellValue)}
+          </a>
+
+          <PersonnelFilesModal
+            isOpen={isPersonnelFilesModalOpen}
+            onClose={() => setIsPersonnelFilesModalOpen(false)}
+            attachments={personnelAttachments}
+            folder="IT Reporting"
+          />
+        </>
+      ) : (
+        <span>{displayValue(cellValue)}</span>
+      );
     case "date":
       return <span>{displayValue(cellValue)}</span>;
     case "actions":
@@ -111,16 +157,20 @@ export const RenderCell = ({
               </button>
             </Tooltip>
           )}
-          <Tooltip content="Edit table" color="secondary">
-            <button onClick={() => handleEditTask(ItTasks)}>
-              <EditIcon size={20} fill="#979797" />
-            </button>
-          </Tooltip>
-          <Tooltip content="Delete" color="danger">
-            <button onClick={() => handleDeleteTask(ItTasks)}>
-              <DeleteIcon size={20} fill="#FF0080" />
-            </button>
-          </Tooltip>
+          {canUpload && (
+            <Tooltip content="Edit table" color="secondary">
+              <button onClick={() => handleEditTask(ItTasks)}>
+                <EditIcon size={20} fill="#979797" />
+              </button>
+            </Tooltip>
+          )}
+          {canUpload && (
+            <Tooltip content="Delete" color="danger">
+              <button onClick={() => handleDeleteTask(ItTasks)}>
+                <DeleteIcon size={20} fill="#FF0080" />
+              </button>
+            </Tooltip>
+          )}
         </div>
       );
 

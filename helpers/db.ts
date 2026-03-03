@@ -61,6 +61,7 @@ export interface ItTasks {
   personnel: string;
   date: string | null;
   attachmentName: string | null;
+  fileName: string | null;
   status: string;
 }
 
@@ -74,6 +75,29 @@ export const ItColumns = [
   { name: "Date", uid: "date" },
   { name: "Actions", uid: "actions" },
 ];
+
+// ------------------------- MARKETING MONITORING -------------------------
+export interface MarketingTasks {
+  id: number;
+  clientName: string;
+  projectDesc: string;
+  dateReceived: string | null;
+  personnel: string;
+  date: string | null;
+  file: string | null;
+  status: string;
+}
+
+export const MarketingColumns = [
+  { name: "Status", uid: "status" },
+  { name: "Client Name", uid: "clientName" },
+  { name: "Project Description", uid: "projectDesc" },
+  { name: "Date Received", uid: "dateReceived" },
+  { name: "Personnel", uid: "personnel" },
+  { name: "Date", uid: "date" },
+  { name: "Actions", uid: "actions" },
+];
+
 // ------------------------- PROJECT MONITORING -------------------------
 
 export interface ProjectMonitoring {
@@ -284,6 +308,23 @@ export const AwardedManagementColumns = [
   { name: "Notes", uid: "notes" },
   { name: "Actions", uid: "actions" },
 ];
+
+// ------------------------- KRA TABLE -------------------------
+
+export interface KRATable {
+  kra: string;
+  kpi: string;
+  achievement: string;
+  weight: string;
+  excellent: string;
+  veryGood: string;
+  good: string;
+  needImprovement: string;
+  poor: string;
+  rating: string;
+  points: number;
+  total: number;
+}
 
 // ------------------------- RISK TABLE -------------------------
 

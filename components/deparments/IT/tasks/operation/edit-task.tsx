@@ -9,6 +9,9 @@ import {
   ModalFooter,
   ModalHeader,
   useDraggable,
+  Select,
+  SelectItem,
+  SelectSection,
 } from "@heroui/react";
 import { DatePicker } from "@heroui/date-picker";
 import {
@@ -17,7 +20,6 @@ import {
   today,
   parseDate,
 } from "@internationalized/date";
-import { Select, SelectItem } from "@heroui/select";
 import { mutate } from "swr";
 import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useEffect, useState } from "react";
@@ -136,6 +138,7 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
                 variant="bordered"
                 value={projectDesc}
                 onValueChange={setProjectDesc}
+                disabled
               />
               <DatePicker
                 label="date Received"
@@ -143,13 +146,36 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
                 value={dateReceived}
                 onChange={setDateReceived}
               />
-              <Input
+              <Select
+                isRequired
                 label="Personnel"
                 variant="bordered"
-                value={personnel}
-                onValueChange={setPersonnel}
-              />
+                placeholder="Select a personnel"
+                selectedKeys={personnel ? new Set([personnel]) : new Set()}
+                onSelectionChange={(keys) => {
+                  const selectedKey = Array.from(keys)[0] as string;
+                  setPersonnel(selectedKey);
+                }}
+              >
+                <SelectSection title="Programmer">
+                  <SelectItem key="MON">Ramon Christopher Co</SelectItem>
+                  <SelectItem key="IVAN">Ivan Bradley Balo</SelectItem>
+                  <SelectItem key="HASSAN">Hassan E. Ayonan</SelectItem>
+                </SelectSection>
 
+                <SelectSection title="Technical">
+                  <SelectItem key="ERWIN">Erwin Del Rosario</SelectItem>
+                  <SelectItem key="ASH">Ashly Alavaro</SelectItem>
+                  <SelectItem key="ELI">Eliezer Manuel Herrera</SelectItem>
+                  <SelectItem key="AARON">Aaron Vincent A. Opinaldo</SelectItem>
+                </SelectSection>
+
+                <SelectSection title="MMC">
+                  <SelectItem key="CJ">Charles Joseph R. Cabrera</SelectItem>
+                  <SelectItem key="RHON">Rhon Pacleb</SelectItem>
+                  <SelectItem key="JOHNNY">John Carlo F. Suarez</SelectItem>
+                </SelectSection>
+              </Select>
               <DatePicker
                 label="Date"
                 variant="bordered"

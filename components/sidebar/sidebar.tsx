@@ -17,6 +17,7 @@ import { usePathname } from "next/navigation";
 import { useUserContext } from "../layout/UserContext";
 import { BalanceIcon } from "../icons/sidebar/balance-icon";
 import { ChatIcon } from "../icons/sidebar/chat-icon";
+import { InfoIcon } from "../icons/accounts/info-icon";
 import {
   SIDEBAR_ACCESS_FOR_TASK_DESIGNATION,
   SIDEBAR_ACCESS_FOR_INVENTORY_DESIGNATION,
@@ -196,6 +197,12 @@ export const SidebarWrapper = () => {
                   { label: "QMS Files", href: "/qms" },
                   { label: "LMS Files", href: "/lms" },
                 ]}
+              />
+              <SidebarItem
+                isActive={pathname === "/kra"}
+                title="Key Result Area"
+                icon={<InfoIcon />}
+                href="/kra"
               />
             </SidebarMenu>
           </div>

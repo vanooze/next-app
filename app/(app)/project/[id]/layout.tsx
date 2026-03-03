@@ -17,6 +17,7 @@ import { formatDatetoStr } from "@/helpers/formatDate";
 import {
   selectFiliteredDesign,
   selectFiltiredPmo,
+  selectInvetory,
   selectPurchasing,
   selectSales,
   selectTMIG,
@@ -204,6 +205,7 @@ export default function ProjectLayout({
               { title: "Design", data: selectFiliteredDesign },
               { title: "TMIG", data: selectTMIG },
               { title: "Purchasing", data: selectPurchasing },
+              { title: "Inventory", data: selectInvetory },
             ].map(({ title, data }) => (
               <SelectSection
                 key={title}
