@@ -1,6 +1,7 @@
 export interface SelectUser {
   key: string;
   label: string;
+  department: string;
 }
 
 interface DepartmentUser {
@@ -19,6 +20,7 @@ export const getDepartmentUsers = async (): Promise<SelectUser[]> => {
     return users.map((u) => ({
       key: String(u.user_id),
       label: u.name,
+      department: u.department?.trim() || "NO DEPARTMENT",
     }));
   } catch (err) {
     console.error("Error fetching department users:", err);

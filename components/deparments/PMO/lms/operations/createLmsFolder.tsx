@@ -13,25 +13,24 @@ import {
   SelectItem,
   SelectSection,
 } from "@heroui/react";
-import { useUserContext } from "@/components/layout/UserContext";
-import {
-  SelectExecutive,
-  selectHeads,
-  selectSupervisors,
-} from "@/helpers/data";
 import { mutate } from "swr";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   parentFolderId: number | null;
+  users: Record<string, { key: string; label: string }[]>;
 }
 
-export const CreateLmsFolder = ({ isOpen, onClose, parentFolderId }: Props) => {
+export const CreateLmsFolder = ({
+  isOpen,
+  onClose,
+  parentFolderId,
+  users,
+}: Props) => {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [accessUsers, setAccessUsers] = useState<Set<string>>(new Set());
-  const { user } = useUserContext();
 
   const handleCreate = async () => {
     if (!name.trim()) return;
@@ -60,9 +59,6 @@ export const CreateLmsFolder = ({ isOpen, onClose, parentFolderId }: Props) => {
     }
   };
 
-  const normalize = (list: { key: string; label: string }[]) =>
-    list.map((i) => ({ key: String(i.key), label: i.label }));
-
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose}>
       <ModalContent>
@@ -74,6 +70,7 @@ export const CreateLmsFolder = ({ isOpen, onClose, parentFolderId }: Props) => {
             onValueChange={setName}
             autoFocus
           />
+
           <Select
             selectionMode="multiple"
             label="Give access to:"
@@ -84,36 +81,30 @@ export const CreateLmsFolder = ({ isOpen, onClose, parentFolderId }: Props) => {
               if (keys !== "all") {
                 setAccessUsers(keys as Set<string>);
               } else {
-                const allKeys = [
-                  ...SelectExecutive,
-                  ...selectHeads,
-                  ...selectSupervisors,
-                ].map((i) => String(i.key));
-
-                setAccessUsers(new Set(allKeys));
+                // Select all users across all departments
+                const allUserKeys = Object.values(users)
+                  .flat()
+                  .map((u) => String(u.key));
+                setAccessUsers(new Set(allUserKeys));
               }
             }}
           >
-            {[
-              { title: "Executive", data: normalize(SelectExecutive) },
-              { title: "Heads", data: normalize(selectHeads) },
-              { title: "Supervisors", data: normalize(selectSupervisors) },
-            ].map(({ title, data }) => (
-              <SelectSection
-                key={title}
-                title={title}
-                classNames={{
-                  heading:
-                    "flex w-full sticky top-1 z-20 py-1.5 px-2 bg-default-100 shadow-small rounded-small",
-                }}
-              >
-                {data.map((item) => (
-                  <SelectItem key={item.key}>{item.label}</SelectItem>
-                ))}
-              </SelectSection>
-            ))}
+            {Object.entries(users)
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([department, deptUsers]) => (
+                <SelectSection key={department} title={department}>
+                  {deptUsers
+                    .sort((a, b) => a.label.localeCompare(b.label))
+                    .map((user) => (
+                      <SelectItem key={String(user.key)}>
+                        {user.label}
+                      </SelectItem>
+                    ))}
+                </SelectSection>
+              ))}
           </Select>
         </ModalBody>
+
         <ModalFooter>
           <Button variant="light" onPress={onClose}>
             Cancel

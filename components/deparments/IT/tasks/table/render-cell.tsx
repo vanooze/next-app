@@ -62,7 +62,7 @@ export const RenderCell = ({
   const canUpload =
     user?.designation.includes("PROGRAMMER") ||
     user?.designation.includes("MMC") ||
-    user?.designation.includes("IT TECHNICAL");
+    user?.designation.includes("IT");
 
   switch (columnKey) {
     case "status":

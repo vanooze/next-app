@@ -16,11 +16,10 @@ export async function GET(req) {
 
     if (dept.includes("HR")) {
       query = `
-        SELECT user_id, name, department
+       SELECT user_id, name, department
         FROM users_clean
-        WHERE UPPER(TRIM(department)) != ?
+        WHERE UPPER(TRIM(department)) != 'Z OLD'
       `;
-      params = ["Z OLD"];
     } else if (dept.startsWith("IT/DT")) {
       query = `
         SELECT user_id, name, department

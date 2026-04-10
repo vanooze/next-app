@@ -21,12 +21,12 @@ import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useState, useEffect } from "react";
 import { PlusIcon } from "@/components/icons/table/add-icon";
 import { useUserContext } from "@/components/layout/UserContext";
-import Image from "next/image";
 import { SALES_PERSONNEL_MAP } from "@/helpers/restriction";
 
 export const AddTask = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const targetRef = React.useRef(null);
+
   const { moveProps } = useDraggable({
     targetRef,
     canOverflow: true,
@@ -35,21 +35,28 @@ export const AddTask = () => {
 
   const { user } = useUserContext();
 
-  const [clientName, setClientName] = useState("");
+  // ✅ UPDATED: clientName → clientId
+  const [clientId, setClientId] = useState("");
+
   const [projectDesc, setProjectDesc] = useState("");
   const [salesPersonnel, setSalesPersonnel] = useState<string>("");
   const [dateReceived, setDateReceived] = useState<CalendarDate | null>(null);
-  const [status] = useState("Pending");
-  const [loading, setLoading] = useState(false);
-  const [files, setFiles] = useState<File[]>([]);
-  const [isCustom, setIsCustom] = useState(false);
   const [requestDepartment, setRequestDepartment] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [isCustom, setIsCustom] = useState(false);
+
+  const status = "Pending";
 
   const username = user?.email;
   const password = user?.acu_password;
 
+  // -----------------------------
+  // Sales Personnel Selection
+  // -----------------------------
   const handleSelectionChange = (keys: any) => {
     const selected = Array.from(keys)[0] as string;
+
     if (selected === "OTHER") {
       setIsCustom(true);
       setSalesPersonnel("");
@@ -73,9 +80,12 @@ export const AddTask = () => {
     }
   }, [user?.name, isOpen]);
 
+  // -----------------------------
+  // File Validation
+  // -----------------------------
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
-    if (selectedFiles.length === 0) return;
+    if (!selectedFiles.length) return;
 
     const allowedTypes = [
       "application/pdf",
@@ -86,7 +96,7 @@ export const AddTask = () => {
       "application/vnd.ms-excel",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "application/x-rar-compressed",
-      "application/octet-stream", // some RARs are detected as this
+      "application/octet-stream",
     ];
 
     const validFiles = selectedFiles.filter((file) =>
@@ -94,69 +104,74 @@ export const AddTask = () => {
     );
 
     if (validFiles.length !== selectedFiles.length) {
-      alert(
-        "Some files were skipped. Only PDF, images, Word, Excel, or RAR are allowed.",
-      );
+      alert("Some files were skipped. Invalid file types detected.");
     }
 
     setFiles(validFiles);
   };
 
-  const getSecondEndpoint = (department: string) => {
-    if (department === "DT") {
-      return "/api/department/ITDT/DT/tasks/create";
-    }
-
-    if (
-      department === "PROG" ||
-      department === "MMC" ||
-      department === "TECHNICAL"
-    ) {
-      return "/api/department/ITDT/IT/tasks/create";
-    }
-
-    return null;
+  // -----------------------------
+  // Department routing
+  // -----------------------------
+  const departmentMap: Record<string, string> = {
+    DT: "/api/department/ITDT/DT/tasks/create",
+    PROG: "/api/department/ITDT/IT/tasks/create",
+    MMC: "/api/department/ITDT/IT/tasks/create",
+    TECHNICAL: "/api/department/ITDT/IT/tasks/create",
   };
 
+  const getSecondEndpoint = (department: string) =>
+    departmentMap[department] || null;
+
+  const isFormValid =
+    clientId.trim() !== "" &&
+    projectDesc.trim() !== "" &&
+    salesPersonnel.trim() !== "" &&
+    dateReceived !== null &&
+    requestDepartment.trim() !== "";
+
+  // -----------------------------
+  // Submit handler
+  // -----------------------------
   const handleAddTask = async (onClose: () => void) => {
     setLoading(true);
 
-    const allRequiredEmpty =
-      (!clientName.trim() &&
-        !projectDesc.trim() &&
-        !salesPersonnel.trim() &&
-        !dateReceived) ||
-      (!requestDepartment.trim() && !dateReceived);
-
-    if (allRequiredEmpty) {
-      alert("Cannot submit: all required fields are empty.");
-      return;
-    }
     try {
       if (!requestDepartment) {
         alert("Request Department is required");
         return;
       }
 
-      const dateReceivedStr = formatDatetoStr(dateReceived);
-      const name = user?.name || "Unknown User";
+      const isEmpty =
+        !clientId.trim() &&
+        !projectDesc.trim() &&
+        !salesPersonnel.trim() &&
+        !dateReceived;
+
+      if (isEmpty) {
+        alert("Cannot submit: required fields are empty.");
+        return;
+      }
 
       const formData = new FormData();
-      formData.append("clientName", clientName);
+
+      // ✅ UPDATED FIELD
+      formData.append("clientId", clientId);
+
       formData.append("projectDesc", projectDesc);
       formData.append("salesPersonnel", salesPersonnel);
-      formData.append("dateReceived", dateReceivedStr || "null");
+      formData.append("dateReceived", formatDatetoStr(dateReceived) || "null");
       formData.append("requestDepartment", requestDepartment);
       formData.append("status", status);
       formData.append("username", username || "");
       formData.append("password", password || "");
-      formData.append("name", name);
+      formData.append("name", user?.name || "Unknown User");
 
       files.forEach((file) => {
         formData.append("files", file);
       });
 
-      // 1️⃣ Insert into sales_management first
+      // 1️⃣ SALES INSERT
       const salesRes = await fetch(
         "/api/department/SALES/sales_management/create",
         {
@@ -165,42 +180,38 @@ export const AddTask = () => {
         },
       );
 
-      if (!salesRes.ok)
-        throw new Error("Failed to create task in sales management");
+      if (!salesRes.ok) {
+        throw new Error("Failed to create sales task");
+      }
 
-      const { salesId } = await salesRes.json(); // salesId is the parent ID
+      const { salesId } = await salesRes.json();
 
-      // 2️⃣ Dynamically map request department to its API
-      const departmentMap: Record<string, string> = {
-        DT: "/api/department/ITDT/DT/tasks/create",
-        PROG: "/api/department/ITDT/IT/tasks/create",
-        MMC: "/api/department/ITDT/IT/tasks/create",
-        TECHNICAL: "/api/department/ITDT/IT/tasks/create",
-      };
-
-      const secondEndpoint = departmentMap[requestDepartment];
+      // 2️⃣ Department sync
+      const secondEndpoint = getSecondEndpoint(requestDepartment);
 
       if (secondEndpoint) {
-        formData.append("salesId", salesId.toString()); // send parent FK to department
+        formData.append("salesId", salesId.toString());
 
         const deptRes = await fetch(secondEndpoint, {
           method: "POST",
           body: formData,
         });
 
-        if (!deptRes.ok)
-          throw new Error("Failed to send task to request department");
+        if (!deptRes.ok) {
+          throw new Error("Failed to send to department");
+        }
       }
 
       await mutate("/api/department/SALES/sales_management");
 
-      // Reset form
-      setClientName("");
+      // Reset
+      setClientId("");
       setProjectDesc("");
       setSalesPersonnel("");
       setRequestDepartment("");
       setDateReceived(null);
       setFiles([]);
+
       onClose();
     } catch (err) {
       console.error("Error creating task:", err);
@@ -209,6 +220,9 @@ export const AddTask = () => {
     }
   };
 
+  // -----------------------------
+  // UI
+  // -----------------------------
   return (
     <div>
       <Button onPress={onOpen} color="primary" endContent={<PlusIcon />}>
@@ -225,21 +239,19 @@ export const AddTask = () => {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader
-                {...moveProps}
-                className="w-full flex flex-col gap-4"
-              >
-                Add Task
-              </ModalHeader>
+              <ModalHeader {...moveProps}>Add Task</ModalHeader>
 
               <ModalBody className="grid grid-cols-2 gap-4">
+                {/* ✅ CLIENT ID */}
                 <Input
                   isRequired
-                  label="Client Name"
+                  label="Customer ID"
                   variant="bordered"
-                  value={clientName}
-                  onValueChange={setClientName}
+                  value={clientId}
+                  onValueChange={setClientId}
+                  placeholder="ID from creating a Customer in Acumatica"
                 />
+
                 <Input
                   isRequired
                   label="Project Description"
@@ -247,6 +259,8 @@ export const AddTask = () => {
                   value={projectDesc}
                   onValueChange={setProjectDesc}
                 />
+
+                {/* Sales Personnel */}
                 {!isCustom ? (
                   <Select
                     isRequired
@@ -254,7 +268,6 @@ export const AddTask = () => {
                     variant="bordered"
                     selectedKeys={salesPersonnel ? [salesPersonnel] : []}
                     onSelectionChange={handleSelectionChange}
-                    placeholder="Select or add a name"
                   >
                     <SelectSection title="Executives">
                       <SelectItem key="LSC">Lani Campos</SelectItem>
@@ -262,44 +275,15 @@ export const AddTask = () => {
                       <SelectItem key="MJ">Marvin Jimenez</SelectItem>
                       <SelectItem key="HAROLD">Harold David</SelectItem>
                     </SelectSection>
+
                     <SelectSection title="Sales">
                       <SelectItem key="ALI">Alliah Pear Robles</SelectItem>
                       <SelectItem key="KENNETH">Kenneth Bautista</SelectItem>
                       <SelectItem key="SAIRA">Saira Gatdula</SelectItem>
                       <SelectItem key="JHOAN">Jhoannah Sicat</SelectItem>
-                      <SelectItem key="DESIREE">Desiree Salivio</SelectItem>
-                      <SelectItem key="IDA">Ida Madamba</SelectItem>
-                      <SelectItem key="EVE">Evelyn Pequiras</SelectItem>
-                      <SelectItem key="GENEVEL">Genevel Garcia</SelectItem>
-                      <SelectItem key="JAM">Judie Ann Manuel</SelectItem>
-                      <SelectItem key="ERWIN T.">Erwin Talavera</SelectItem>
-                      <SelectItem key="CYRIL">
-                        Cellano Cyril D. Javan
-                      </SelectItem>
-                      <SelectItem key="KISHA">Francine Kisha Guatlo</SelectItem>
-                      <SelectItem key="ZEL">Mark Edzel Castillo</SelectItem>
-                      <SelectItem key="RONALD">Ronaldo Francisco</SelectItem>
                     </SelectSection>
-                    <SelectSection title="Technical">
-                      <SelectItem key="ERWIN">Erwin Del Rosario</SelectItem>
-                      <SelectItem key="ENCHONG">Lawrence Ducut</SelectItem>
-                      <SelectItem key="AARON">Aaron Opinaldo</SelectItem>
-                      <SelectItem key="ASH">Ashly Alvaro</SelectItem>
-                    </SelectSection>
-                    <SelectSection title="Davao Team">
-                      <SelectItem key="JOEMAR">Joemar Banichina</SelectItem>
-                      <SelectItem key="RAM">Ramielyn Malaya</SelectItem>
-                      <SelectItem key="ERSON">Erson Lastimado</SelectItem>
-                      <SelectItem key="JAYLORD">Jaylord Catalan</SelectItem>
-                      <SelectItem key="EARL JAN">
-                        Earl Jan E. Acierda
-                      </SelectItem>
-                      <SelectItem key="MYLEEN">Myleen Ligue</SelectItem>
-                    </SelectSection>
-                    <SelectItem
-                      key="OTHER"
-                      className="text-primary font-medium"
-                    >
+
+                    <SelectItem key="OTHER">
                       ➕ Others (Type manually)
                     </SelectItem>
                   </Select>
@@ -307,7 +291,6 @@ export const AddTask = () => {
                   <Input
                     isRequired
                     label="Custom Sales Personnel"
-                    placeholder="Type name manually"
                     value={salesPersonnel}
                     onChange={(e) => setSalesPersonnel(e.target.value)}
                     onBlur={() => {
@@ -315,6 +298,7 @@ export const AddTask = () => {
                     }}
                   />
                 )}
+
                 <DatePicker
                   label="Date Filed"
                   variant="bordered"
@@ -322,6 +306,7 @@ export const AddTask = () => {
                   onChange={setDateReceived}
                   isRequired
                 />
+
                 <Select
                   isRequired
                   label="Request Department"
@@ -335,27 +320,32 @@ export const AddTask = () => {
                   <SelectItem key="PROG">Programmer / MMC</SelectItem>
                   <SelectItem key="TECHNICAL">Digital Signage - IT</SelectItem>
                 </Select>
+
                 <Input
                   isReadOnly
                   label="Status"
                   variant="bordered"
                   value="Pending"
                 />
+
+                {/* FILES */}
                 <div className="col-span-2">
                   <label className="block text-sm font-medium mb-1">
-                    Upload Files (PDF, Image, Word, Excel, or RAR)
+                    Upload Files
                   </label>
+
                   <input
                     type="file"
+                    multiple
                     accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx,.rar"
                     onChange={handleFileChange}
-                    className="w-full border border-gray-300 rounded-md p-2"
-                    multiple
+                    className="w-full border rounded-md p-2"
                   />
+
                   {files.length > 0 && (
-                    <ul className="mt-2 list-disc pl-5 text-sm text-gray-700">
-                      {files.map((file, idx) => (
-                        <li key={idx}>{file.name}</li>
+                    <ul className="mt-2 text-sm list-disc pl-5">
+                      {files.map((file, i) => (
+                        <li key={i}>{file.name}</li>
                       ))}
                     </ul>
                   )}
@@ -371,11 +361,12 @@ export const AddTask = () => {
                 >
                   Close
                 </Button>
+
                 <Button
                   color="primary"
                   onClick={() => handleAddTask(onClose)}
                   isLoading={loading}
-                  isDisabled={loading}
+                  isDisabled={loading || !isFormValid}
                 >
                   {loading ? "Adding..." : "Add Project"}
                 </Button>

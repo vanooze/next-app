@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Button,
   Input,
@@ -16,15 +18,15 @@ import { DatePicker } from "@heroui/date-picker";
 import { CalendarDate } from "@internationalized/date";
 import { mutate } from "swr";
 import { formatDatetoStr } from "@/helpers/formatDate";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { PlusIcon } from "@/components/icons/table/add-icon";
 import { useUserContext } from "@/components/layout/UserContext";
-import Image from "next/image";
-import { selectStatus } from "@/helpers/data";
+import { TMIGSelectStatus } from "@/helpers/data";
 
-export const RequestMMC = () => {
+export const AddTask = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const targetRef = React.useRef(null);
+
   const { moveProps } = useDraggable({
     targetRef,
     canOverflow: true,
@@ -33,94 +35,61 @@ export const RequestMMC = () => {
 
   const { user } = useUserContext();
 
-  const [project, setProject] = useState("");
-  const [projectDesc, setProjectDesc] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [description, setDescription] = useState("");
   const [personnel, setPersonnel] = useState<string>("");
-  const [requestBy, setRequestBy] = useState<string>("");
-  const [files, setFiles] = useState<File[]>([]);
   const [date, setDate] = useState<CalendarDate | null>(null);
   const [status, setStatus] = useState<string>("Pending");
+  const [unit, setUnit] = useState<string>("");
+  const [severity, setSeverity] = useState<string>("Low");
+  const [completion, setCompletion] = useState<string>("0");
+
+  const [files, setFiles] = useState<File[]>([]);
 
   const [loading, setLoading] = useState(false);
 
-  const handleSelectionChange = (keys: Set<string>) => {
-    const selectedKey = Array.from(keys)[0];
-    setPersonnel(selectedKey);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    if (selectedFiles.length === 0) return;
-
-    const allowedTypes = [
-      "application/pdf",
-      "image/png",
-      "image/jpeg",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/vnd.ms-excel",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "application/x-rar-compressed",
-      "application/octet-stream",
-    ];
-
-    const validFiles = selectedFiles.filter((file) =>
-      allowedTypes.includes(file.type),
-    );
-
-    if (validFiles.length !== selectedFiles.length) {
-      alert(
-        "Some files were skipped. Only PDF, images, Word, Excel, or RAR are allowed.",
-      );
-    }
-
-    setFiles(validFiles);
-  };
-
   const handleAddTask = async (onClose: () => void) => {
-    if (!project || !projectDesc || !requestBy) {
-      alert("Please complete required fields.");
-      setLoading(false);
-      return;
-    }
     setLoading(true);
-
     try {
       const dateStr = formatDatetoStr(date);
       const name = user?.name || "Unknown User";
 
       const formData = new FormData();
-      formData.append("clientName", project);
-      formData.append("projectDesc", projectDesc);
+      formData.append("clientName", clientName);
+      formData.append("description", description);
+      formData.append("date", dateStr || "null");
       formData.append("personnel", personnel);
-      formData.append("salesPersonnel", requestBy);
       formData.append("status", status);
-      formData.append("name", name);
+      formData.append("unit", unit || "0");
+      formData.append("severity", severity);
+      formData.append("completion", completion);
+      formData.append("dateCreated", new Date().toISOString());
+      formData.append("createdBy", name);
 
-      if (date) {
-        formData.append("dateReceived", dateStr || "");
-      }
-
+      // ✅ Append files
       files.forEach((file) => {
         formData.append("files", file);
       });
 
-      const res = await fetch("/api/department/ITDT/IT/tasks/create", {
+      const res = await fetch("/api/department/TMIG/tasks/create", {
         method: "POST",
         body: formData,
       });
 
       if (!res.ok) throw new Error("Failed to create task");
 
-      await mutate("/api/department/ITDT/IT/tasks");
+      await mutate("/api/department/TMIG/tasks");
 
-      // reset
-      setProject("");
-      setProjectDesc("");
+      // ✅ Reset fields correctly
+      setClientName("");
+      setDescription("");
       setPersonnel("");
-      setRequestBy("");
       setDate(null);
-      setFiles([]); // ✅ clear files
+      setStatus("Pending");
+      setUnit("");
+      setSeverity("Low");
+      setCompletion("0");
+      setFiles([]);
 
       onClose();
     } catch (err) {
@@ -133,7 +102,7 @@ export const RequestMMC = () => {
   return (
     <div>
       <Button onPress={onOpen} color="primary" endContent={<PlusIcon />}>
-        Request to MMC
+        Add Task
       </Button>
 
       <Modal
@@ -146,73 +115,62 @@ export const RequestMMC = () => {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader
-                {...moveProps}
-                className="w-full flex flex-col gap-4"
-              >
-                Request to MMC
+              <ModalHeader {...moveProps} className="flex flex-col gap-4">
+                Add Task
               </ModalHeader>
 
               <ModalBody className="grid grid-cols-2 gap-4">
+                {/* ✅ FIXED bindings */}
                 <Input
                   isRequired
                   label="Client Name"
                   variant="bordered"
-                  value={project}
-                  onValueChange={setProject}
+                  value={clientName}
+                  onValueChange={setClientName}
                 />
+
                 <Input
                   isRequired
-                  label="Project Description"
+                  label="Description"
                   variant="bordered"
-                  value={projectDesc}
-                  onValueChange={setProjectDesc}
+                  value={description}
+                  onValueChange={setDescription}
                 />
-                <Select
-                  isRequired
-                  label="Request By"
-                  variant="bordered"
-                  placeholder="Request By"
-                  selectedKeys={requestBy ? new Set([requestBy]) : new Set()}
-                  onSelectionChange={(keys) => {
-                    const selectedKey = Array.from(keys)[0] as string;
-                    setRequestBy(selectedKey);
-                  }}
-                >
-                  <SelectItem key="BILLY">Billy Joel Topacio</SelectItem>
-                  <SelectItem key="MARCIAL">Marcial A. Gigante III</SelectItem>
-                  <SelectItem key="JAN">Jan Ronnell V. Camero</SelectItem>
-                  <SelectItem key="JIL">Jilian Mark H. Ardinel</SelectItem>
-                  <SelectItem key="JER">John Eden Ross V. Cola</SelectItem>
-                </Select>
 
                 <Select
                   isRequired
                   label="Personnel"
                   variant="bordered"
-                  placeholder="Select a personnel"
                   selectedKeys={personnel ? new Set([personnel]) : new Set()}
                   onSelectionChange={(keys) => {
                     const selectedKey = Array.from(keys)[0] as string;
                     setPersonnel(selectedKey);
                   }}
                 >
-                  <SelectItem key="CJ">Charles Joseph R. Cabrera</SelectItem>
-                  <SelectItem key="RHON">Rhon Pacleb</SelectItem>
-                  <SelectItem key="JOHNNY">John Carlo F. Suarez</SelectItem>
+                  <SelectItem key="PUNAY">Angelito Punay</SelectItem>
+                  <SelectItem key="JAPITANA">Christopher Japitana</SelectItem>
+                  <SelectItem key="MARFIL">John Q. Marfil</SelectItem>
+                  <SelectItem key="JOMAR">Jomar A. David</SelectItem>
+                  <SelectItem key="UNIDA">Joshua Venhur M. Unida</SelectItem>
+                  <SelectItem key="JULIUS">Julius D. Lusterio</SelectItem>
+                  <SelectItem key="BUMAAT">Mark Anthony Bumaat</SelectItem>
+                  <SelectItem key="TAMO">Mark Louie F. Tamo</SelectItem>
+                  <SelectItem key="VHAL">Vhal Joshua Tintero</SelectItem>
                 </Select>
 
                 <DatePicker
+                  isRequired
                   label="Date Start"
                   variant="bordered"
                   value={date}
                   onChange={setDate}
                 />
+
                 <Select
                   isRequired
                   label="Status"
                   variant="bordered"
-                  items={selectStatus}
+                  items={TMIGSelectStatus}
                   selectedKeys={new Set([status])}
                   onSelectionChange={(keys) => {
                     const selectedKey = Array.from(keys)[0] as string;
@@ -223,26 +181,66 @@ export const RequestMMC = () => {
                     <SelectItem key={item.key}>{item.label}</SelectItem>
                   )}
                 </Select>
+
+                <Input
+                  isRequired
+                  type="number"
+                  label="Unit"
+                  variant="bordered"
+                  value={unit}
+                  onValueChange={(val) => {
+                    // allow only numbers
+                    if (/^\d*$/.test(val)) setUnit(val);
+                  }}
+                />
+
+                <Input
+                  isRequired
+                  type="number"
+                  label="Completion (%)"
+                  variant="bordered"
+                  value={completion}
+                  onValueChange={(val) => {
+                    if (/^\d*$/.test(val) && Number(val) <= 100) {
+                      setCompletion(val);
+                    }
+                  }}
+                />
+
+                <Select
+                  isRequired
+                  label="Severity"
+                  variant="bordered"
+                  selectedKeys={new Set([severity])}
+                  onSelectionChange={(keys) => {
+                    const selectedKey = Array.from(keys)[0] as string;
+                    setSeverity(selectedKey);
+                  }}
+                >
+                  <SelectItem key="Low">Low</SelectItem>
+                  <SelectItem key="Medium">Medium</SelectItem>
+                  <SelectItem key="High">High</SelectItem>
+                </Select>
+
+                {/* ✅ NEW: File Upload */}
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium mb-1">
-                    Upload Files (PDF, Image, Word, Excel, or RAR)
+                  <label className="text-sm font-medium">
+                    Upload Files (Images / Documents)
                   </label>
                   <input
                     type="file"
-                    accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx,.rar"
-                    onChange={handleFileChange}
-                    className="w-full border border-gray-300 rounded-md p-2"
                     multiple
+                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        setFiles(Array.from(e.target.files));
+                      }
+                    }}
+                    className="mt-1 block w-full text-sm"
                   />
-                  {files.length > 0 && (
-                    <ul className="mt-2 list-disc pl-5 text-sm text-gray-700">
-                      {files.map((file, idx) => (
-                        <li key={idx}>{file.name}</li>
-                      ))}
-                    </ul>
-                  )}
                 </div>
               </ModalBody>
+
               <ModalFooter>
                 <Button
                   color="danger"
@@ -252,6 +250,7 @@ export const RequestMMC = () => {
                 >
                   Close
                 </Button>
+
                 <Button
                   color="primary"
                   onClick={() => handleAddTask(onClose)}

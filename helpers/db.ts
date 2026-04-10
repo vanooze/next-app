@@ -41,14 +41,12 @@ export const dtColumns = [
 
 export interface BoqItem {
   id: number;
-  project_id: string;
-  category: string;
-  subcategory: string | null;
-  brand: string | null;
-  description: string | null;
-  unit: string | null;
-  qty: number | null;
-  remarks: string | null;
+  projectId?: string;
+  taskId?: string;
+  description?: string;
+  unit?: string;
+  qty?: number;
+  date?: string;
 }
 
 // ------------------------- IT MONITORING -------------------------
@@ -73,6 +71,32 @@ export const ItColumns = [
   { name: "Sales Personnel", uid: "salesPersonnel" },
   { name: "Personnel", uid: "personnel" },
   { name: "Date", uid: "date" },
+  { name: "Actions", uid: "actions" },
+];
+
+//------------------------- TMIG REPAIR MONITORING -------------------------
+export interface RepairTasks {
+  id: number;
+  clientName: string;
+  description: string;
+  date: string;
+  personnel: string;
+  status: string;
+  unit: string;
+  severity: string;
+  completion: string;
+  files: string | null;
+}
+
+export const RepairColumns = [
+  { name: "Client Name", uid: "clientName" },
+  { name: "Description", uid: "description" },
+  { name: "Date In", uid: "date" },
+  { name: "Personnel", uid: "personnel" },
+  { name: "Status", uid: "status" },
+  { name: "Units", uid: "unit" },
+  { name: "Severity", uid: "severity" },
+  { name: "Completion", uid: "completion" },
   { name: "Actions", uid: "actions" },
 ];
 

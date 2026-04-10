@@ -31,6 +31,8 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
       user.position === "MANAGER" ||
       user.position === "SUPERVISOR" ||
       user.position === "PMO" ||
+      user.position === "COORDINATOR" ||
+      user?.designation?.includes("ADMIN PURCHASING") ||
       user.designation?.includes("SALES ASSISTANT");
 
     const accessList = Tasks.access
@@ -41,11 +43,11 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
   })();
 
   const canToggleStatus =
-    user?.designation?.includes("DOCUMENT CONTROLLER") ||
+    user?.designation?.includes("TECHNICAL ADMIN") ||
     user?.designation?.includes("PMO");
 
   const userDocumentController =
-    user?.designation?.includes("DOCUMENT CONTROLLER") ||
+    user?.designation?.includes("TECHNICAL ADMIN") ||
     user?.designation?.includes("TECHNICAL COORDINATOR");
 
   // ✅ Centralized color map for statuses

@@ -31,6 +31,8 @@ export default function BOQ({ project }: BOQProps) {
   const { user } = useUserContext();
   const [projectId, setProjectId] = useState<string | null>("");
   const [assignedPersonnel, setassignedPersonnel] = useState(user?.name);
+  const [customerId, setCustomerId] = useState<string | null>(null);
+
   const [PODetails, setPODetails] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -40,6 +42,7 @@ export default function BOQ({ project }: BOQProps) {
   useEffect(() => {
     if (project) {
       setProjectId(project.projectId);
+      setCustomerId(project.customerId);
     }
   }, [project]);
 
@@ -90,8 +93,10 @@ export default function BOQ({ project }: BOQProps) {
 
         const result = await res.json();
         if (!res.ok || !result?.file) throw new Error("Upload failed");
+
         const webhookFormData = new FormData();
         webhookFormData.append("projectId", projectId.toString());
+        webhookFormData.append("customerId", customerId || "null");
         webhookFormData.append(
           "assignedPersonnel",
           assignedPersonnel || "null",
@@ -102,15 +107,14 @@ export default function BOQ({ project }: BOQProps) {
         webhookFormData.append("fileType", file.type);
         webhookFormData.append("type", type);
         webhookFormData.append("file", file);
-
-        // await fetch(
-        //   "http://localhost:5678/webhook-test/75d91fd6-cbca-432e-b115-935e48ce8461",
-        //http://localhost:5678/webhook/75d91fd6-cbca-432e-b115-935e48ce8461
-        //   {
-        //     method: "POST",
-        //     body: webhookFormData,
-        //   }
-        // );
+        await fetch(
+          // "http://localhost:5678/webhook-test/75d91fd6-cbca-432e-b115-935e48ce8461",
+          "http://localhost:5678/webhook/75d91fd6-cbca-432e-b115-935e48ce8461",
+          {
+            method: "POST",
+            body: webhookFormData,
+          },
+        );
       }
 
       // Reset form
@@ -140,10 +144,6 @@ export default function BOQ({ project }: BOQProps) {
           />
 
           <h1 className="text-lg font-semibold">BOQ Attachment</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-300 italic">
-            Upload Excel first for data Extracting, then upload the PDF for
-            documentation and version control
-          </p>
           <div className="border border-dashed rounded max-w-lg">
             <div className="p-6 border border-gray-300 rounded text-center flex flex-col items-center gap-2">
               <p className="text-sm text-gray-600 mb-2">

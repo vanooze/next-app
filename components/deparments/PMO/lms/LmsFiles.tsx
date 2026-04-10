@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Button, Card, CardBody, CardHeader, Spinner } from "@heroui/react";
 import { useUserContext } from "@/components/layout/UserContext";
 import { PlusIcon } from "@/components/icons/table/add-icon";
@@ -12,11 +12,6 @@ import { UploadLmsFile } from "./UploadLmsFile";
 import useSWR, { mutate } from "swr";
 import { fetcher } from "@/app/lib/fetcher";
 import { EditIcon } from "@/components/icons/table/edit-icon";
-import {
-  selectHeads,
-  selectSupervisors,
-  SelectExecutive,
-} from "@/helpers/data";
 
 // ----------------- TYPES -----------------
 interface Folder {
@@ -47,16 +42,45 @@ export const LmsFiles = () => {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [folderToDelete, setFolderToDelete] = useState<Folder | null>(null);
   const [folderToEdit, setFolderToEdit] = useState<Folder | null>(null);
-  const allUsers = [...SelectExecutive, ...selectHeads, ...selectSupervisors];
 
-  const canUpload = user?.designation?.includes("DOCUMENT CONTROLLER");
-  const canUpdate = user?.designation?.includes("DOCUMENT CONTROLLER");
-  const canDelete = user?.designation?.includes("DOCUMENT CONTROLLER");
+  const canUpload =
+    user?.position?.includes("MANAGER") ||
+    user?.position.includes("SUPERVISOR") ||
+    user?.position.includes("COORDINATOR");
+  const canUpdate =
+    user?.position?.includes("MANAGER") ||
+    user?.position.includes("SUPERVISOR") ||
+    user?.position.includes("COORDINATOR");
+  const canDelete =
+    user?.position?.includes("MANAGER") ||
+    user?.position.includes("SUPERVISOR") ||
+    user?.position.includes("COORDINATOR");
 
   const { data, error, isLoading } = useSWR<{
     folders: Folder[];
     files: LmsFile[];
   }>("/api/files/lms", fetcher);
+
+  const { data: usersData } = useSWR("/api/files/qms/user", fetcher);
+
+  const groupedUsers = useMemo(() => {
+    if (!usersData) return {};
+
+    return usersData.reduce((acc: any, user: any) => {
+      const department = user.department?.trim() || "NO DEPARTMENT";
+
+      if (!acc[department]) {
+        acc[department] = [];
+      }
+
+      acc[department].push({
+        key: user.user_id,
+        label: user.name,
+      });
+
+      return acc;
+    }, {});
+  }, [usersData]);
 
   if (isLoading) {
     return (
@@ -77,7 +101,7 @@ export const LmsFiles = () => {
   const { folders = [], files = [] } = data || {};
 
   const hasAccess = (access: string | null, userId?: string | number) => {
-    if (user?.designation?.includes("DOCUMENT CONTROLLER")) return true;
+    if (user?.designation?.includes("TECHNICAL ADMIN")) return true;
     // 🌍 Public folder
     if (!access) return true;
 
@@ -143,7 +167,7 @@ export const LmsFiles = () => {
   };
 
   const handleDownload = (fileName: string, folderId?: number) => {
-    const url = `/files/lms/download?file=${encodeURIComponent(fileName)}${
+    const url = `/api/files/lms/download?file=${encodeURIComponent(fileName)}${
       folderId ? `&folderId=${folderId}` : ""
     }`;
     const link = document.createElement("a");
@@ -319,6 +343,7 @@ export const LmsFiles = () => {
         isOpen={isCreateFolderOpen}
         onClose={() => setIsCreateFolderOpen(false)}
         parentFolderId={currentFolderId} // only top-level
+        users={groupedUsers}
       />
 
       <DeleteConfirmModal
@@ -354,7 +379,7 @@ export const LmsFiles = () => {
         isOpen={!!folderToEdit}
         onClose={() => setFolderToEdit(null)}
         folder={folderToEdit}
-        users={allUsers}
+        users={groupedUsers}
       />
     </div>
   );

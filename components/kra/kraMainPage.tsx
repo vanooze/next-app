@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { Select, SelectItem, Button } from "@heroui/react";
+import { Select, SelectItem, Button, SelectSection } from "@heroui/react";
 import { getDepartmentUsers, SelectUser } from "@/helpers/kra";
 import { useUserContext } from "@/components/layout/UserContext";
 import { KRATemplateModal } from "./action/selectTemplate";
@@ -50,7 +50,7 @@ export const KeyResultAreaPage = () => {
         setSelectUsers(users);
 
         if (canSelectEmployees) {
-          setSelectedEmployeeId(users[0]?.key ?? null);
+          setSelectedEmployeeId(user.user_id ? String(user.user_id) : null);
         } else {
           setSelectedEmployeeId(user.user_id ? String(user.user_id) : null);
         }
@@ -61,6 +61,37 @@ export const KeyResultAreaPage = () => {
 
     fetchUsers();
   }, [user, canSelectEmployees]);
+
+  const filteredUsers = useMemo(() => {
+    if (!selectUsers.length || !user?.department) return [];
+
+    // HR & IT/DT can see everyone
+    if (isHR || isITDT) {
+      return selectUsers;
+    }
+
+    // Manager / Supervisor → only same department
+    if (isManagerOrSupervisor) {
+      return selectUsers.filter((u) => u.department === user.department);
+    }
+
+    // fallback → only self
+    return selectUsers.filter((u) => u.key === String(user.user_id));
+  }, [selectUsers, user, isHR, isITDT, isManagerOrSupervisor]);
+
+  const groupedUsers = useMemo(() => {
+    if (!filteredUsers.length) return {};
+
+    return filteredUsers.reduce((acc: Record<string, SelectUser[]>, user) => {
+      if (!acc[user.department]) {
+        acc[user.department] = [];
+      }
+
+      acc[user.department].push(user);
+
+      return acc;
+    }, {});
+  }, [filteredUsers]);
 
   useEffect(() => {
     if (!user?.department) return;
@@ -131,16 +162,23 @@ export const KeyResultAreaPage = () => {
         <div className="mb-6 max-w-sm">
           <Select
             label="Select Employee"
-            placeholder="Choose employee"
             selectedKeys={selectedEmployeeId ? [selectedEmployeeId] : []}
             onSelectionChange={(keys) => {
-              const key = Array.from(keys)[0];
-              setSelectedEmployeeId(key ? String(key) : null);
+              const selected = Array.from(keys)[0] as string;
+              setSelectedEmployeeId(selected);
             }}
           >
-            {selectUsers.map((u) => (
-              <SelectItem key={u.key}>{u.label}</SelectItem>
-            ))}
+            {Object.entries(groupedUsers)
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([department, users]) => (
+                <SelectSection key={department} title={department}>
+                  {users
+                    .sort((a, b) => a.label.localeCompare(b.label))
+                    .map((u) => (
+                      <SelectItem key={u.key}>{u.label}</SelectItem>
+                    ))}
+                </SelectSection>
+              ))}
           </Select>
         </div>
       )}

@@ -1,33 +1,31 @@
 import { executeQuery } from "@/app/lib/db";
 import { NextResponse } from "next/server";
 import { getUserFromToken } from "@/app/lib/auth";
+export const dynamic = "force-dynamic";
 
 export async function GET(req) {
   try {
     const user = await getUserFromToken(req);
-    if (!user || !user.department) {
-      return NextResponse.json(
-        { error: "Unauthorized access" },
-        { status: 403 },
-      );
-    }
+    // if (!user || !user.department) {
+    //   return NextResponse.json(
+    //     { error: "Unauthorized access" },
+    //     { status: 403 }
+    //   );
+    // }
     const rows = await executeQuery(
-      "SELECT * FROM sales_management WHERE deleted = 0",
+      "SELECT * FROM repair_activity WHERE deleted = 0",
     );
     const tasks = rows.map((r) => ({
       id: r.id,
-      clientId: r.client_id,
       clientName: r.client_name,
-      projectDesc: r.proj_desc,
-      dateReceived: r.date_received,
-      sirMJH: r.sir_mjh,
-      salesPersonnel: r.sales_personnel,
-      notes: r.notes,
+      description: r.description,
+      date: r.date,
+      personnel: r.assigned_personnel,
       status: r.status,
-      profitingFile: r.profiting_file,
-      updateDates: r.update_dates,
-      updates: r.updates,
-      dateAwarded: r.date_awarded,
+      unit: r.unit,
+      severity: r.severity,
+      completion: r.completion,
+      files: r.file,
     }));
     return Response.json(tasks);
   } catch (error) {

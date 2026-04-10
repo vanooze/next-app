@@ -28,6 +28,12 @@ export const selectStatus = [
   { key: "Finished", label: "Finished" },
 ];
 
+export const TMIGSelectStatus = [
+  { key: "Pending", label: "Pending" },
+  { key: "Working", label: "Working" },
+  { key: "Finished", label: "Finished" },
+];
+
 export const selectSalesStatus = [
   { key: "Lost Account", label: "Lost Account" },
   { key: "Overdue", label: "Overdue" },
@@ -260,43 +266,6 @@ export const ReportCategories = [
   { key: `Restoration Works`, value: `Restoration Works` },
   { key: `Safety`, value: `Safety` },
   { key: `Others`, value: `Others` },
-];
-
-export const SelectExecutive = [
-  { key: `138`, label: `MARIA LEA BERMUDEZ` },
-  { key: `137`, label: `LANI KIMBER CAMPOS` },
-  { key: `135`, label: `MARVIN JIMENEZ` },
-];
-
-export const selectHeads = [
-  { key: `136`, label: `JOHN MAGNO` },
-  { key: `22`, label: `HAROLD DAVID` },
-  { key: `36`, label: `RAMIELYN MALAYA` },
-  { key: `73`, label: `Ronaldo J. Francisco` },
-  { key: `325018`, label: `Erwin E. Talavera` },
-  {
-    key: `325035`,
-    label: `Cellano Cyril Nicolo D. Javan`,
-  },
-  { key: `325038`, label: `Gemma Grace D. Bautista` },
-  { key: `325039`, label: `Philip Edward B. Tarobal` },
-];
-
-export const selectSupervisors = [
-  { key: `19`, label: `JULLY CO` },
-  { key: `20`, label: `MARVINNE ESTACIO` },
-  { key: `316032`, label: `JOHN RAYMOND BIASON` },
-  { key: `33`, label: `RAMON CHRISTOPHER CO` },
-  { key: `35`, label: `ERWIN DEL ROSARIO` },
-  { key: `39`, label: `LAWRENCE DUCUT` },
-  { key: `40`, label: `NORIEL VILLAR` },
-  { key: `45`, label: `JOEMAR BACHINICHA` },
-  { key: `47`, label: `MA. FATIMA BUAC` },
-  { key: `50`, label: `JAYLORD CATALAN` },
-  {
-    key: `325041`,
-    label: `Francine Kisha Guatlo`,
-  },
 ];
 
 export const Davao = [

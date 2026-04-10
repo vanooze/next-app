@@ -81,7 +81,9 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         user.position === "EXECUTIVE" ||
         user.position === "MANAGER" ||
         user.position === "SUPERVISOR" ||
+        user.position === "COORDINATOR" ||
         user.position === "PMO" ||
+        user?.designation?.includes("ADMIN PURCHASING") ||
         user.designation?.includes("SALES ASSISTANT");
 
       return hasAccessByName || hasAccessByRole;

@@ -7,7 +7,7 @@ import path from "path";
 export async function GET(req) {
   try {
     const user = await getUserFromToken(req);
-    if (!user || !user.department) {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
         { status: 403 },

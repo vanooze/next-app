@@ -11,6 +11,7 @@ import {
   Input,
   Select,
   SelectItem,
+  SelectSection,
 } from "@heroui/react";
 import { mutate } from "swr";
 
@@ -24,7 +25,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   folder: Folder | null;
-  users: { key: string; label: string }[];
+  users: Record<string, { key: string; label: string }[]>;
 }
 
 export const UpdateLmsFolder = ({ isOpen, onClose, folder, users }: Props) => {
@@ -98,13 +99,27 @@ export const UpdateLmsFolder = ({ isOpen, onClose, folder, users }: Props) => {
               if (keys !== "all") {
                 setAccessUsers(keys as Set<string>);
               } else {
-                setAccessUsers(new Set(users.map((u) => u.key)));
+                const allUserKeys = Object.values(users)
+                  .flat()
+                  .map((u) => String(u.key));
+
+                setAccessUsers(new Set(allUserKeys));
               }
             }}
           >
-            {users.map((u) => (
-              <SelectItem key={u.key}>{u.label}</SelectItem>
-            ))}
+            {Object.entries(users)
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([department, deptUsers]) => (
+                <SelectSection key={department} title={department}>
+                  {deptUsers
+                    .sort((a, b) => a.label.localeCompare(b.label))
+                    .map((user) => (
+                      <SelectItem key={String(user.key)}>
+                        {user.label}
+                      </SelectItem>
+                    ))}
+                </SelectSection>
+              ))}
           </Select>
         </ModalBody>
 

@@ -18,6 +18,8 @@ import { SalesTableWrapper } from "../deparments/SALES/table/table";
 import { ITTableWrapper } from "../deparments/IT/tasks/table/table";
 import { MarketingTableWrapper } from "../deparments/MARKETING/tasks/table/table";
 import { useITTasks } from "../hooks/useITTasks";
+import { useTMIGTasks } from "../hooks/useTMIGTasks";
+import { useMarketingTasks } from "../hooks/useMarketingTasks";
 
 import {
   PMOTasks,
@@ -25,7 +27,7 @@ import {
   SalesManagement,
   MarketingTasks,
 } from "@/helpers/db";
-import { useMarketingTasks } from "../hooks/useMarketingTasks";
+import { RepairTableWrapper } from "../deparments/TMIG/table/table";
 
 const ColumnChart = dynamic(
   () => import("../charts/column").then((mod) => mod.Column),
@@ -50,6 +52,11 @@ const MarketingColumnChart = dynamic(
   { ssr: false },
 );
 
+const TMIGColumnChart = dynamic(
+  () => import("../charts/tmigcolumn").then((mod) => mod.TMIGColumn),
+  { ssr: false },
+);
+
 export const Content = () => {
   const { user } = useUserContext();
   const department = user?.designation;
@@ -59,6 +66,7 @@ export const Content = () => {
   const { tasks: pmoTasks, loading: pmoLoading } = usePMOTasks();
   const { tasks: salesTasks, loading: salesLoading } = useSalesManagement();
   const { tasks: ITTasks, loading: ITLoading } = useITTasks();
+  const { tasks: tmigTasks, loading: tmigLoading } = useTMIGTasks();
   const { tasks: marketingTasks, loading: marketingLoading } =
     useMarketingTasks();
 
@@ -82,7 +90,7 @@ export const Content = () => {
 
   const getStats = (
     tasks: any[],
-    type: "PMO" | "SALES" | "DESIGN" | "IT" | "MARKETING",
+    type: "PMO" | "SALES" | "DESIGN" | "IT" | "MARKETING" | "TMIG",
   ) => {
     const onPendingTasks = tasks.filter((task) => {
       if (type === "SALES") return task.status === "On Going";
@@ -98,6 +106,18 @@ export const Content = () => {
       if (type === "SALES") return task.status === "Lost Account";
       return task.status === "Overdue";
     }).length;
+
+    if (type === "TMIG") {
+      const working = tasks.filter((t) => t.status === "Working").length;
+      const pending = tasks.filter((t) => t.status === "Pending").length;
+
+      return {
+        onPendingTasks: pending,
+        onRushTasks: 0,
+        overdueTasks: 0,
+        finishedTasks: working,
+      };
+    }
 
     const finishedTasks = tasks.filter((task) => {
       let finishedDate: string | null;
@@ -120,7 +140,7 @@ export const Content = () => {
   };
 
   const renderDepartment = (
-    type: "PMO" | "SALES" | "DESIGN" | "IT" | "MARKETING",
+    type: "PMO" | "SALES" | "DESIGN" | "IT" | "MARKETING" | "TMIG",
     tasks: any[],
     loading: boolean,
   ) => {
@@ -132,6 +152,7 @@ export const Content = () => {
       if (type === "SALES") return <SalesColumnChart tasks={tasks} />;
       if (type === "IT") return <ITColumnChart tasks={tasks} />;
       if (type === "MARKETING") return <MarketingColumnChart tasks={tasks} />;
+      if (type === "TMIG") return <TMIGColumnChart tasks={tasks} />;
       return <ColumnChart tasks={tasks} />;
     };
 
@@ -155,6 +176,14 @@ export const Content = () => {
       if (type === "MARKETING")
         return (
           <MarketingTableWrapper
+            tasks={tasks}
+            loading={loading}
+            fullScreen={false}
+          />
+        );
+      if (type === "TMIG")
+        return (
+          <RepairTableWrapper
             tasks={tasks}
             loading={loading}
             fullScreen={false}
@@ -221,6 +250,9 @@ export const Content = () => {
           <Tab key="IT" title="IT">
             {renderDepartment("IT", ITTasks, ITLoading)}
           </Tab>
+          <Tab key="TMIG" title="TMIG">
+            {renderDepartment("TMIG", tmigTasks, tmigLoading)}
+          </Tab>
         </Tabs>
       </div>
     );
@@ -247,6 +279,10 @@ export const Content = () => {
 
   if (user?.department?.includes("MARKETING")) {
     return renderDepartment("MARKETING", marketingTasks, marketingLoading);
+  }
+
+  if (user?.department?.includes("TMIG")) {
+    return renderDepartment("TMIG", tmigTasks, tmigLoading);
   }
 
   return (
