@@ -7,6 +7,7 @@ export interface User {
   designation: string;
   designation_status: string;
   department: string;
+  department_clean: string;
   position: string;
   restriction: string;
   // Add other user fields as needed

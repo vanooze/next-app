@@ -1,6 +1,8 @@
 import fs from "fs";
 import path from "path";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const testPath = "D:/ProjectUploads/test.txt";

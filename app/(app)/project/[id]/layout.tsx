@@ -200,7 +200,6 @@ export default function ProjectLayout({
             }}
           >
             {[
-              { title: "PMO", data: selectFiltiredPmo },
               { title: "Sales", data: selectSales },
               { title: "Design", data: selectFiliteredDesign },
               { title: "TMIG", data: selectTMIG },

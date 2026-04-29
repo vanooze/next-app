@@ -30,6 +30,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         if (res.ok) {
           const data = await res.json();
           setUser(data.user);
+        } else if (res.status === 401) {
+          // Patched global fetch already triggers sign-out + redirect for /api/* 401s
+          setUser(null);
         } else {
           setUser(null);
         }

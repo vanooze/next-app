@@ -268,22 +268,63 @@ export const AddTask = () => {
                     variant="bordered"
                     selectedKeys={salesPersonnel ? [salesPersonnel] : []}
                     onSelectionChange={handleSelectionChange}
+                    placeholder="Select or add a name"
                   >
                     <SelectSection title="Executives">
-                      <SelectItem key="LSC">Lani Campos</SelectItem>
-                      <SelectItem key="MLB">Lea Bermudez</SelectItem>
+                      <SelectItem key="LSC">Lani Kimber Campos</SelectItem>
+                      <SelectItem key="MLB">Maria Lea Bermudez</SelectItem>
                       <SelectItem key="MJ">Marvin Jimenez</SelectItem>
                       <SelectItem key="HAROLD">Harold David</SelectItem>
                     </SelectSection>
-
-                    <SelectSection title="Sales">
-                      <SelectItem key="ALI">Alliah Pear Robles</SelectItem>
-                      <SelectItem key="KENNETH">Kenneth Bautista</SelectItem>
-                      <SelectItem key="SAIRA">Saira Gatdula</SelectItem>
-                      <SelectItem key="JHOAN">Jhoannah Sicat</SelectItem>
+                    <SelectSection title="Marketing">
+                      <SelectItem key="ALI">Alliah Pearl C. Robles</SelectItem>
+                      <SelectItem key="SHANIA">
+                        Mary Shania M. Camunias
+                      </SelectItem>
                     </SelectSection>
-
-                    <SelectItem key="OTHER">
+                    <SelectSection title="Sales">
+                      <SelectItem key="KENNETH">Kenneth Bautista</SelectItem>
+                      <SelectItem key="JHOAN">
+                        Jhoannah Rose-Mil L. Sicat
+                      </SelectItem>
+                      <SelectItem key="DESIREE">Desiree Salivio</SelectItem>
+                      <SelectItem key="IDA">Ida Madamba</SelectItem>
+                      <SelectItem key="EVE">Evelyn Pequiras</SelectItem>
+                      <SelectItem key="GENEVEL">Genevel Garcia</SelectItem>
+                      <SelectItem key="JAM">Judie Ann Manuel</SelectItem>
+                      <SelectItem key="CYRIL">
+                        Cellano Cyril D. Javan
+                      </SelectItem>
+                      <SelectItem key="ZEL">Mark Edzel Castillo</SelectItem>
+                      <SelectItem key="RONALD">Ronaldo J. Francisco</SelectItem>
+                    </SelectSection>
+                    <SelectSection title="Advertising">
+                      <SelectItem key="SAIRA">Saira May Y. Gatdula </SelectItem>
+                      <SelectItem key="JIP">Jip Philip D. Oliva </SelectItem>
+                      <SelectItem key="HASMIN">Hasmin Parnecio </SelectItem>
+                      <SelectItem key="ERWIN T.">Erwin E. Talavera </SelectItem>
+                      <SelectItem key="NES">Neslien Banaga </SelectItem>
+                    </SelectSection>
+                    <SelectSection title="Technical">
+                      <SelectItem key="ERWIN">Erwin Del Rosario</SelectItem>
+                      <SelectItem key="ENCHONG">Lawrence Ducut</SelectItem>
+                      <SelectItem key="AARON">Aaron Opinaldo</SelectItem>
+                      <SelectItem key="ASH">Ashly Alvaro</SelectItem>
+                    </SelectSection>
+                    <SelectSection title="Davao Team">
+                      <SelectItem key="JOEMAR">Joemar Banichina</SelectItem>
+                      <SelectItem key="RAM">Ramielyn Malaya</SelectItem>
+                      <SelectItem key="ERSON">Erson Lastimado</SelectItem>
+                      <SelectItem key="JAYLORD">Jaylord Catalan</SelectItem>
+                      <SelectItem key="EARL JAN">
+                        Earl Jan E. Acierda
+                      </SelectItem>
+                      <SelectItem key="MYLEEN">Myleen Ligue</SelectItem>
+                    </SelectSection>
+                    <SelectItem
+                      key="OTHER"
+                      className="text-primary font-medium"
+                    >
                       ➕ Others (Type manually)
                     </SelectItem>
                   </Select>

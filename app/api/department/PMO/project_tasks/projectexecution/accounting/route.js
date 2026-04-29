@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { executeQuery } from "@/app/lib/db";
 
+export const dynamic = "force-dynamic";
+
 // GET - fetch saved accounting data for a project
 export async function GET(req) {
   try {

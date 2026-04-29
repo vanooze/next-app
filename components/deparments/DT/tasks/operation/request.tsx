@@ -19,7 +19,6 @@ import { formatDatetoStr } from "@/helpers/formatDate";
 import React, { useState, useEffect } from "react";
 import { PlusIcon } from "@/components/icons/table/add-icon";
 import { useUserContext } from "@/components/layout/UserContext";
-import Image from "next/image";
 import { selectStatus } from "@/helpers/data";
 
 export const RequestMMC = () => {

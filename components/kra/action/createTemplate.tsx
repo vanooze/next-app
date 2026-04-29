@@ -18,6 +18,7 @@ interface KRACreateTemplateModalProps {
   onClose: () => void;
   tableIds?: number[]; // all table IDs will be passed here
   onSaved?: () => void;
+  kraType?: "employee" | "department" | "hr";
 }
 
 export const KRACreateTemplateModal: React.FC<KRACreateTemplateModalProps> = ({
@@ -25,6 +26,7 @@ export const KRACreateTemplateModal: React.FC<KRACreateTemplateModalProps> = ({
   onClose,
   tableIds,
   onSaved,
+  kraType = "employee",
 }) => {
   const [templateName, setTemplateName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,14 +34,28 @@ export const KRACreateTemplateModal: React.FC<KRACreateTemplateModalProps> = ({
 
   const selectedTables = tableIds || [];
 
+  const getEndpoint = () => {
+    switch (kraType) {
+      case "department":
+        return "/api/kra/dept/template";
+
+      case "hr":
+        return "/api/kra/hr/template";
+
+      default:
+        return "/api/kra/template";
+    }
+  };
+
   const handleSaveTemplate = async () => {
     if (!selectedTables.length)
       return alert("No tables to create template from.");
     if (!templateName.trim()) return alert("Please enter a template name.");
 
     setLoading(true);
+
     try {
-      const res = await fetch("/api/kra/template", {
+      const res = await fetch(getEndpoint(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -63,12 +79,6 @@ export const KRACreateTemplateModal: React.FC<KRACreateTemplateModalProps> = ({
       setLoading(false);
     }
   };
-
-  // Reset template name when modal opens
-  useEffect(() => {
-    if (isOpen) setTemplateName("");
-  }, [isOpen]);
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} placement="center" size="2xl">
       <ModalContent>

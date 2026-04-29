@@ -4,6 +4,8 @@ import { getUserFromToken } from "@/app/lib/auth";
 import fs from "fs";
 import path from "path";
 
+export const dynamic = "force-dynamic";
+
 export async function PUT(req) {
   try {
     const user = await getUserFromToken(req);

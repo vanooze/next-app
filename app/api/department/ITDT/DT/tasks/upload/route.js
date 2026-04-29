@@ -7,6 +7,76 @@ import fs from "fs/promises";
 
 export const dynamic = "force-dynamic";
 
+const getSafeJSON = (value) => {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return [];
+  }
+};
+
+const normalizeFiles = (fileData) => {
+  if (!Array.isArray(fileData)) return [];
+
+  return fileData.map((f) => {
+    if (typeof f === "string") {
+      return { name: f, revision: 0, notes: "" };
+    }
+    return {
+      name: f.name,
+      revision: f.revision ?? 0,
+      notes: f.notes ?? "",
+    };
+  });
+};
+
+const getNextRevision = (files, status) => {
+  if (!files.length) return 0;
+
+  const maxRevision = Math.max(...files.map((f) => f.revision || 0));
+  return status === "Declined" ? maxRevision + 1 : maxRevision;
+};
+
+const generateFileName = async (uploadDir, originalName) => {
+  const ext = path.extname(originalName);
+  let baseName = path
+    .basename(originalName, ext)
+    .replace(/,/g, "-")
+    .replace(/["']/g, "")
+    .trim();
+
+  const dateSuffix = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  let fileName = `${baseName}-${dateSuffix}${ext}`;
+  let counter = 1;
+
+  while (true) {
+    try {
+      await fs.access(path.join(uploadDir, fileName));
+      fileName = `${baseName}-${dateSuffix}-v${++counter}${ext}`;
+    } catch {
+      break;
+    }
+  }
+
+  return fileName;
+};
+
+const saveFilesToDisk = async (files, uploadDir) => {
+  const saved = [];
+
+  for (const file of files) {
+    if (!(file instanceof Blob)) continue;
+
+    const fileName = await generateFileName(uploadDir, file.name);
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    await fs.writeFile(path.join(uploadDir, fileName), buffer);
+    saved.push(fileName);
+  }
+
+  return saved;
+};
+
 export async function POST(req) {
   try {
     const user = await getUserFromToken(req);
@@ -20,6 +90,7 @@ export async function POST(req) {
 
     const formData = await req.formData();
     const salesId = formData.get("salesId");
+    const notes = formData.get("notes") || "";
 
     if (!salesId) {
       return NextResponse.json(
@@ -39,102 +110,43 @@ export async function POST(req) {
     const uploadDir = path.join(process.cwd(), "public/uploads/profitting");
     await fs.mkdir(uploadDir, { recursive: true });
 
-    const savedFiles = [];
+    const savedFiles = await saveFilesToDisk(files, uploadDir);
 
-    for (const file of files) {
-      if (!(file instanceof Blob)) continue;
-
-      const ext = path.extname(file.name);
-      let baseName = path
-        .basename(file.name, ext)
-        .replace(/,/g, "-")
-        .replace(/["']/g, "")
-        .trim();
-      const dateSuffix = new Date()
-        .toISOString()
-        .slice(0, 10)
-        .replace(/-/g, "");
-      let fileName = `${baseName}-${dateSuffix}${ext}`;
-      let counter = 1;
-
-      while (true) {
-        try {
-          await fs.access(path.join(uploadDir, fileName));
-          counter++;
-          fileName = `${baseName}-${dateSuffix}-v${counter}${ext}`;
-        } catch {
-          break;
-        }
-      }
-
-      const buffer = Buffer.from(await file.arrayBuffer());
-      await fs.writeFile(path.join(uploadDir, fileName), buffer);
-      savedFiles.push(fileName);
-    }
-
-    const formattedDate = new Date().toISOString().split("T")[0];
-
-    // 1️⃣ Fetch existing data from design_activity using sales_id
-    const [existingDesign] = await executeQuery(
-      `SELECT id, profiting_file, client_name, sales_personnel, status 
+    const [design] = await executeQuery(
+      `SELECT profiting_file, status 
        FROM design_activity 
        WHERE sales_id = ?`,
       [salesId],
     );
 
-    // 2️⃣ Fetch sales record
-    const [existingSales] = await executeQuery(
-      `SELECT id, profiting_file, sales_personnel, client_name, status 
+    const [sales] = await executeQuery(
+      `SELECT client_name, sales_personnel 
        FROM sales_management 
        WHERE id = ?`,
       [salesId],
     );
 
-    if (!existingSales) {
+    if (!sales) {
       return NextResponse.json(
         { success: false, error: "Sales record not found" },
         { status: 404 },
       );
     }
 
-    // 3️⃣ Determine next revision and merge existing files
-    let allFiles = [];
-    let nextRevision = 0;
+    const existingFiles = normalizeFiles(getSafeJSON(design?.profiting_file));
 
-    if (existingDesign?.profiting_file) {
-      try {
-        const fileData = JSON.parse(existingDesign.profiting_file);
-        if (Array.isArray(fileData) && fileData.length > 0) {
-          if (
-            typeof fileData[0] === "object" &&
-            fileData[0].revision !== undefined
-          ) {
-            allFiles = [...fileData];
-            const maxRevision = Math.max(
-              ...fileData.map((f) => f.revision || 0),
-            );
-            nextRevision =
-              existingDesign.status === "Declined"
-                ? maxRevision + 1
-                : maxRevision;
-          } else {
-            allFiles = fileData.map((name) => ({ name, revision: 0 }));
-            nextRevision = existingDesign.status === "Declined" ? 1 : 0;
-          }
-        }
-      } catch (err) {
-        console.warn("Failed to parse existing files JSON:", err);
-      }
-    }
+    const nextRevision = getNextRevision(existingFiles, design?.status);
 
     const newFiles = savedFiles.map((name) => ({
       name,
       revision: nextRevision,
+      notes,
     }));
-    allFiles = [...allFiles, ...newFiles];
 
-    // 4️⃣ Update design_activity
-    if (existingDesign) {
+    const allFiles = [...existingFiles, ...newFiles];
+    const formattedDate = new Date().toISOString().split("T")[0];
+
+    if (design) {
       await executeQuery(
         `UPDATE design_activity 
          SET profiting_file = ?, sir_mjh = ?, status = ? 
@@ -143,22 +155,19 @@ export async function POST(req) {
       );
     }
 
-    // 5️⃣ Update sales_management
     await executeQuery(
       `UPDATE sales_management 
-       SET profiting_file = ?, sir_mjh = ?,  status = ? 
+       SET profiting_file = ?, sir_mjh = ?, status = ? 
        WHERE id = ?`,
       [JSON.stringify(allFiles), formattedDate, "Submitted", salesId],
     );
 
-    // 6️⃣ Log notification for sales personnel
-    const clientName = existingSales.client_name || "";
-    const salesPersonnel = existingSales.sales_personnel || null;
-    if (salesPersonnel) {
+    if (sales.sales_personnel) {
       await logNotification({
         type: "Proposal Submitted",
-        message: `${clientName} Proposal Submission Available`.trim(),
-        receiverName: salesPersonnel,
+        message:
+          `${sales.client_name || ""} Proposal Submission Available`.trim(),
+        receiverName: sales.sales_personnel,
         redirectUrl: `/sales?taskId=${salesId}&view=files`,
         active: 1,
       });
@@ -167,6 +176,7 @@ export async function POST(req) {
     const responseFiles = allFiles.map((f) => ({
       name: f.name,
       revision: f.revision,
+      notes: f.notes,
       path: `/uploads/profitting/${encodeURIComponent(f.name)}`,
     }));
 
@@ -178,6 +188,7 @@ export async function POST(req) {
     });
   } catch (err) {
     console.error("Error uploading files:", err);
+
     return NextResponse.json(
       { success: false, error: "Failed to upload files" },
       { status: 500 },

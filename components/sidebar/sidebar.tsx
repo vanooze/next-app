@@ -36,6 +36,12 @@ export const SidebarWrapper = () => {
       user.designation.toUpperCase().includes(role),
     );
 
+  const isManagerOrSupervisor =
+    user?.designation.toUpperCase().includes("MANAGER") ||
+    user?.designation.toUpperCase().includes("SUPERVISOR");
+
+  const isHR = user?.designation.toUpperCase().includes("HR");
+
   const {
     data: ongoingProjects = [],
     error: projectsError,
@@ -156,6 +162,12 @@ export const SidebarWrapper = () => {
               isActive={pathname === "/chat"}
               href="/chat"
             />
+            <SidebarItem
+              title="Ticketing System"
+              icon={<InfoIcon />}
+              isActive={pathname === "/ticketing"}
+              href="/ticketing"
+            />
             <SidebarMenu title="Main Menu">
               {accessForTask && (
                 <SidebarItem
@@ -198,11 +210,18 @@ export const SidebarWrapper = () => {
                   { label: "LMS Files", href: "/lms" },
                 ]}
               />
-              <SidebarItem
-                isActive={pathname === "/kra"}
-                title="Key Result Area"
+              <CollapseItems
                 icon={<InfoIcon />}
-                href="/kra"
+                title="Key Result Area"
+                items={[
+                  { label: "My KRA", href: "/kra" },
+                  ...(isManagerOrSupervisor
+                    ? [{ label: "Department KRA", href: "/kra/department" }]
+                    : []),
+                  ...(isHR
+                    ? [{ label: "HR KRA Dashboard", href: "/kra/hr" }]
+                    : []),
+                ]}
               />
             </SidebarMenu>
           </div>

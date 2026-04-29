@@ -4,6 +4,8 @@ import { getConnection } from "@/app/lib/db";
 import fs from "fs/promises";
 import path from "path";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req) {
   const connection = await getConnection();
 

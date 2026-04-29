@@ -333,6 +333,52 @@ export const AwardedManagementColumns = [
   { name: "Actions", uid: "actions" },
 ];
 
+//------------------------- TICKETING SYSTEM -------------------------
+
+export interface Ticketing {
+  id: number;
+  description: string;
+  department: string;
+  assignedPersonnel: string | null;
+  requestedBy: string;
+  requestedDate: string;
+  requestedNote: string;
+  requestedFile: string | null;
+  acceptedDate: string | null;
+  acceptedTime: string | null;
+  finishedDate: string | null;
+  finishedTime: string | null;
+  personnelFile: string | null;
+  status: string;
+}
+
+export const personalTicketingColumns = [
+  { name: "Status", uid: "status" },
+  { name: "Description", uid: "description" },
+  { name: "Requested Note", uid: "requestedNote" },
+  { name: "Requested Date", uid: "requestedDate" },
+  { name: "Assigned Personnel", uid: "assignedPersonnel" },
+  { name: "accepted date", uid: "acceptedDate" },
+  { name: "accepted time", uid: "acceptedTime" },
+  { name: "finished date", uid: "finishedDate" },
+  { name: "finished time", uid: "finishedTime" },
+  { name: "Actions", uid: "actions" },
+];
+
+export const pendingTicketingColumns = [
+  { name: "Status", uid: "status" },
+  { name: "Description", uid: "description" },
+  { name: "Requested Note", uid: "requestedNote" },
+  { name: "requested By", uid: "requestedBy" },
+  { name: "Requested Date", uid: "requestedDate" },
+  { name: "Assigned Personnel", uid: "assignedPersonnel" },
+  { name: "accepted date", uid: "acceptedDate" },
+  { name: "accepted time", uid: "acceptedTime" },
+  { name: "finished date", uid: "finishedDate" },
+  { name: "finished time", uid: "finishedTime" },
+  { name: "Actions", uid: "actions" },
+];
+
 // ------------------------- KRA TABLE -------------------------
 
 export interface KRATable {

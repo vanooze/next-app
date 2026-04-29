@@ -5,6 +5,8 @@ import fs from "fs";
 import path from "path";
 import { form } from "@heroui/theme";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req) {
   try {
     const formData = await req.formData();

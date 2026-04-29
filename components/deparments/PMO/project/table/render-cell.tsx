@@ -32,6 +32,7 @@ export const RenderCell = ({ Tasks, columnKey, handleEditProject }: Props) => {
       user.position === "SUPERVISOR" ||
       user.position === "PMO" ||
       user.position === "COORDINATOR" ||
+      user.position === "INVENTORY" ||
       user?.designation?.includes("ADMIN PURCHASING") ||
       user.designation?.includes("SALES ASSISTANT");
 

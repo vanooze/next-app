@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { executeQuery } from "@/app/lib/db";
 import { getUserFromToken } from "@/app/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function DELETE(req) {
   try {
     const user = await getUserFromToken(req);

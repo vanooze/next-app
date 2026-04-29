@@ -131,7 +131,9 @@ export const ITTableWrapper: React.FC<TableWrapperProps> = ({
         designation.includes("MMC");
 
       const isSalesOrDesignUser =
-        designation.includes("SALES") || designation.includes("DESIGN");
+        designation.includes("SALES") ||
+        designation.includes("DESIGN") ||
+        designation.includes("MARKETING");
 
       const mappedAlias =
         Object.entries(IT_NAME_MAPPINGS).find(

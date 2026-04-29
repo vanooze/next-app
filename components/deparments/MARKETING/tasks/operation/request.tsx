@@ -179,7 +179,7 @@ export const RequestMMC = () => {
                     setRequestBy(selectedKey);
                   }}
                 >
-                  <SelectItem key="ALI">Alliah Pearl Robles</SelectItem>
+                  <SelectItem key="ALLIAH">Alliah Pearl Robles</SelectItem>
                   <SelectItem key="SHANIA">Mary Shania M. Camunias</SelectItem>
                 </Select>
 

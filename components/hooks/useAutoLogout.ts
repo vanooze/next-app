@@ -1,48 +1,57 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
+import { useEffect, useCallback, useRef } from "react";
+import {
+  getNativeFetch,
+  signOutAndRedirectToLogin,
+} from "@/helpers/authSession";
 
-interface JWTPayload {
-  exp: number; // expiration timestamp in seconds
-  [key: string]: any;
+const POLL_MS = 60 * 1000;
+
+async function sessionInvalid(): Promise<boolean> {
+  const res = await getNativeFetch()("/api/auth/me", {
+    credentials: "include",
+  });
+  return res.status === 401;
 }
 
-export default function useAutoLogout(token?: string | null) {
-  const router = useRouter();
-  const redirectToLogin = useCallback(() => {
-    router.push("/login");
-    router.refresh();
-  }, [router]);
+/**
+ * Keeps client state in sync with the httpOnly session cookie by asking the
+ * server. Client-side JWT decoding is unreliable here because the token is
+ * not readable from document.cookie.
+ */
+export default function useAutoLogout(enabled: boolean) {
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
+
+  const redirectToLogin = useCallback(async () => {
+    await signOutAndRedirectToLogin();
+  }, []);
 
   useEffect(() => {
-    if (!token) {
-      redirectToLogin();
-      return;
-    }
+    if (!enabled) return;
 
-    try {
-      const decoded: JWTPayload = jwtDecode(token);
-      const expiry = decoded.exp * 1000; // convert seconds → ms
-      const now = Date.now();
+    let cancelled = false;
 
-      if (expiry <= now) {
-        // Already expired → redirect immediately
-        redirectToLogin();
-      } else {
-        // Set a timer for auto-logout at expiry
-        const timeout = setTimeout(() => {
-          alert("Session expired. Please log in again.");
-          redirectToLogin();
-        }, expiry - now);
-
-        return () => clearTimeout(timeout);
+    const tick = async () => {
+      if (!enabledRef.current || cancelled) return;
+      if (await sessionInvalid()) {
+        await redirectToLogin();
       }
-      console.log("Expires in:", (expiry - now) / 1000, "seconds");
-    } catch (err) {
-      console.error("Invalid or malformed token:", err);
-      redirectToLogin();
-    }
-  }, [token, redirectToLogin]);
+    };
+
+    void tick();
+    const interval = setInterval(() => void tick(), POLL_MS);
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void tick();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [enabled, redirectToLogin]);
 }

@@ -243,7 +243,7 @@ export const IT_NAME_MAPPINGS: Record<string, string> = {
   "Marcial A. Gigante III": "MARCIAL",
   "Billy Joel Topacio": "BILLY",
   //MARKETING
-  "Alliah Pearl Robles": "ALI",
+  "Alliah Pearl C. Robles": "ALLIAH",
   "Mary Shania M. Camunias": "SHANIA",
 };
 
@@ -269,6 +269,7 @@ export const PROJECT_ASSIGN_ACCESS_DESIGNATION = [
   "TECHNICAL ADMIN",
   "TECHNICAL COORDINATOR",
   "ADMIN PURCHASING",
+  "INVENTORY",
 ];
 
 export const PROJECT_TABLE_VIEW_ACCESS_DESIGNATION = [];
@@ -545,7 +546,12 @@ export const CONTRACTORS_EVAL_CAN_UPLOAD_DESIGNATION = [
   "PMO",
 ];
 
-export const NCCAPA_CAN_UPLOAD_DESIGNATION = ["DESIGN", "TECHNICAL ADMIN"];
+export const NCCAPA_CAN_UPLOAD_DESIGNATION = [
+  "DESIGN",
+  "TECHNICAL ADMIN",
+  "TECHNICAL ASSISTANT MANAGER",
+  "TECHNICAL COORDINATOR",
+];
 
 export const OVERALL_REPORT_CAN_UPLOAD_DESIGNATION = ["PMO", "TECHNICAL ADMIN"];
 

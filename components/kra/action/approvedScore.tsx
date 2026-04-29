@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Modal,
   ModalContent,
@@ -19,6 +19,7 @@ interface ApproveScoreProps {
   month: number;
   year: number;
   onApproved?: () => void;
+  kraType?: "employee" | "department" | "hr";
 }
 
 export const ApproveScore: React.FC<ApproveScoreProps> = ({
@@ -28,31 +29,45 @@ export const ApproveScore: React.FC<ApproveScoreProps> = ({
   month,
   year,
   onApproved,
+  kraType = "employee",
 }) => {
   const { user } = useUserContext();
   const [score, setScore] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+
+  const scoreEndpoint = useMemo(() => {
+    switch (kraType) {
+      case "department":
+        return "/api/kra/dept/score";
+
+      case "hr":
+        return "/api/kra/hr/score";
+
+      default:
+        return "/api/kra/score";
+    }
+  }, [kraType]);
 
   useEffect(() => {
     if (!isOpen || !tableId) return;
 
     const load = async () => {
       const res = await fetch(
-        `/api/kra/score?tableId=${tableId}&month=${month}&year=${year}`,
+        `${scoreEndpoint}?tableId=${tableId}&month=${month}&year=${year}`,
       );
       const data = await res.json();
       setScore(data);
     };
 
     load();
-  }, [isOpen, tableId, month, year]);
+  }, [isOpen, tableId, month, year, scoreEndpoint]);
 
   const handleApprove = async () => {
     if (!user?.name) return;
 
     setLoading(true);
     try {
-      const res = await fetch("/api/kra/score", {
+      const res = await fetch(scoreEndpoint, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

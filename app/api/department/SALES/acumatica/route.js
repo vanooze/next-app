@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { LoginAcumatica } from "@/app/lib/acumatica";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req) {
   try {
     const body = await req.json();

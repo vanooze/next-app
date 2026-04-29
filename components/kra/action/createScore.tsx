@@ -22,6 +22,7 @@ interface CreateScoreProps {
   month: number;
   year: number;
   onSaved?: () => void;
+  kraType?: "employee" | "department" | "hr";
 }
 
 const ratingOptions = [
@@ -41,12 +42,25 @@ export const CreateScore: React.FC<CreateScoreProps> = ({
   month,
   year,
   onSaved,
+  kraType = "employee",
 }) => {
   const [rating, setRating] = useState<string>("");
   const [points, setPoints] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false); // loading existing score
 
+  const scoreEndpoint = useMemo(() => {
+    switch (kraType) {
+      case "department":
+        return "/api/kra/dept/score";
+
+      case "hr":
+        return "/api/kra/hr/score";
+
+      default:
+        return "/api/kra/score";
+    }
+  }, [kraType]);
   /** Normalize weight */
   const numericWeight = useMemo(() => {
     if (weight === null || weight === undefined) return 0;
@@ -93,7 +107,7 @@ export const CreateScore: React.FC<CreateScoreProps> = ({
       setFetching(true);
       try {
         const res = await fetch(
-          `/api/kra/score?tableId=${tableId}&month=${month}&year=${year}`,
+          `${scoreEndpoint}?tableId=${tableId}&month=${month}&year=${year}`,
         );
 
         if (!res.ok) throw new Error("Failed to fetch score");
@@ -114,7 +128,7 @@ export const CreateScore: React.FC<CreateScoreProps> = ({
     };
 
     loadScore();
-  }, [isOpen, tableId, userId]);
+  }, [isOpen, tableId, userId, month, year, scoreEndpoint]);
 
   const handleSave = async () => {
     if (!tableId || !userId || !rating) {
@@ -125,7 +139,7 @@ export const CreateScore: React.FC<CreateScoreProps> = ({
     setLoading(true);
 
     try {
-      const res = await fetch("/api/kra/score", {
+      const res = await fetch(scoreEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

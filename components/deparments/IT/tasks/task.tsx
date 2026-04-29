@@ -55,7 +55,9 @@ export const ITTasks = () => {
   const canCreate =
     user?.position === "SUPERVISOR" ||
     user?.position === "MMC" ||
-    user?.position === "MANAGER";
+    user?.position === "MANAGER" ||
+    user?.position === "TECHNICAL" ||
+    user?.position === "PROGRAMMER";
 
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">

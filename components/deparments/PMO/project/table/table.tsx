@@ -83,6 +83,7 @@ export const TableWrapper: React.FC<TableWrapperProps> = ({
         user.position === "SUPERVISOR" ||
         user.position === "COORDINATOR" ||
         user.position === "PMO" ||
+        user.position === "INVENTORY" ||
         user?.designation?.includes("ADMIN PURCHASING") ||
         user.designation?.includes("SALES ASSISTANT");
 

@@ -39,11 +39,13 @@ interface KRARecord {
 interface KRATableProps {
   employeeId?: string | null;
   onTableIdsChange?: (ids: number[]) => void; // new prop
+  kraType?: "employee" | "department" | "hr";
 }
 
 export const KRATable: React.FC<KRATableProps> = ({
   employeeId,
   onTableIdsChange,
+  kraType,
 }) => {
   const { user } = useUserContext();
   const currentDate = new Date();
@@ -60,16 +62,29 @@ export const KRATable: React.FC<KRATableProps> = ({
 
   const fetchData = useCallback(
     async (empId?: string | null) => {
-      if (!empId) {
-        setData([]);
-        return;
-      }
-
       setLoading(true);
+
       try {
-        const res = await fetch(
-          `/api/kra?employeeId=${empId}&month=${selectedMonth}&year=${selectedYear}`,
-        );
+        let endpoint = "/api/kra";
+        let query = "";
+
+        if (kraType === "department") {
+          endpoint = "/api/kra/dept";
+          query = `?department=${user?.department}&month=${selectedMonth}&year=${selectedYear}`;
+        }
+
+        if (kraType === "hr") {
+          endpoint = "/api/kra/hr";
+          query = `?month=${selectedMonth}&year=${selectedYear}`;
+        }
+
+        if (kraType === "employee") {
+          endpoint = "/api/kra";
+          query = `?employeeId=${empId}&month=${selectedMonth}&year=${selectedYear}`;
+        }
+
+        const res = await fetch(`${endpoint}${query}`);
+
         if (!res.ok) throw new Error("Failed to fetch KRA");
 
         const json = await res.json();
@@ -81,7 +96,7 @@ export const KRATable: React.FC<KRATableProps> = ({
         setLoading(false);
       }
     },
-    [selectedMonth, selectedYear],
+    [kraType, selectedMonth, selectedYear, user?.department],
   );
 
   useEffect(() => {
@@ -105,7 +120,17 @@ export const KRATable: React.FC<KRATableProps> = ({
     if (!confirm("Are you sure you want to delete this KRA?")) return;
 
     try {
-      const res = await fetch(`/api/kra/${id}`, {
+      let endpoint = `/api/kra/${id}`;
+
+      if (kraType === "department") {
+        endpoint = `/api/kra/dept/${id}`;
+      }
+
+      if (kraType === "hr") {
+        endpoint = `/api/kra/hr/${id}`;
+      }
+
+      const res = await fetch(endpoint, {
         method: "PUT",
       });
 
@@ -153,9 +178,6 @@ export const KRATable: React.FC<KRATableProps> = ({
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(Number(e.target.value))}
             className="w-full pl-4 pr-10 py-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 appearance-none cursor-pointer bg-[length:1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-            }}
           >
             {Array.from({ length: 12 }, (_, i) => {
               const monthNumber = i + 1;
@@ -294,6 +316,7 @@ export const KRATable: React.FC<KRATableProps> = ({
         weight={selectedWeight}
         month={selectedMonth}
         year={selectedYear}
+        kraType={kraType}
         onSaved={() => fetchData(employeeId)}
       />
 
@@ -303,6 +326,7 @@ export const KRATable: React.FC<KRATableProps> = ({
         tableId={selectedId}
         month={selectedMonth}
         year={selectedYear}
+        kraType={kraType}
         onApproved={() => fetchData(employeeId)}
       />
     </div>

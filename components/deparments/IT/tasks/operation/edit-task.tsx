@@ -66,6 +66,7 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
     setId(task.id);
     setClientName(task.clientName ?? "");
     setProjectDesc(task.projectDesc ?? "");
+    setSalesPersonnel(task.salesPersonnel ?? "");
     setDateReceived(
       typeof task.dateReceived === "string"
         ? safeParseDate(task.dateReceived)
@@ -81,16 +82,11 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
     setStatus(task.status ?? "");
   }, [task]);
 
-  /* ✅ AUTO SET END DATE WHEN FINISHED */
-  useEffect(() => {
-    if (status === "Finished") {
-      setDate(today(getLocalTimeZone()));
-    }
-  }, [status]);
-
   const handleUpdateTask = async (onClose: () => void) => {
     const payload = {
       id,
+      salesPersonnel,
+      dateReceived: formatDatetoStr(dateReceived),
       personnel,
       date: formatDatetoStr(date),
       status,
@@ -139,6 +135,13 @@ export const EditTask = ({ isOpen, onClose, task }: EditTaskProps) => {
                 value={projectDesc}
                 onValueChange={setProjectDesc}
                 disabled
+              />
+              <Input
+                isRequired
+                label="Request By"
+                variant="bordered"
+                value={salesPersonnel}
+                onValueChange={setSalesPersonnel}
               />
               <DatePicker
                 label="date Received"

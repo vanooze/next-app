@@ -15,6 +15,7 @@ interface ExportKRAModalProps {
   onClose: () => void;
   employeeId: string | null;
   department: string | null;
+  kraType?: "employee" | "department" | "hr";
 }
 
 export const ExportKRAModal = ({
@@ -22,6 +23,7 @@ export const ExportKRAModal = ({
   onClose,
   employeeId,
   department,
+  kraType = "employee",
 }: ExportKRAModalProps) => {
   const [exportType, setExportType] = useState<string>("monthly");
   const [selectedMonth, setSelectedMonth] = useState<string>("");
@@ -94,6 +96,7 @@ export const ExportKRAModal = ({
       employeeId,
       department,
       year: selectedYear,
+      kraType,
     };
 
     if (exportType === "monthly") {

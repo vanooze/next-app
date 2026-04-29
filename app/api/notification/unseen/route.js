@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { executeQuery } from "@/app/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const receivers = searchParams.getAll("receiver");

@@ -1,19 +1,18 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import useAutoLogout from "../hooks/useAutoLogout";
 
-export default function SessionWatcher() {
-  // Get the token from cookies
-  const token =
-    typeof document !== "undefined"
-      ? document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("token="))
-          ?.split("=")[1] || null
-      : null;
+function isPublicRoute(pathname: string | null): boolean {
+  if (!pathname) return false;
+  if (pathname === "/login" || pathname === "/register") return true;
+  if (/^\/contract\/upload\/[^/]+$/.test(pathname)) return true;
+  return false;
+}
 
-  // Call your hook
-  useAutoLogout(token);
+export default function SessionWatcher() {
+  const pathname = usePathname();
+  useAutoLogout(!isPublicRoute(pathname));
 
   return null;
 }

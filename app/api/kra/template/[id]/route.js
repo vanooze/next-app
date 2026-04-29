@@ -1,6 +1,8 @@
 import { executeQuery } from "@/app/lib/db";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req, { params }) {
   try {
     const templateId = params.id;

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getUserFromToken } from "@/app/lib/auth";
 import { getConnection } from "@/app/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req) {
   const connection = await getConnection();
 

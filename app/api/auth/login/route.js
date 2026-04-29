@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { createToken } from "@/app/lib/jwt";
 import { cookies } from "next/headers";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request) {
   try {
     const { username, password } = await request.json();

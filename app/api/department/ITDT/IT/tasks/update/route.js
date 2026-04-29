@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { executeQuery } from "@/app/lib/db";
 import { getUserFromToken } from "@/app/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req) {
   try {
     const user = await getUserFromToken(req);
@@ -13,7 +15,7 @@ export async function POST(req) {
     }
     const body = await req.json();
 
-    const { id, personnel, date, status } = body;
+    const { id, salesPersonnel, personnel, dateReceived, date, status } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -25,12 +27,21 @@ export async function POST(req) {
     const query = `
       UPDATE it_activity SET
         personnel = ?,
+        sales_personnel = ?,
+        date_received = ?,
         date= ?,
         status = ?
       WHERE id = ?
     `;
 
-    const result = await executeQuery(query, [personnel, date, status, id]);
+    const result = await executeQuery(query, [
+      personnel,
+      salesPersonnel,
+      dateReceived,
+      date,
+      status,
+      id,
+    ]);
 
     return NextResponse.json({
       success: true,

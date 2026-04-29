@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { executeQuery } from "@/app/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export async function PUT(req) {
   try {
     const { id, name, access } = await req.json();

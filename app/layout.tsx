@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+import "@/helpers/authSession";
 import type { Metadata } from "next";
 import { Providers } from "./providers";
 import { fontSans } from "@/config/fonts";

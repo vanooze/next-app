@@ -18,11 +18,13 @@ import { useUserContext } from "@/components/layout/UserContext";
 interface KRAModalProps {
   triggerText?: string;
   employeeId?: string | null;
+  kraType?: "employee" | "department" | "hr";
 }
 
 export const KRAModal: React.FC<KRAModalProps> = ({
   triggerText = "Add KRA",
   employeeId,
+  kraType = "employee",
 }) => {
   const { user } = useUserContext();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -36,6 +38,19 @@ export const KRAModal: React.FC<KRAModalProps> = ({
   const [needImprovement, setNeedImprovement] = useState("");
   const [poor, setPoor] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const getEndpoint = () => {
+    switch (kraType) {
+      case "department":
+        return "/api/kra/dept/table";
+
+      case "hr":
+        return "/api/kra/hr/table";
+
+      default:
+        return "/api/kra/table";
+    }
+  };
 
   const handleSubmit = async () => {
     if (!user) {
@@ -78,7 +93,7 @@ export const KRAModal: React.FC<KRAModalProps> = ({
         createdAt: new Date().toISOString(),
       };
 
-      const res = await fetch("/api/kra/table", {
+      const res = await fetch(getEndpoint(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify([payload]),
@@ -100,7 +115,20 @@ export const KRAModal: React.FC<KRAModalProps> = ({
       setPoor("");
 
       onOpenChange();
-      await mutate(`/api/kra?employeeId=${employeeId}`);
+      const getMutateKey = () => {
+        switch (kraType) {
+          case "department":
+            return `/api/kra/dept`;
+
+          case "hr":
+            return `/api/kra/hr`;
+
+          default:
+            return `/api/kra?employeeId=${employeeId}`;
+        }
+      };
+
+      await mutate(getMutateKey());
     } catch (err) {
       console.error(err);
       alert("Error submitting KRA");

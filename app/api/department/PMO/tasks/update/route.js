@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { getUserFromToken } from "@/app/lib/auth";
 import { date } from "yup";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req) {
   try {
     const user = await getUserFromToken(req);

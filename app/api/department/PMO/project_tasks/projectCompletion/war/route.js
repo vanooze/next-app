@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { getUserFromToken } from "@/app/lib/auth";
 import { uptime } from "process";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req) {
   try {
     const user = await getUserFromToken(req);

@@ -15,12 +15,14 @@ interface FileObj {
   name: string;
   path: string;
   revision?: number;
+  notes?: string;
 }
 
 interface RevisionGroup {
   revision: number;
   files: FileObj[];
   label: string;
+  notes?: string;
 }
 
 interface FilesModalProps {
@@ -98,6 +100,7 @@ export const FilesModal: React.FC<FilesModalProps> = ({
         revision,
         files,
         label: revision === 0 ? "Initial Submission" : `Revision ${revision}`,
+        notes: files[0]?.notes || "",
       }));
   };
 
@@ -196,6 +199,25 @@ export const FilesModal: React.FC<FilesModalProps> = ({
                             {revisionGroup.label}
                           </h4>
                         </div>
+
+                        {/* ✅ NOTES DISPLAY */}
+                        {revisionGroup.notes ? (
+                          <div
+                            className={`mb-2 p-2 rounded-md text-sm ${
+                              isLatest
+                                ? "bg-primary-50 text-primary-700"
+                                : "bg-default-100 text-foreground-500"
+                            }`}
+                          >
+                            <span className="font-medium">Notes:</span>{" "}
+                            {revisionGroup.notes}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-foreground-400 italic mb-2">
+                            No notes provided
+                          </p>
+                        )}
+
                         <ul
                           className={`list-disc pl-5 space-y-1 ${
                             isOld ? "text-sm" : ""

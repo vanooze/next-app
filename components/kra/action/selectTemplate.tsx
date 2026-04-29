@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Modal,
   ModalContent,
@@ -15,6 +15,7 @@ interface TemplateModalProps {
   onClose: () => void;
   employeeId: string | null;
   userDepartment: string | null;
+  kraType?: "employee" | "department" | "hr";
 }
 
 export const KRATemplateModal: React.FC<TemplateModalProps> = ({
@@ -22,6 +23,7 @@ export const KRATemplateModal: React.FC<TemplateModalProps> = ({
   onClose,
   employeeId,
   userDepartment,
+  kraType = "employee",
 }) => {
   const [templates, setTemplates] = useState<
     { id: number; template_name: string }[]
@@ -30,16 +32,40 @@ export const KRATemplateModal: React.FC<TemplateModalProps> = ({
     null,
   );
 
+  const getTemplateEndpoint = useCallback((id?: number) => {
+    switch (kraType) {
+      case "department":
+        return id ? `/api/kra/dept/template/${id}` : `/api/kra/dept/template`;
+
+      case "hr":
+        return id ? `/api/kra/hr/template/${id}` : `/api/kra/hr/template`;
+
+      default:
+        return id ? `/api/kra/template/${id}` : `/api/kra/template`;
+    }
+  }, [kraType]);
+
   // Fetch templates when modal opens
   useEffect(() => {
-    if (!isOpen || !userDepartment) return;
+    if (!isOpen) return;
 
     const fetchTemplates = async () => {
       try {
-        const res = await fetch(
-          `/api/kra/template?department=${userDepartment}`,
-        );
+        let url = getTemplateEndpoint();
+
+        // optional query params
+        if (kraType === "employee" && userDepartment) {
+          url += `?department=${userDepartment}`;
+        }
+
+        if (kraType === "department" && userDepartment) {
+          url += `?department=${userDepartment}`;
+        }
+
+        const res = await fetch(url);
+
         if (!res.ok) throw new Error("Failed to fetch templates");
+
         const data = await res.json();
         setTemplates(data);
       } catch (err) {
@@ -48,7 +74,7 @@ export const KRATemplateModal: React.FC<TemplateModalProps> = ({
     };
 
     fetchTemplates();
-  }, [isOpen, userDepartment]);
+  }, [isOpen, userDepartment, kraType, getTemplateEndpoint]);
 
   useEffect(() => {
     if (isOpen) setSelectedTemplateId(null);
@@ -58,10 +84,13 @@ export const KRATemplateModal: React.FC<TemplateModalProps> = ({
     if (!selectedTemplateId || !employeeId) return;
 
     try {
-      const res = await fetch(`/api/kra/template/${selectedTemplateId}`, {
+      const res = await fetch(getTemplateEndpoint(selectedTemplateId), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ employeeId }),
+        body: JSON.stringify({
+          employeeId,
+          department: userDepartment,
+        }),
       });
 
       if (!res.ok) throw new Error("Failed to apply template");

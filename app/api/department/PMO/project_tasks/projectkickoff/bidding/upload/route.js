@@ -5,6 +5,8 @@ import { nanoid } from "nanoid";
 import fs from "fs";
 import path from "path";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req) {
   try {
     const user = await getUserFromToken(req);

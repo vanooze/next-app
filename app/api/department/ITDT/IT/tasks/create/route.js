@@ -4,19 +4,12 @@ import { getConnection } from "@/app/lib/db";
 import fs from "fs/promises";
 import path from "path";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req) {
   const connection = await getConnection();
 
   try {
-    const user = await getUserFromToken(req);
-
-    if (!user || !user.department) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized access" },
-        { status: 403 },
-      );
-    }
-
     const formData = await req.formData();
 
     const salesId = formData.get("salesId");

@@ -10,6 +10,7 @@ import {
   ModalFooter,
   ModalHeader,
   Spinner,
+  Textarea,
   useDraggable,
 } from "@heroui/react";
 import { mutate } from "swr";
@@ -18,7 +19,7 @@ interface UploadProfitingModalProps {
   isOpen: boolean;
   onClose: () => void;
   salesId: number;
-  folder?: string; // optional folder name, default "profitting"
+  folder?: string;
 }
 
 export const UploadProfitingModal: React.FC<UploadProfitingModalProps> = ({
@@ -35,6 +36,7 @@ export const UploadProfitingModal: React.FC<UploadProfitingModalProps> = ({
   });
 
   const [files, setFiles] = useState<File[]>([]);
+  const [notes, setNotes] = useState("");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
@@ -52,9 +54,11 @@ export const UploadProfitingModal: React.FC<UploadProfitingModalProps> = ({
       "image/png",
       "image/webp",
     ];
+
     const validFiles = selectedFiles.filter((f) =>
       allowedTypes.includes(f.type),
     );
+
     if (validFiles.length !== selectedFiles.length) {
       setError(
         "Some files were skipped. Only PDF, DOCX, XLSX, Images, and WinRAR allowed.",
@@ -62,6 +66,7 @@ export const UploadProfitingModal: React.FC<UploadProfitingModalProps> = ({
     } else {
       setError("");
     }
+
     setFiles(validFiles);
   };
 
@@ -74,6 +79,8 @@ export const UploadProfitingModal: React.FC<UploadProfitingModalProps> = ({
     try {
       const formData = new FormData();
       formData.append("salesId", String(salesId));
+      formData.append("notes", notes);
+
       files.forEach((f) => formData.append("files", f));
 
       const res = await fetch("/api/department/ITDT/DT/tasks/upload", {
@@ -87,12 +94,11 @@ export const UploadProfitingModal: React.FC<UploadProfitingModalProps> = ({
         throw new Error(resData.error || "Upload failed");
       }
 
-      // Refresh task files
       await mutate(`/api/department/ITDT/DT/tasks/`);
 
-      // Clear selected files
+      // reset
       setFiles([]);
-      // Close modal automatically
+      setNotes(""); // ✅ reset notes
       onClose();
     } catch (err) {
       console.error("Upload error:", err);
@@ -115,7 +121,7 @@ export const UploadProfitingModal: React.FC<UploadProfitingModalProps> = ({
           <>
             <ModalHeader {...moveProps}>Upload Files</ModalHeader>
             <ModalBody>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
                 <p className="text-sm text-foreground-500">
                   Upload one or multiple files. (Accept pdf, docx, xlsx, rar,
                   and images)
@@ -128,9 +134,20 @@ export const UploadProfitingModal: React.FC<UploadProfitingModalProps> = ({
                   className="text-sm"
                   multiple
                 />
-                {error && <p className="text-danger text-xs mt-1">{error}</p>}
+
+                {/* ✅ Notes field */}
+                <Textarea
+                  label="Notes"
+                  placeholder="Add notes for this upload..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  minRows={3}
+                />
+
+                {error && <p className="text-danger text-xs">{error}</p>}
               </div>
             </ModalBody>
+
             <ModalFooter className="gap-2">
               <Button color="default" variant="flat" onClick={onClose}>
                 Cancel

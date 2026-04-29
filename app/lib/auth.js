@@ -17,7 +17,10 @@ export async function getUserFromToken(req) {
       department: payload.department,
     };
   } catch (err) {
-    console.error("Error verifying token:", err);
+    // Build-time static analysis calls `cookies()` and throws; avoid noisy logs.
+    if (err?.digest !== "DYNAMIC_SERVER_USAGE") {
+      console.error("Error verifying token:", err);
+    }
     return null;
   }
 }

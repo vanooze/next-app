@@ -4,6 +4,8 @@ import { executeQuery } from "@/app/lib/db";
 import fs from "fs";
 import path from "path";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req) {
   try {
     const formData = await req.formData();
